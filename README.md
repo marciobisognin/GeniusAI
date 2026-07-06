@@ -4,19 +4,28 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 0 (scaffold)
+## Estado atual: Fase 1 concluída
 
-Já implementado:
+**Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
 - Interface `AgentRunner` com implementações plugáveis:
   - `ClaudeCodeRunner` → `claude -p --output-format json`
   - `CodexRunner` → `codex exec`
   - `OpencodeRunner` → `opencode run`
   - `OllamaRunner` → HTTP `localhost:11434/api/chat` (com `format` = JSON schema)
-- Seleção por env `RUNNER`.
-- **Health check** do runner configurado (via HTTP `/health`, WebSocket e CLI).
+- Seleção por env `RUNNER`; **health check** (HTTP `/health`, WebSocket e CLI).
 
-Ainda **não** há lógica de jogo — isso é a Fase 1 (World Engine determinístico).
+**Fase 1 — World Engine determinístico (`apps/backend/src/engine/`), sem LLM:**
+- Estado do mundo (mapa de tiles, civilizações, cidades, exércitos, tecnologia, diplomacia).
+- PRNG determinístico (`Rng`) com estado serializável → simulação reproduzível (replay).
+- `createWorld(seed)` determinístico e `tick(world, decisions)` puro (não muta a entrada).
+- Ações validadas pelo motor: `build`, `research`, `move_army`, `attack`, `set_diplomacy`, `trade`, `set_strategy` — ações inválidas viram evento `action_rejected` (feedback p/ o agente).
+- Economia (rendimentos, crescimento, pesquisa) e combate determinístico.
+- **25 testes** cobrindo determinismo, validação, combate, comércio e economia.
+
+Rodar os testes: `npm run test --workspace apps/backend`.
+
+Próximo: **Fase 2** — ligar os agentes (`AgentRunner`) ao motor (`runCivilizationTurn`), com schema de ações + `zod` + fallback.
 
 ## Pré-requisitos
 
