@@ -23,9 +23,22 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 - Economia (rendimentos, crescimento, pesquisa) e combate determinístico.
 - **25 testes** cobrindo determinismo, validação, combate, comércio e economia.
 
-Rodar os testes: `npm run test --workspace apps/backend`.
+**Fase 2 — Camada de agentes (`apps/backend/src/agent/`), liga o LLM ao motor:**
+- `actions.ts` — schema de ações em JSON (para `format`/prompt) + validação `zod` (`coerceActions`): ações inválidas são descartadas com erro, sem derrubar o turno.
+- `prompt.ts` — `buildSystemPrompt` (regras + persona) e `buildTurnPrompt` (snapshot compacto do mundo + resultados do último turno).
+- `runTurn.ts` — `runCivilizationTurn(world, civId, runner)`: monta prompts → chama o runner → valida → devolve ações. **Fallback:** se o runner falha (exceção/saída não-JSON/timeout), re-pergunta 1×; se falhar de novo, "passa o turno".
+- `memory.ts` — memória por civilização em `./data/memory/<civ>.md` (`readMemory`/`writeMemory`/`hydrateMemory`/`persistMemory`).
+- **16 testes** com runners falsos (sem LLM) cobrindo validação, fallback e integração com o motor.
 
-Próximo: **Fase 2** — ligar os agentes (`AgentRunner`) ao motor (`runCivilizationTurn`), com schema de ações + `zod` + fallback.
+Rodar os testes: `npm run test --workspace apps/backend` (41 no total).
+
+Demo de um turno real com LLM:
+```bash
+RUNNER=claude npm run turn:demo --workspace apps/backend -- rome
+# ou:  RUNNER=ollama MODEL=qwen2.5:14b npm run turn:demo --workspace apps/backend -- egypt
+```
+
+Próximo: **Fase 3** — Orquestrador: rodar os 4 agentes por tick, aplicar no motor, persistir memória/trace e fazer streaming do progresso.
 
 ## Pré-requisitos
 

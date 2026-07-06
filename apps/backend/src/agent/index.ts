@@ -4,6 +4,21 @@ import { CliAgentRunner } from "./CliAgentRunner";
 import { OllamaRunner } from "./OllamaRunner";
 
 export type { AgentRunner, AgentDecision, AgentAction, DecideInput } from "./AgentRunner";
+export * from "./actions";
+export * from "./prompt";
+export * from "./runTurn";
+export * from "./memory";
+
+/** Extrai o texto do modelo do envelope JSON do `claude -p --output-format json`. */
+function unwrapClaudeEnvelope(stdout: string): string {
+  try {
+    const env = JSON.parse(stdout) as { result?: unknown };
+    if (typeof env.result === "string") return env.result;
+  } catch {
+    // não era um envelope JSON — usa a saída como veio
+  }
+  return stdout;
+}
 
 /** Cria o runner conforme a configuração (env RUNNER + AGENT_CMD). */
 export function createRunner(cfg: Config): AgentRunner {
@@ -36,6 +51,7 @@ export function createRunner(cfg: Config): AgentRunner {
         cmd: cmd ?? "claude",
         decideArgs: ["-p", "--output-format", "json"],
         healthArgs: ["--version"],
+        unwrap: unwrapClaudeEnvelope,
       });
   }
 }

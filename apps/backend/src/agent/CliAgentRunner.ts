@@ -12,6 +12,12 @@ export interface CliAgentOptions {
   healthArgs?: string[];
   /** Enviar o prompt via stdin (padrão) ou anexado como último argumento. */
   promptOnStdin?: boolean;
+  /**
+   * Pré-processa a saída do CLI antes de extrair o JSON de ações.
+   * Ex.: `claude -p --output-format json` devolve um envelope
+   * { result: "<texto do modelo>" } — o unwrap retorna o campo `result`.
+   */
+  unwrap?: (stdout: string) => string;
 }
 
 interface RunResult {
@@ -110,6 +116,7 @@ export class CliAgentRunner implements AgentRunner {
     if (code !== 0 && stdout.trim() === "") {
       throw new Error(`${this.opts.cmd} saiu com código ${code}: ${stderr.slice(0, 300)}`);
     }
-    return parseDecision(stdout);
+    const text = this.opts.unwrap ? this.opts.unwrap(stdout) : stdout;
+    return parseDecision(text);
   }
 }
