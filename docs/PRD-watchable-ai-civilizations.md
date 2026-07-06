@@ -1,8 +1,10 @@
-# PRD — "Watchable AI": Simulação de Civilizações com Agentes Autônomos
+# PRD — "Watchable AI": Simulação de Civilizações com Agentes Autônomos (Local-First)
 
 > **Documento de Requisitos de Produto (PRD)**
-> Como replicar, usando **Claude Code**, a experiência mostrada na publicação analisada.
-> Versão 1.0 · Data: 2026-07-06 · Status: Proposta
+> Como replicar a experiência da publicação analisada, rodando **100% local**: LLM na própria máquina via CLI, sem nuvem, com todo o sistema, agentes, artefatos e a UI (design) salvos em disco e servidos em `localhost`.
+> Versão 2.0 (local-first) · Data: 2026-07-06 · Status: Proposta
+
+> **Mudança da v1 → v2:** a v1 usava a API da Anthropic (nuvem). Esta v2 substitui a inferência por um **LLM local** (Ollama por padrão), sem nenhuma dependência de rede externa. Toda a lógica de produto (motor, agentes, UI, roadmap) permanece; só a camada de inferência e as considerações de custo/desempenho mudam.
 
 ---
 
@@ -14,34 +16,47 @@
 - **Mídia:** vídeo (~46s) demonstrando uma interface de simulação onde múltiplas civilizações (Roma, Egito, Grécia, Mali) tomam decisões autônomas simultaneamente, em tempo real.
 - **Ideia-chave / tese:** o paradigma de interface deixa de ser a **janela de chat** (o usuário comanda) e passa a ser a **IA observável** ("watchable AI"): o usuário **assiste** agentes autônomos raciocinando e agindo dentro de um sistema complexo.
 
-O que precisamos replicar não é um jogo de estratégia clássico, e sim: **N agentes de IA autônomos, cada um com sua própria "árvore de decisão" (personalidade + estratégia + memória), agindo em tempo real sobre um mundo compartilhado, com o raciocínio de cada agente exposto para o observador.**
+O que precisamos replicar: **N agentes de IA autônomos, cada um com sua própria "árvore de decisão" (personalidade + estratégia + memória), agindo em tempo real sobre um mundo compartilhado, com o raciocínio de cada agente exposto para o observador** — e **tudo isso rodando localmente**.
+
+---
+
+## 0.1 Princípios de "Local-First" (restrições de projeto)
+
+Estes princípios são requisitos não-negociáveis desta versão:
+
+1. **Inferência local:** o LLM roda na máquina do usuário via CLI/servidor local (ex.: `ollama serve` em `http://localhost:11434`). **Zero chamadas para APIs de nuvem.**
+2. **Offline-capable:** depois de baixar os modelos e as dependências uma vez, o sistema funciona **sem internet**.
+3. **Tudo em disco, na máquina:** código, estado do mundo, memórias dos agentes, traces/replays e artefatos gerados são salvos localmente (JSON/SQLite em uma pasta do projeto, ex.: `./data/`).
+4. **Design/UI em localhost:** o frontend é servido localmente (ex.: `http://localhost:5173`); nenhuma dependência de CDN/fonte/recurso externo em runtime.
+5. **Experiência de terminal (como Claude Code/Codex):** o sistema é iniciado e operável pela CLI (`npm run dev`, comandos para iniciar/pausar/step da simulação), e o LLM é um binário local acessível pelo terminal.
 
 ---
 
 ## 1. Resumo Executivo
 
-Vamos construir **GeniusAI Civilizations** — uma simulação onde cada civilização é controlada por um **agente Claude autônomo**. Os agentes tomam decisões de construção, pesquisa, diplomacia, comércio e guerra a cada "turno" (tick), sobre um mapa/estado de mundo compartilhado. A tela principal **não é um chat**: é um painel onde o usuário observa, em tempo real, o mundo evoluindo e o raciocínio (streaming de "thinking") de cada civilização.
+**GeniusAI Civilizations** — uma simulação onde cada civilização é controlada por um **agente de LLM local autônomo**. Os agentes tomam decisões de construção, pesquisa, diplomacia, comércio e guerra a cada "turno" (tick), sobre um mundo compartilhado. A tela principal **não é um chat**: é um painel, servido em localhost, onde o usuário observa em tempo real o mundo evoluindo e o raciocínio de cada civilização.
 
-O diferencial em relação a um jogo tradicional é que **as decisões não são scripts nem heurísticas fixas** — são geradas por um LLM que recebe o estado do mundo, a personalidade da civilização e seu histórico, e responde com ações estruturadas (tool calls). Isso produz comportamento emergente, imprevisível e "assistível".
+O diferencial: **as decisões são geradas por um LLM rodando na própria máquina** (via Ollama/llama.cpp), que recebe o estado do mundo, a personalidade da civilização e seu histórico, e responde com ações estruturadas (JSON validado por schema). Comportamento emergente, imprevisível, "assistível" — e privado/offline.
 
-**Meta do MVP:** 4 civilizações autônomas (Roma, Egito, Grécia, Mali), um mundo simples de recursos/território, loop de simulação com raciocínio transparente, e uma UI de observação em tempo real.
+**Meta do MVP:** 4 civilizações autônomas (Roma, Egito, Grécia, Mali), mundo simples de recursos/território, loop de simulação com raciocínio transparente, UI de observação em tempo real, **tudo local**.
 
 ---
 
 ## 2. Objetivos e Não-Objetivos
 
 ### 2.1 Objetivos
-1. Rodar **≥4 agentes de IA** simultâneos, cada um governando uma civilização de forma autônoma.
-2. Expor o **raciocínio** de cada agente ("por que estou fazendo isso") em streaming — a essência do "watchable AI".
-3. Loop de simulação **determinístico no motor, não-determinístico nas decisões** (o motor aplica regras; o agente escolhe ações).
-4. UI de **observação em tempo real** (não de comando): mapa/estado + painel de raciocínio por civilização + linha do tempo de eventos.
-5. Custo de API controlado e previsível (via prompt caching e escolha de modelo por tarefa).
+1. Rodar **≥4 agentes de IA locais** simultâneos, cada um governando uma civilização de forma autônoma.
+2. Expor o **raciocínio** de cada agente em streaming — a essência do "watchable AI".
+3. Loop de simulação **determinístico no motor, não-determinístico nas decisões**.
+4. UI de **observação em tempo real** em localhost (não de comando).
+5. **Rodar offline** após setup, com desempenho aceitável em hardware de consumidor.
 
 ### 2.2 Não-Objetivos (fora do MVP)
-- Multiplayer humano / o humano jogando contra a IA.
-- Gráficos 3D / engine de jogo pesada (Unity, Unreal).
-- Balanceamento profundo de game design / árvore tecnológica completa.
-- Persistência de longo prazo entre sessões (além de salvar/carregar uma partida).
+- Uso de qualquer API de LLM em nuvem.
+- Multiplayer humano / humano jogando contra a IA.
+- Gráficos 3D / engine de jogo pesada.
+- Balanceamento profundo de game design.
+- Deploy remoto / hospedagem (o produto é para rodar na máquina do usuário).
 
 ---
 
@@ -49,240 +64,256 @@ O diferencial em relação a um jogo tradicional é que **as decisões não são
 
 | Persona | Necessidade | Como o produto atende |
 |---|---|---|
-| **Espectador curioso** | Ver IA "pensando" e agindo sozinha, sem operar nada | Modo observação puro; play/pause/velocidade |
-| **Pesquisador de IA / dev** | Estudar comportamento emergente multiagente | Logs de raciocínio, export de traces, ajuste de personalidades |
-| **Criador de conteúdo** | Gerar clipes curtos e narrativos (como o post original) | Câmera/replay, eventos narrados, timelapse |
+| **Espectador curioso** | Ver IA "pensando" e agindo sozinha, localmente | Modo observação; play/pause/velocidade em localhost |
+| **Pesquisador / dev de IA local** | Estudar comportamento multiagente com modelos abertos, offline e privado | Logs de raciocínio, traces em disco, troca de modelos/personas |
+| **Criador de conteúdo** | Gerar clipes narrativos sem custo de API | Replay determinístico, timelapse, eventos narrados |
 
 ---
 
 ## 4. Visão do Produto / Experiência ("Watchable AI")
 
-A tela principal tem três zonas:
+Três zonas na tela principal (servida em localhost):
 
-1. **Mundo (centro):** mapa/grid mostrando territórios, cidades, recursos e unidades de cada civilização (cores distintas). Atualiza a cada tick.
-2. **Painéis das civilizações (laterais):** um card por civilização com: bandeira/nome, métricas (população, ouro, tecnologia, território, relações), e o **fluxo de raciocínio em streaming** do agente ("Estou expandindo para o sul porque o Egito enfraqueceu na fronteira leste…").
-3. **Linha do tempo / feed de eventos (rodapé):** eventos globais narrados ("Roma declarou guerra à Grécia", "Mali descobriu Escrita", "Aliança Egito–Grécia formada").
+1. **Mundo (centro):** mapa/grid com territórios, cidades, recursos e unidades por civilização (cores distintas). Atualiza a cada tick.
+2. **Painéis das civilizações (laterais):** um card por civilização com bandeira/nome, métricas (população, ouro, tecnologia, território, relações) e o **fluxo de raciocínio em streaming** do agente local.
+3. **Linha do tempo / feed de eventos (rodapé):** eventos globais narrados ("Roma declarou guerra à Grécia", "Mali descobriu Escrita").
 
-Controles do observador: **play / pause / velocidade (0.5×–4×) / step (1 tick) / focar civilização / replay**. Não há botão para "comandar" uma civilização — o usuário observa.
+Controles do observador: **play / pause / velocidade / step / focar civilização / replay**. Não há botão para comandar uma civilização.
 
 ---
 
 ## 5. Requisitos Funcionais
 
 ### RF-1 — Motor de Simulação (World Engine)
-- Mantém o **estado do mundo** autoritativo: mapa (grid de tiles), recursos, civilizações, unidades, tecnologias, relações diplomáticas.
-- Avança em **ticks discretos** (ex.: 1 tick = 1 "ano/estação"). Cada tick: coleta ações dos agentes → valida → aplica → resolve conflitos → emite eventos → publica novo estado.
-- Regras determinísticas (crescimento populacional, produção, combate) implementadas em código — **não** delegadas ao LLM.
+- Estado do mundo autoritativo: mapa (grid de tiles), recursos, civilizações, unidades, tecnologias, relações.
+- Avança em **ticks discretos**. Cada tick: coleta ações dos agentes → valida → aplica → resolve conflitos → emite eventos → publica novo estado.
+- Regras determinísticas em código — **não** delegadas ao LLM.
 
-### RF-2 — Agentes de Civilização
-- Cada civilização é um **agente Claude autônomo** com:
-  - **System prompt de personalidade/estratégia** (ex.: Roma = expansionista militarista; Egito = defensiva e comercial; Grécia = científica/cultural; Mali = mercantil/diplomática).
-  - **Ferramentas (tools)** que representam as ações possíveis (ver RF-3).
-  - **Contexto por turno:** visão do estado do mundo (parcial ou total, ver RF-6), estado próprio, histórico recente, resultados das últimas ações.
-  - **Memória:** um "diário/estratégia" persistente que o agente lê e atualiza (ex.: arquivo/registro de memória por civilização).
+### RF-2 — Agentes de Civilização (LLM local)
+- Cada civilização é um **agente de LLM local autônomo** com:
+  - **System prompt de personalidade/estratégia** (Roma = expansionista militarista; Egito = defensiva/comercial; Grécia = científica/cultural; Mali = mercantil/diplomática).
+  - **Ações possíveis** expostas como **schema JSON** (structured output) e/ou tools (ver RF-3).
+  - **Contexto por turno:** estado do mundo, estado próprio, histórico recente, resultados das últimas ações.
+  - **Memória:** um arquivo por civilização em disco (ex.: `./data/memory/rome.md`) que o agente lê e atualiza.
 - O agente decide **1..N ações por turno** e produz raciocínio explicável.
 
-### RF-3 — Ferramentas de Ação (tool use)
-Conjunto mínimo de tools estruturadas (JSON schema, `strict: true`):
-- `build(structure, tile)` — construir cidade/estrutura.
-- `research(technology)` — investir em tecnologia.
-- `move_army(from, to)` / `attack(target_tile)` — militar.
-- `set_diplomacy(civ, stance)` — aliança/paz/guerra/comércio.
-- `trade(civ, offer, request)` — proposta comercial.
-- `set_strategy(note)` — atualizar a memória/estratégia de longo prazo.
-O **motor valida** cada ação (recursos suficientes? tile adjacente? etc.) e retorna resultado como `tool_result` (inclusive erros, com `is_error: true`) para o agente aprender no próximo turno.
+### RF-3 — Ações estruturadas (structured output / tool use)
+Ações mínimas, representadas por um **JSON schema** que o modelo local é forçado a seguir (via `format` do Ollama) — mais confiável que tool-calling em modelos pequenos:
+- `build(structure, tile)`, `research(technology)`, `move_army(from,to)` / `attack(tile)`,
+  `set_diplomacy(civ, stance)`, `trade(civ, offer, request)`, `set_strategy(note)`.
+- O **motor valida** cada ação; retorna resultado (inclusive erros) para o agente no próximo turno, permitindo autocorreção.
+- **Fallback obrigatório:** se o JSON vier inválido/fora do schema, re-perguntar 1×; se falhar de novo, a civilização "passa o turno". A simulação nunca trava por causa de um modelo local imperfeito.
 
 ### RF-4 — Transparência de Raciocínio (streaming)
-- O `thinking` (adaptativo, `display: "summarized"`) e/ou uma justificativa curta de cada ação são **transmitidos em streaming** para a UI, por civilização.
-- Cada ação registrada carrega um "porquê" legível para humanos.
+- O raciocínio (tokens do modelo e/ou um campo `reasoning` curto por ação) é **transmitido em streaming** do backend para a UI, por civilização.
+- Cada ação carrega um "porquê" legível.
 
 ### RF-5 — Orquestração / Loop
-- Um **Orquestrador** coordena os turnos: pode rodar agentes **em paralelo** (todos decidem sobre o mesmo snapshot) e depois resolver simultaneamente, ou em ordem (round-robin). MVP: paralelo por tick.
-- Controla velocidade, pausa, e limita gasto (nº máximo de tokens/turno via *task budget*).
+- Um **Orquestrador** coordena os turnos. Como a inferência local é sequencial-limitada por VRAM, o padrão do MVP é **turnos sequenciais** (uma civilização por vez, mesmo modelo carregado) — com opção de paralelismo se houver VRAM/instâncias suficientes.
+- Controla velocidade, pausa, step, timeout por turno e teto de tokens (`num_predict`).
 
 ### RF-6 — Informação / "Fog of War" (opcional no MVP)
-- Config: agentes veem o **estado global** (mais simples, MVP) ou apenas o que sua civilização "descobriu" (mais rico, fase 2).
+- Config: visão global (MVP) ou apenas o descoberto pela civilização (fase 2).
 
-### RF-7 — UI de Observação
-- Render do mundo, painéis por civilização com raciocínio em streaming, feed de eventos, controles de reprodução, foco/replay.
+### RF-7 — UI de Observação (localhost)
+- Render do mundo, painéis com raciocínio em streaming, feed de eventos, controles de reprodução, foco/replay. **Sem recursos externos** (fontes/imagens embutidas).
 
-### RF-8 — Persistência
-- Salvar/carregar estado do mundo + memórias dos agentes (JSON). Export de "trace" da partida (para clipes/análise).
+### RF-8 — Persistência (disco local)
+- Salvar/carregar estado do mundo + memórias em `./data/`. Export de trace da partida (JSON) para clipes/análise. Sem banco em nuvem.
 
 ---
 
 ## 6. Requisitos Não-Funcionais
 
-- **Tempo real percebido:** um tick completo (4 agentes) deve resolver em poucos segundos na velocidade padrão; UI atualiza incrementalmente via streaming.
-- **Custo previsível:** gasto por tick monitorado e limitado; uso agressivo de **prompt caching** para o estado compartilhado e regras (ver §8).
-- **Robustez:** falha/timeout de um agente não trava a simulação (fallback: "civilização passa o turno").
-- **Determinismo do motor:** dado o mesmo conjunto de ações + seed, o motor produz o mesmo resultado (importante para replay).
-- **Observabilidade:** logs estruturados de cada request (model, tokens, cache hits, ação escolhida).
+- **Offline:** após setup (baixar modelo + `npm install`), funciona sem internet.
+- **Privacidade:** nenhum dado sai da máquina.
+- **Desempenho local:** um tick (4 civs) deve completar em segundos-a-dezenas-de-segundos, dependendo do modelo/hardware; UI atualiza incrementalmente via streaming. A **velocidade da simulação é limitada pela inferência local** — projetar a UI para tornar a espera "assistível" (mostrar o thinking enquanto processa).
+- **Robustez:** falha/timeout/JSON inválido de um agente não trava a simulação (fallback "passar o turno").
+- **Determinismo do motor:** mesmo conjunto de ações + seed → mesmo resultado (essencial para replay). O LLM é a fonte de não-determinismo; o motor é determinístico.
+- **Observabilidade:** logs em disco por request (modelo, tokens, tempo, ação escolhida, validade do JSON).
+- **Portabilidade de hardware:** funcionar em GPU de consumidor e degradar graciosamente para CPU (modelo menor).
 
 ---
 
-## 7. Arquitetura Técnica (proposta)
+## 7. Arquitetura Técnica (local-first)
 
 ```
 ┌──────────────────────────────────────────────────────────────┐
-│                        Frontend (React + TS)                  │
+│              Frontend (React + TS) — http://localhost:5173    │
 │   Mapa/Estado · Painéis de raciocínio (stream) · Timeline     │
 │              controles: play/pause/velocidade                 │
 └───────────────▲──────────────────────────┬───────────────────┘
-                │ WebSocket / SSE (estado + │ streaming de thinking)
+                │ WebSocket (estado +       │ streaming de tokens)
                 │                           ▼
 ┌───────────────┴──────────────────────────────────────────────┐
-│                    Backend (Node.js + TypeScript)             │
+│         Backend (Node.js + TypeScript) — localhost            │
 │                                                               │
 │   ┌────────────────┐   snapshot   ┌────────────────────────┐  │
 │   │  World Engine  │─────────────▶│      Orquestrador      │  │
-│   │ (regras/estado │◀─── ações ───│ (loop de ticks, budget)│  │
-│   │  determinístico│              └───────────┬────────────┘  │
+│   │ (determinístico│◀─── ações ───│  (loop de ticks, budget│  │
+│   │  em disco)     │              └───────────┬────────────┘  │
 │   └────────────────┘                          │ 1 agente/civ  │
 │                                               ▼               │
 │                         ┌───────────────────────────────────┐ │
-│                         │  Agentes (Anthropic SDK)          │ │
-│                         │  system prompt + tools + memória  │ │
-│                         │  Roma · Egito · Grécia · Mali     │ │
-│                         └───────────────────────────────────┘ │
-└──────────────────────────────────┬───────────────────────────┘
-                                    ▼
-                        Claude API (api.anthropic.com)
+│                         │ Agentes (cliente Ollama local)    │ │
+│                         │ system prompt + schema + memória  │ │
+│                         │ Roma · Egito · Grécia · Mali      │ │
+│                         └───────────────┬───────────────────┘ │
+└─────────────────────────────────────────┼─────────────────────┘
+                                           ▼
+                    Ollama — http://localhost:11434  (LLM local)
+                    modelos em ~/.ollama · dados em ./data/
 ```
 
-### 7.1 Stack recomendada
-- **Backend:** Node.js + TypeScript, `@anthropic-ai/sdk`. (Motivo: mesmo tipo em front e back, streaming/tool-runner de primeira classe, WebSocket trivial.)
-- **Frontend:** React + TypeScript + Vite. Render do mapa com Canvas/SVG (ou PixiJS se quiser mais unidades animadas). Tailwind para UI. Estado via WebSocket/SSE.
-- **Transporte tempo real:** WebSocket (bidirecional: controles → back; estado + thinking → front).
-- **Persistência:** JSON em disco no MVP (SQLite/Postgres na fase 2).
+### 7.1 Stack recomendada (tudo local)
+- **Runtime de LLM:** **Ollama** (`ollama serve` em `localhost:11434`). CLI: `ollama pull <modelo>`, `ollama run <modelo>`. Mantém o modelo em memória (`keep_alive`) e reaproveita KV-cache do prefixo estável.
+  - *Alternativas:* llama.cpp (`llama-server`), LM Studio (servidor local), vLLM (se houver GPU forte). A camada de agentes deve isolar isso atrás de uma interface `LLMClient` para trocar de runtime sem tocar no resto.
+- **Backend:** Node.js + TypeScript. Cliente: pacote oficial **`ollama`** (npm) ou o SDK da OpenAI apontado para `http://localhost:11434/v1` (Ollama expõe endpoint compatível). WebSocket (`ws`) para tempo real.
+- **Frontend:** React + TypeScript + Vite (dev server em localhost). Mapa em Canvas/SVG (ou PixiJS). Tailwind. **Assets embutidos** (sem CDN).
+- **Persistência:** JSON em `./data/` no MVP (SQLite local na fase 2).
 
-### 7.2 Camada de Agentes — decisões de LLM
+### 7.2 Camada de Agentes — decisões via LLM local
 
-Cada turno, para cada civilização, o backend chama a Claude API com **tool use**:
+Cada turno, para cada civilização, o backend chama o Ollama com **saída estruturada por JSON schema** (mecanismo primário — mais robusto em modelos locais que tool-calling):
 
-- **`system`** (estável, cacheado): regras do jogo + descrição das tools + personalidade da civilização.
-- **`messages`** (volátil): snapshot do estado do mundo (JSON), estado próprio, resultados do último turno, e a memória/estratégia atual.
-- **Tools:** as ações do RF-3, com `strict: true` para garantir JSON válido.
-- **Thinking:** `thinking: {type: "adaptive", display: "summarized"}` para expor o raciocínio.
-- **Task budget** (beta): teto de tokens por turno para pacing e custo.
+- **`system`** (estável): regras do jogo + descrição das ações + personalidade da civilização. Manter **byte-idêntico** entre turnos favorece o reaproveitamento de KV-cache do Ollama (menor tempo de prompt-eval).
+- **`messages`** (volátil): snapshot do mundo (JSON compacto), estado próprio, resultados do último turno, memória atual.
+- **`format`**: JSON schema das ações (Ollama força o modelo a produzir JSON válido). Alternativa: `tools` para modelos com tool-calling forte (Qwen2.5, Llama 3.3).
+- **`options`**: `num_ctx` (janela), `num_predict` (teto de saída/turno), `temperature`, `keep_alive` (manter modelo carregado).
+- **Streaming** ligado para exibir o raciocínio na UI.
 
-Modelo default recomendado: **`claude-opus-4-8`** para decisões (mais capaz e coerente em horizonte longo). Para reduzir custo em alta frequência de ticks, ver §8 (estratégia por camada).
-
-> Exemplo (TypeScript, esqueleto de um turno de agente):
+> Exemplo (TypeScript, esqueleto de um turno de agente com Ollama):
 > ```ts
-> import Anthropic from "@anthropic-ai/sdk";
-> const client = new Anthropic();
+> import { Ollama } from "ollama";
+> const ollama = new Ollama({ host: "http://localhost:11434" });
 >
-> const tools /* : civilization action tools, strict:true */ = [...];
+> const ACTION_SCHEMA = {
+>   type: "object",
+>   properties: {
+>     reasoning: { type: "string" },                 // "porquê" para a UI
+>     actions: {
+>       type: "array",
+>       items: {
+>         type: "object",
+>         properties: {
+>           tool: { type: "string",
+>             enum: ["build","research","move_army","attack","set_diplomacy","trade","set_strategy"] },
+>           args: { type: "object" }
+>         },
+>         required: ["tool","args"]
+>       }
+>     }
+>   },
+>   required: ["reasoning","actions"]
+> } as const;
 >
-> const res = await client.beta.messages.create({
->   model: "claude-opus-4-8",
->   max_tokens: 4000,
->   thinking: { type: "adaptive", display: "summarized" },
->   betas: ["task-budgets-2026-03-13"],
->   output_config: { effort: "medium", task_budget: { type: "tokens", total: 8000 } },
->   system: [
->     { type: "text", text: GAME_RULES_AND_TOOLS },              // estável
->     { type: "text", text: CIV_PERSONA[civId],
->       cache_control: { type: "ephemeral" } },                  // estável por civ → cacheado
->   ],
+> const res = await ollama.chat({
+>   model: "qwen2.5:14b",                 // modelo local com bom suporte a JSON/tools
+>   stream: true,                          // para exibir tokens/raciocínio ao vivo
+>   format: ACTION_SCHEMA,                 // força JSON válido no schema das ações
+>   keep_alive: "30m",                     // mantém o modelo carregado entre turnos
+>   options: { num_ctx: 8192, num_predict: 512, temperature: 0.8 },
 >   messages: [
->     { role: "user", content: [
->       { type: "text", text: worldSnapshotJson },               // volátil (muda por tick)
->       { type: "text", text: ownStateAndMemory },
->       { type: "text", text: lastTurnResults },
->     ]},
+>     { role: "system", content: GAME_RULES + "\n\n" + CIV_PERSONA[civId] }, // estável
+>     { role: "user", content: worldSnapshotJson + "\n" + ownStateAndMemory + "\n" + lastTurnResults },
 >   ],
->   tools,
 > });
-> // parse tool_use blocks → validar no World Engine → aplicar → devolver tool_result no próximo turno
+> // acumular tokens (stream) → JSON.parse do resultado final → VALIDAR no World Engine
+> // se inválido: re-perguntar 1x; se falhar de novo: "passar o turno".
 > ```
-> Observação: `budget_tokens` NÃO existe mais nesses modelos — usar `thinking: {type:"adaptive"}` + `effort`. Sempre fazer `JSON.parse` das inputs de tool (nunca casar string crua).
+> Regras: sempre `JSON.parse` + validação de schema (ex.: `zod`) antes de aplicar; nunca confiar cegamente no JSON do modelo local. Devolver erros de validação como contexto no próximo turno para autocorreção.
+
+### 7.3 Interface de troca de runtime (`LLMClient`)
+Definir uma interface fina para não acoplar ao Ollama:
+```ts
+interface LLMClient {
+  decide(input: { system: string; user: string; schema: object;
+                  onToken?: (t: string) => void }): Promise<AgentDecision>;
+}
+// Implementações: OllamaClient (default), LlamaCppClient, LmStudioClient...
+```
 
 ---
 
-## 8. Estratégia de Custo e Modelos
+## 8. Desempenho, Modelos e Hardware (substitui "custo de API")
 
-Multiagente + muitos ticks = muitas chamadas de LLM. Três alavancas:
+Sem custo de API — o gargalo agora é **desempenho local** e **hardware**. Alavancas:
 
-1. **Prompt caching (crítico).** As **regras do jogo + descrição das tools + persona da civilização** são estáveis → colocá-las no início do `system` com `cache_control: {type:"ephemeral"}`. O que muda por tick (snapshot do mundo) vai **depois** do breakpoint. Leituras de cache custam ~10% do preço de input → economia enorme em simulações longas. Validar via `usage.cache_read_input_tokens`.
-2. **Modelo por camada (tiered):**
-   - **Decisões das civilizações:** `claude-opus-4-8` (default; melhor coerência de longo prazo) — ou `claude-sonnet-5` para reduzir custo em alto volume mantendo boa qualidade.
-   - **Turnos "de rotina"/baixo risco:** `claude-haiku-4-5` (mais barato e rápido) quando a civilização não está em situação crítica.
-   - **Narrador/Diretor de eventos** (gera as manchetes do feed): `claude-haiku-4-5`.
-3. **Task budgets + effort:** teto de tokens por turno (`task_budget`) e `effort: "low"|"medium"` para turnos triviais, reservando `high` para decisões críticas (guerra iminente, etc.).
+1. **Escolha de modelo (equilíbrio capacidade × velocidade × VRAM).** Priorizar modelos com bom suporte a JSON/tools:
+   - **Recomendado (decisões):** `qwen2.5:14b` ou `llama3.3` (bom raciocínio e aderência a JSON).
+   - **Hardware modesto:** `qwen2.5:7b` / `llama3.1:8b` (quantização `Q4_K_M`).
+   - **CPU-only / muito leve:** `qwen2.5:3b` (qualidade menor; ainda "assistível").
+   - **Narrador de eventos** (manchetes do feed): um modelo pequeno e rápido.
+2. **Reaproveitar KV-cache do prefixo estável:** manter regras+persona no `system` **inalteradas** entre turnos → menor tempo de prompt-eval no Ollama. Colocar o que muda (snapshot) sempre depois.
+3. **Manter o modelo carregado:** `keep_alive` alto para evitar recarregar pesos a cada turno.
+4. **Controlar contexto e saída:** `num_ctx` só o necessário; snapshot do mundo **compacto**; `num_predict` curto (a decisão é pequena).
+5. **Quantização:** `Q4_K_M`/`Q5_K_M` para caber em GPU de consumidor com boa qualidade.
+6. **Paralelismo consciente:** com VRAM sobrando, rodar 2+ civilizações em paralelo (múltiplas requisições/instâncias); senão, sequencial.
 
-> Preços de referência (por 1M tokens, input/output): Opus 4.8 $5/$25 · Sonnet 5 $3/$15 (intro $2/$10 até 31/08/2026) · Haiku 4.5 $1/$5. Com caching, a maior parte do input por turno é cache-read (~0,1×).
-
-**Orçamento estimado (ilustrativo):** 4 civs × 100 ticks × ~1 chamada/civ = 400 chamadas. Com system cacheado (~2–4k tokens de cache-read) e ~1–2k tokens voláteis + saída curta, o custo por partida fica na faixa de **poucos dólares** em Sonnet/Haiku e mais alto em Opus — medir com `count_tokens` e ajustar o mix.
+**Referência de hardware (aprox., quantizado Q4):** 3B ≈ 3–4 GB · 7–8B ≈ 6–8 GB · 14B ≈ 10–12 GB · 32B ≈ 20–24 GB de VRAM/RAM. CPU-only funciona com modelos pequenos, porém mais lento — projetar a UI para tornar a espera parte do espetáculo (mostrar o thinking).
 
 ---
 
-## 9. Modelo de Dados (esboço)
+## 9. Modelo de Dados (esboço) — persistido em `./data/`
 
 ```ts
 type World = {
-  tick: number;
-  seed: number;
-  map: Tile[][];                 // terreno, recurso, dono
+  tick: number; seed: number;
+  map: Tile[][];                                   // terreno, recurso, dono
   civilizations: Record<CivId, Civilization>;
-  diplomacy: Record<`${CivId}:${CivId}`, Stance>; // peace|war|alliance|trade
+  diplomacy: Record<`${CivId}:${CivId}`, Stance>;  // peace|war|alliance|trade
   events: GameEvent[];
 };
 
 type Civilization = {
-  id: CivId;                     // "rome" | "egypt" | "greece" | "mali"
-  persona: string;              // system prompt de personalidade
+  id: CivId;                    // "rome" | "egypt" | "greece" | "mali"
+  persona: string;             // system prompt de personalidade
   resources: { gold: number; food: number; science: number };
-  tech: string[];
-  cities: City[]; armies: Army[];
-  memory: string;               // "diário/estratégia" que o agente lê e atualiza
+  tech: string[]; cities: City[]; armies: Army[];
+  memory: string;              // ./data/memory/<civ>.md — lido/atualizado pelo agente
 };
 
 type AgentDecision = {
   civ: CivId; tick: number;
-  reasoning: string;            // resumo do thinking (para a UI)
-  actions: ToolCall[];          // ações escolhidas
+  reasoning: string;           // resumo do raciocínio (para a UI)
+  actions: ToolCall[];         // ações escolhidas
+  raw?: string;                // saída bruta do modelo (para debug/trace)
 };
 ```
+Layout em disco: `./data/saves/<partida>.json`, `./data/memory/<civ>.md`, `./data/traces/<partida>.jsonl`, `./logs/`.
 
 ---
 
-## 10. Plano de Implementação **com Claude Code**
+## 10. Plano de Implementação **com um CLI de codificação (local ou Claude Code)**
 
-O objetivo é usar o Claude Code (CLI/IDE) como ferramenta de construção. Sugestão de fases e de como delegar:
+Você pode construir o projeto com o Claude Code/Codex **ou** com um agente de codificação local (ex.: `aider` apontado para o Ollama). O produto final, porém, roda 100% local.
 
-### Fase 0 — Bootstrap (0,5 dia)
-- `Scaffold` do monorepo: `apps/backend` (Node/TS + Anthropic SDK) e `apps/frontend` (React/Vite/TS).
-- Config de `.env` (`ANTHROPIC_API_KEY`), lint, tsconfig.
-- **Prompt ao Claude Code:** *"Crie um monorepo TypeScript com backend Node (WebSocket) e frontend React/Vite. Adicione o Anthropic SDK no backend e um endpoint de health."*
+### Fase 0 — Setup local (0,5 dia)
+- Instalar Ollama; `ollama pull qwen2.5:14b` (e um modelo pequeno para o narrador).
+- Monorepo TS: `apps/backend` (Node + `ollama` + `ws`) e `apps/frontend` (React/Vite). `.env` local (`OLLAMA_HOST`, `MODEL`).
+- **Prompt:** *"Crie um monorepo TypeScript com backend Node (WebSocket) e frontend React/Vite. No backend, adicione o cliente `ollama` e um `LLMClient` com implementação `OllamaClient` apontando para localhost:11434. Health check que confirma que o Ollama responde."*
 
-### Fase 1 — World Engine (1–2 dias)
-- Estado do mundo, tiles, recursos, regras determinísticas (produção, crescimento, combate), avanço de tick, emissão de eventos. **Testes unitários** do motor.
-- **Prompt:** *"Implemente o World Engine determinístico com testes: aplicar um conjunto de ações a um snapshot produz o próximo estado. Nada de LLM aqui."*
+### Fase 1 — World Engine determinístico + testes (1–2 dias)
+- Estado, tiles, recursos, regras (produção, crescimento, combate), tick, eventos. Testes unitários. **Sem LLM.**
 
-### Fase 2 — Camada de Agentes + Tools (2–3 dias)
-- Definir as tools (JSON schema, `strict:true`), o system prompt base + personas, o wrapper de chamada à Claude API com **caching** e **thinking**.
-- Loop de turno de UM agente end-to-end; validar ações no motor; devolver `tool_result`.
-- **Prompt:** *"Implemente `runCivilizationTurn(world, civId)` usando o Anthropic SDK com tool use estruturado (strict), thinking adaptativo summarized, e prompt caching do system. Consulte a skill claude-api para os parâmetros corretos."*
+### Fase 2 — Camada de Agentes local (2–3 dias)
+- `LLMClient` + schema de ações (`format`) + system prompt/personas + `runCivilizationTurn(world, civId)`.
+- Validação com `zod`, fallback (re-perguntar 1×, senão passar o turno), atualização de memória em disco.
+- **Prompt:** *"Implemente `runCivilizationTurn` usando o OllamaClient com `format` (JSON schema das ações), streaming de tokens, validação `zod` e fallback de turno. Salve/atualize a memória da civilização em ./data/memory."*
 
-### Fase 3 — Orquestrador + Loop de Simulação (1–2 dias)
-- Rodar as 4 civilizações por tick (paralelo), resolver simultaneamente, aplicar budget/pacing, tratar timeout/erro (fallback "passar o turno").
-- **Prompt:** *"Implemente o Orquestrador: para cada tick, chama os 4 agentes em paralelo sobre o mesmo snapshot, coleta ações, resolve no World Engine, emite eventos, e faz stream do progresso."*
+### Fase 3 — Orquestrador + Loop (1–2 dias)
+- Ticks sequenciais (padrão local), timeout por turno, `keep_alive`, budget de tokens, tratamento de erro. Streaming de progresso.
 
-### Fase 4 — Streaming + UI de Observação (2–3 dias)
-- WebSocket back→front com estado + streaming de thinking por civilização.
-- React: mapa (Canvas/SVG), painéis com raciocínio ao vivo, feed de eventos, controles play/pause/velocidade.
-- **Prompt:** *"Crie a UI de observação: mapa, 4 painéis de civilização com o thinking em streaming, feed de eventos, e controles de reprodução. Sem botões de comando — só observação."*
+### Fase 4 — UI de Observação em localhost (2–3 dias)
+- WebSocket back→front (estado + tokens de raciocínio por civilização). Mapa, painéis com thinking ao vivo, feed de eventos, controles de reprodução. **Assets embutidos, nada externo.**
 
 ### Fase 5 — Persistência, Replay, Polimento (1–2 dias)
-- Salvar/carregar partida + memórias; export de trace; replay determinístico; narrador de eventos (Haiku).
+- Salvar/carregar em `./data/`, export de trace, replay determinístico, narrador de eventos (modelo pequeno local).
 
-> **Dicas de uso do Claude Code:**
-> - Rode a skill **`claude-api`** antes de escrever qualquer código que chame o modelo — evita erros de parâmetros (ex.: `budget_tokens` foi removido; use `thinking:{type:"adaptive"}`).
-> - Use **subagentes** para paralelizar trabalho independente (ex.: um cuida do World Engine + testes, outro da UI).
-> - Use a skill **`verify`** para exercitar o loop de simulação de ponta a ponta antes de commitar.
-> - Comite por fase, com testes verdes.
+> **Dicas:**
+> - Isole o runtime atrás de `LLMClient` desde o início (troca Ollama↔llama.cpp sem refatorar).
+> - Modelos locais erram JSON: `format`+`zod`+fallback são obrigatórios, não opcionais.
+> - Comite por fase, com testes verdes. Use a skill **`verify`** para exercitar o loop de simulação de ponta a ponta antes de commitar.
 
 ---
 
@@ -290,21 +321,22 @@ O objetivo é usar o Claude Code (CLI/IDE) como ferramenta de construção. Suge
 
 | Marco | Entregável | Critério de aceite |
 |---|---|---|
+| M0 | Ollama respondendo + monorepo | `LLMClient` conversa com o modelo local; health OK |
 | M1 | World Engine + testes | Aplicar ações a um snapshot é determinístico e testado |
-| M2 | 1 agente decide e age | Um agente Claude produz ações válidas + raciocínio |
-| M3 | Loop 4 civs | 4 civilizações rodam N ticks sem travar; fallback em falha |
-| M4 | UI observável (MVP) | Usuário assiste mundo + raciocínio em tempo real |
-| M5 | Persistência/replay | Salvar/carregar e reproduzir uma partida |
+| M2 | 1 agente local decide e age | Modelo local produz ações válidas (schema) + raciocínio; fallback funciona |
+| M3 | Loop 4 civs | 4 civilizações rodam N ticks sem travar, offline |
+| M4 | UI observável em localhost | Usuário assiste mundo + raciocínio em tempo real |
+| M5 | Persistência/replay | Salvar/carregar e reproduzir uma partida em disco |
 
 ---
 
 ## 12. Métricas de Sucesso
 
-- **Engajamento:** tempo médio de observação por sessão (proxy de "é assistível?").
+- **Engajamento:** tempo médio de observação por sessão.
 - **Emergência:** nº de eventos "surpreendentes" por partida (alianças/traições não roteirizadas).
-- **Custo:** US$/partida e % de tokens servidos por cache (meta: >70% cache-read no input).
-- **Confiabilidade:** % de turnos sem erro/timeout de agente (meta: >98%).
-- **Latência:** tempo de tick na velocidade padrão (meta: ≤ poucos segundos p/ 4 civs).
+- **Confiabilidade do modelo local:** % de turnos com JSON válido de primeira (meta: alta o suficiente para o fallback ser raro).
+- **Robustez:** % de turnos sem erro/timeout que travem a simulação (meta: 100% — sempre há fallback).
+- **Desempenho:** tempo médio de tick por modelo/hardware (medir e documentar por preset).
 
 ---
 
@@ -312,30 +344,33 @@ O objetivo é usar o Claude Code (CLI/IDE) como ferramenta de construção. Suge
 
 | Risco | Impacto | Mitigação |
 |---|---|---|
-| Custo de API cresce com ticks/civs | Alto | Prompt caching agressivo, modelos por camada, task budgets, `effort` baixo em turnos triviais |
-| Ações inválidas/alucinadas do LLM | Médio | `strict:true` nas tools + validação no motor + `tool_result` com `is_error` para o agente corrigir |
-| JSON de tool com escaping diferente | Baixo | Sempre `JSON.parse`, nunca casar string crua |
-| Agente trava/timeout | Médio | Timeout por turno + fallback "passar o turno"; simulação nunca depende de 1 agente |
-| Comportamento "chato"/repetitivo | Médio | Personas fortes e distintas, memória persistente, injeção de eventos aleatórios (seca, peste) |
-| Contexto crescente (partidas longas) | Médio | Enviar snapshot compacto + memória resumida; compaction/context editing na fase 2 |
+| Modelo local produz JSON inválido/alucina ações | Alto | `format` (JSON schema) + validação `zod` + re-pergunta + fallback "passar o turno" |
+| Inferência local lenta → simulação arrastada | Alto | Modelo/quantização menores, `keep_alive`, KV-cache do prefixo estável, snapshot compacto, `num_predict` curto; UI que torna a espera assistível |
+| Hardware insuficiente (VRAM) | Médio | Presets por hardware (3B/7B/14B/32B); degradar para CPU + modelo pequeno |
+| Comportamento repetitivo/"chato" | Médio | Personas fortes/distintas, memória persistente, eventos aleatórios (seca, peste), `temperature` moderada |
+| Contexto crescente em partidas longas | Médio | Snapshot compacto + memória resumida; resumir histórico antigo |
+| Acoplamento a um runtime específico | Baixo | Interface `LLMClient` isolando Ollama/llama.cpp/LM Studio |
+| Vazamento de rede acidental (quebrar o "local") | Médio | Sem SDKs de nuvem; assets embutidos; teste que falha se houver chamada externa |
 
 ---
 
-## 14. Considerações Técnicas de LLM (fixar no time)
+## 14. Considerações Técnicas de LLM Local (fixar no time)
 
-- **Modelos:** default `claude-opus-4-8` para decisões; `claude-sonnet-5` / `claude-haiku-4-5` para reduzir custo por camada. Usar os **IDs exatos**.
-- **Thinking:** `thinking: {type:"adaptive", display:"summarized"}` (esses modelos **não** aceitam `budget_tokens`; um `type:"disabled"` explícito não é necessário).
-- **Tools:** `strict: true`, resultados paralelos em **uma** mensagem `user`, e devolver `is_error: true` em falhas de validação.
-- **Caching:** ordem `tools → system → messages`; conteúdo estável (regras, tools, persona) antes do breakpoint; snapshot volátil depois. Verificar `usage.cache_read_input_tokens`.
-- **Streaming:** obrigatório para expor raciocínio e para `max_tokens` altos.
-- **Task budgets** (beta `task-budgets-2026-03-13`): teto de tokens por turno para pacing/custo.
-
----
-
-## 15. Anexo — Prompt inicial sugerido para o Claude Code
-
-> "Vamos construir **GeniusAI Civilizations**, uma simulação 'watchable AI' onde 4 civilizações (Roma, Egito, Grécia, Mali) são agentes Claude autônomos que tomam decisões em tempo real sobre um mundo compartilhado, e o usuário **assiste** (sem comandar). Comece pela Fase 1 deste PRD (`docs/PRD-watchable-ai-civilizations.md`): implemente o World Engine determinístico em TypeScript com testes. Não chame o LLM ainda. Depois seguimos para a camada de agentes usando a skill `claude-api` para os parâmetros corretos do Anthropic SDK."
+- **Runtime:** Ollama em `localhost:11434` (padrão). Endpoint nativo (`/api/chat`) ou compatível OpenAI (`/v1`). Manter tudo atrás de `LLMClient`.
+- **Modelos:** default `qwen2.5:14b`; presets `qwen2.5:7b` / `llama3.1:8b` (hardware modesto) e `qwen2.5:3b` (CPU). Escolher modelos com bom suporte a JSON/ferramentas.
+- **Saída estruturada:** usar `format` (JSON schema) como mecanismo primário das ações; tool-calling só para modelos fortes. **Sempre** validar com `zod` antes de aplicar.
+- **KV-cache:** manter `system` (regras+persona) byte-idêntico entre turnos; volátil (snapshot) sempre depois. `keep_alive` alto para não recarregar pesos.
+- **Contexto/saída:** `num_ctx` mínimo necessário, snapshot compacto, `num_predict` curto.
+- **Streaming:** obrigatório para expor raciocínio ao vivo na UI.
+- **Robustez:** timeout por turno + re-pergunta + fallback "passar o turno". Nada trava por causa do modelo.
+- **Offline/privacidade:** nenhuma dependência de rede em runtime; testar sem internet.
 
 ---
 
-*Fim do PRD v1.0.*
+## 15. Anexo — Prompt inicial sugerido para o agente de codificação
+
+> "Vamos construir **GeniusAI Civilizations**, uma simulação 'watchable AI' **100% local**: 4 civilizações (Roma, Egito, Grécia, Mali) são agentes de um **LLM local (Ollama em localhost:11434)** que tomam decisões em tempo real sobre um mundo compartilhado, e o usuário **assiste** por uma UI servida em localhost (sem comandar, sem nuvem). Todo estado, memória e trace ficam em `./data/`. Comece pela **Fase 0** deste PRD (`docs/PRD-watchable-ai-civilizations.md`): monorepo TypeScript (backend Node + WebSocket, frontend React/Vite), com um `LLMClient` e a implementação `OllamaClient` conversando com o modelo local, e um health check. Depois seguimos para o World Engine determinístico (Fase 1) com testes, sem LLM."
+
+---
+
+*Fim do PRD v2.0 (local-first).*
