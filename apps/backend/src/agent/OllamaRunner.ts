@@ -12,6 +12,8 @@ export class OllamaRunner implements AgentRunner {
   constructor(
     private readonly host: string,
     private readonly model: string,
+    /** Teto de tokens de saída por turno (num_predict). */
+    private readonly numPredict = 512,
   ) {}
 
   async healthy(): Promise<boolean> {
@@ -27,12 +29,13 @@ export class OllamaRunner implements AgentRunner {
     const res = await fetch(`${this.host}/api/chat`, {
       method: "POST",
       headers: { "content-type": "application/json" },
+      signal: AbortSignal.timeout(input.timeoutMs ?? 60_000),
       body: JSON.stringify({
         model: this.model,
         stream: false,
         format: input.schema, // JSON schema → Ollama força JSON válido
         keep_alive: "30m",
-        options: { temperature: 0.8 },
+        options: { temperature: 0.8, num_predict: this.numPredict },
         messages: [
           { role: "system", content: input.system },
           { role: "user", content: input.user },

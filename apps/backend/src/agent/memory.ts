@@ -1,18 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { dataDir } from "../paths";
 import { CIV_IDS } from "../engine/types";
 import type { CivId, World } from "../engine/types";
-
-// Resolve a raiz do repositório a partir deste arquivo
-// (.../apps/backend/src/agent/memory.ts → sobe 4 níveis), independentemente
-// do diretório de trabalho. Pode ser sobrescrito por DATA_DIR (útil em testes).
-const here = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(here, "../../../..");
-
-function dataDir(): string {
-  return process.env.DATA_DIR ?? path.join(REPO_ROOT, "data");
-}
 
 function memoryDir(): string {
   return path.join(dataDir(), "memory");

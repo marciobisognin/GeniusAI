@@ -38,7 +38,20 @@ RUNNER=claude npm run turn:demo --workspace apps/backend -- rome
 # ou:  RUNNER=ollama MODEL=qwen2.5:14b npm run turn:demo --workspace apps/backend -- egypt
 ```
 
-Próximo: **Fase 3** — Orquestrador: rodar os 4 agentes por tick, aplicar no motor, persistir memória/trace e fazer streaming do progresso.
+**Fase 3 — Orquestrador (`apps/backend/src/orchestrator/`):**
+- `GameLoop` — coordena os turnos: a cada tick, todas as civilizações vivas decidem sobre o mesmo snapshot (sequencial), o motor aplica via `tick()`, e o progresso é emitido por eventos (`turn_start`/`turn_token`/`turn_end`/`tick_end`/`loop_state`) — base do streaming para a UI.
+- Controles: `play` / `pause` / `stop` / `step` (1 tick) / `setSpeed`; timeout por turno; auto-stop quando resta ≤1 civilização.
+- `trace.ts` — persistência em `./data/`: trace por tick (`traces/<id>.jsonl`), save do mundo (`saves/<id>.json`), memórias (`memory/<civ>.md`).
+- **5 testes** (runner falso) cobrindo tick/eventos, persistência, skip de civ morta, play→stop e auto-stop.
+
+Rodar os testes: `npm run test --workspace apps/backend` (46 no total).
+
+Demo do orquestrador (N ticks reais com LLM):
+```bash
+RUNNER=claude TICKS=1 npm run loop:demo --workspace apps/backend
+```
+
+Próximo: **Fase 4** — UI de observação em localhost: ligar os eventos do `GameLoop` ao WebSocket e renderizar mapa, painéis de raciocínio e linha do tempo.
 
 ## Pré-requisitos
 
