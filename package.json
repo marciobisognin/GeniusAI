@@ -1,0 +1,16 @@
+{
+  "name": "geniusai-civilizations",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Watchable AI — simulação de civilizações com agentes autônomos acionados por CLI de agente (Claude Code / Codex / opencode) ou Ollama.",
+  "workspaces": [
+    "apps/backend",
+    "apps/frontend"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace apps/backend",
+    "dev:frontend": "npm run dev --workspace apps/frontend",
+    "health": "npm run health --workspace apps/backend",
+    "typecheck": "npm run typecheck --workspace apps/backend && npm run typecheck --workspace apps/frontend"
+  }
+}

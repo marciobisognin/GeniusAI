@@ -1,10 +1,10 @@
-# PRD — "Watchable AI": Simulação de Civilizações com Agentes Autônomos (Local-First)
+# PRD — "Watchable AI": Simulação de Civilizações com Agentes Autônomos (CLI-driven, Local-First)
 
 > **Documento de Requisitos de Produto (PRD)**
-> Como replicar a experiência da publicação analisada, rodando **100% local**: LLM na própria máquina via CLI, sem nuvem, com todo o sistema, agentes, artefatos e a UI (design) salvos em disco e servidos em `localhost`.
-> Versão 2.0 (local-first) · Data: 2026-07-06 · Status: Proposta
+> Como replicar a experiência da publicação analisada, com a camada de decisão **executada por um CLI de agente de codificação** (Claude Code, Codex, opencode ou outro) em modo headless no terminal. Todo o sistema, agentes, artefatos e a UI (design) são salvos em disco e servidos em `localhost`.
+> Versão 2.1 (CLI-driven, local-first) · Data: 2026-07-06 · Status: Proposta
 
-> **Mudança da v1 → v2:** a v1 usava a API da Anthropic (nuvem). Esta v2 substitui a inferência por um **LLM local** (Ollama por padrão), sem nenhuma dependência de rede externa. Toda a lógica de produto (motor, agentes, UI, roadmap) permanece; só a camada de inferência e as considerações de custo/desempenho mudam.
+> **Evolução:** v1 usava a API da Anthropic (nuvem). v2 trocou por um LLM local (Ollama). **v2.1** generaliza a execução: cada agente é acionado por um **CLI de agente** (Claude Code / Codex / opencode / …) rodando em modo não-interativo. O runner é **plugável** — pode apontar para um modelo **local** (offline/privado, o modo preferido) ou para a nuvem, conforme a configuração do usuário. Toda a lógica de produto (motor, agentes, UI, roadmap) permanece; muda a camada de execução.
 
 ---
 
@@ -24,19 +24,20 @@ O que precisamos replicar: **N agentes de IA autônomos, cada um com sua própri
 
 Estes princípios são requisitos não-negociáveis desta versão:
 
-1. **Inferência local:** o LLM roda na máquina do usuário via CLI/servidor local (ex.: `ollama serve` em `http://localhost:11434`). **Zero chamadas para APIs de nuvem.**
-2. **Offline-capable:** depois de baixar os modelos e as dependências uma vez, o sistema funciona **sem internet**.
-3. **Tudo em disco, na máquina:** código, estado do mundo, memórias dos agentes, traces/replays e artefatos gerados são salvos localmente (JSON/SQLite em uma pasta do projeto, ex.: `./data/`).
-4. **Design/UI em localhost:** o frontend é servido localmente (ex.: `http://localhost:5173`); nenhuma dependência de CDN/fonte/recurso externo em runtime.
-5. **Experiência de terminal (como Claude Code/Codex):** o sistema é iniciado e operável pela CLI (`npm run dev`, comandos para iniciar/pausar/step da simulação), e o LLM é um binário local acessível pelo terminal.
+1. **Execução por CLI de agente:** a decisão de cada civilização é produzida acionando-se um **CLI de agente de codificação em modo headless** (ex.: `claude -p`, `codex exec`, `opencode run`) no terminal. O CLI é escolhido/configurado pelo usuário.
+2. **Provedor plugável, local preferido:** o CLI pode ser apontado para um **modelo local** (ex.: opencode+Ollama, ou qualquer CLI atrás de um proxy local) — modo **offline/privado**, preferido — ou para a nuvem. O sistema não fixa um provedor.
+3. **Offline-capable (no modo local):** com um modelo local baixado e as dependências instaladas, o sistema funciona **sem internet**.
+4. **Tudo em disco, na máquina:** código, estado do mundo, memórias dos agentes, traces/replays e artefatos são salvos localmente (JSON/SQLite em `./data/`).
+5. **Design/UI em localhost:** o frontend é servido localmente (ex.: `http://localhost:5173`); assets embutidos, sem dependência externa em runtime.
+6. **Operável pelo terminal:** o sistema é iniciado e controlado pela CLI (`npm run dev`; comandos de iniciar/pausar/step da simulação).
 
 ---
 
 ## 1. Resumo Executivo
 
-**GeniusAI Civilizations** — uma simulação onde cada civilização é controlada por um **agente de LLM local autônomo**. Os agentes tomam decisões de construção, pesquisa, diplomacia, comércio e guerra a cada "turno" (tick), sobre um mundo compartilhado. A tela principal **não é um chat**: é um painel, servido em localhost, onde o usuário observa em tempo real o mundo evoluindo e o raciocínio de cada civilização.
+**GeniusAI Civilizations** — uma simulação onde cada civilização é controlada por um **agente autônomo acionado por um CLI de agente** (Claude Code / Codex / opencode / …) em modo headless. Os agentes tomam decisões de construção, pesquisa, diplomacia, comércio e guerra a cada "turno" (tick), sobre um mundo compartilhado. A tela principal **não é um chat**: é um painel, servido em localhost, onde o usuário observa em tempo real o mundo evoluindo e o raciocínio de cada civilização.
 
-O diferencial: **as decisões são geradas por um LLM rodando na própria máquina** (via Ollama/llama.cpp), que recebe o estado do mundo, a personalidade da civilização e seu histórico, e responde com ações estruturadas (JSON validado por schema). Comportamento emergente, imprevisível, "assistível" — e privado/offline.
+O diferencial: **as decisões são geradas acionando-se um CLI de agente no terminal** (que pode apontar para um modelo local — via Ollama/llama.cpp — ou nuvem, conforme a config do usuário), recebendo o estado do mundo, a personalidade da civilização e seu histórico, e respondendo com ações estruturadas (JSON validado por schema). Comportamento emergente, imprevisível, "assistível" — e, no modo local, privado/offline.
 
 **Meta do MVP:** 4 civilizações autônomas (Roma, Egito, Grécia, Mali), mundo simples de recursos/território, loop de simulação com raciocínio transparente, UI de observação em tempo real, **tudo local**.
 
@@ -155,82 +156,76 @@ Ações mínimas, representadas por um **JSON schema** que o modelo local é for
 │   └────────────────┘                          │ 1 agente/civ  │
 │                                               ▼               │
 │                         ┌───────────────────────────────────┐ │
-│                         │ Agentes (cliente Ollama local)    │ │
-│                         │ system prompt + schema + memória  │ │
+│                         │ Agentes → AgentRunner (plugável)  │ │
+│                         │ system + schema JSON + memória    │ │
 │                         │ Roma · Egito · Grécia · Mali      │ │
 │                         └───────────────┬───────────────────┘ │
-└─────────────────────────────────────────┼─────────────────────┘
-                                           ▼
-                    Ollama — http://localhost:11434  (LLM local)
-                    modelos em ~/.ollama · dados em ./data/
+└──────────────────────────────────────────┼────────────────────┘
+                        spawn CLI headless  │  ou HTTP
+                                            ▼
+        claude -p / codex exec / opencode run   —OU—   Ollama :11434
+                    (provedor plugável · dados em ./data/)
 ```
 
-### 7.1 Stack recomendada (tudo local)
-- **Runtime de LLM:** **Ollama** (`ollama serve` em `localhost:11434`). CLI: `ollama pull <modelo>`, `ollama run <modelo>`. Mantém o modelo em memória (`keep_alive`) e reaproveita KV-cache do prefixo estável.
-  - *Alternativas:* llama.cpp (`llama-server`), LM Studio (servidor local), vLLM (se houver GPU forte). A camada de agentes deve isolar isso atrás de uma interface `LLMClient` para trocar de runtime sem tocar no resto.
+### 7.1 Stack recomendada
+- **Runner de decisão (primário):** um **CLI de agente em modo headless**, atrás da interface `AgentRunner` (ver §7.3). Implementações: `ClaudeCodeRunner` (`claude -p --output-format json`), `CodexRunner` (`codex exec`), `OpencodeRunner` (`opencode run`). O CLI escolhido roda como subprocesso, recebe o prompt do turno e devolve JSON.
+- **Runner alternativo (direto):** **Ollama** (`ollama serve` em `localhost:11434`) via HTTP, sem passar por um CLI de agente — útil para máxima velocidade/controle. Também atrás de `AgentRunner`.
+  - *Outros back-ends de modelo:* llama.cpp (`llama-server`), LM Studio, vLLM — acessíveis por qualquer CLI que os suporte ou pelo runner Ollama-compatível.
 - **Backend:** Node.js + TypeScript. Cliente: pacote oficial **`ollama`** (npm) ou o SDK da OpenAI apontado para `http://localhost:11434/v1` (Ollama expõe endpoint compatível). WebSocket (`ws`) para tempo real.
 - **Frontend:** React + TypeScript + Vite (dev server em localhost). Mapa em Canvas/SVG (ou PixiJS). Tailwind. **Assets embutidos** (sem CDN).
 - **Persistência:** JSON em `./data/` no MVP (SQLite local na fase 2).
 
-### 7.2 Camada de Agentes — decisões via LLM local
+### 7.2 Camada de Agentes — decisões via CLI de agente (headless)
 
-Cada turno, para cada civilização, o backend chama o Ollama com **saída estruturada por JSON schema** (mecanismo primário — mais robusto em modelos locais que tool-calling):
+Cada turno, para cada civilização, o backend invoca o **runner configurado** (um CLI de agente em modo headless, ou o Ollama direto) pedindo **saída estruturada em JSON** (mecanismo primário — mais robusto que tool-calling em modelos locais):
 
-- **`system`** (estável): regras do jogo + descrição das ações + personalidade da civilização. Manter **byte-idêntico** entre turnos favorece o reaproveitamento de KV-cache do Ollama (menor tempo de prompt-eval).
-- **`messages`** (volátil): snapshot do mundo (JSON compacto), estado próprio, resultados do último turno, memória atual.
-- **`format`**: JSON schema das ações (Ollama força o modelo a produzir JSON válido). Alternativa: `tools` para modelos com tool-calling forte (Qwen2.5, Llama 3.3).
-- **`options`**: `num_ctx` (janela), `num_predict` (teto de saída/turno), `temperature`, `keep_alive` (manter modelo carregado).
-- **Streaming** ligado para exibir o raciocínio na UI.
+- **Prompt do sistema** (estável): regras do jogo + descrição das ações + personalidade da civilização. Mantê-lo estável entre turnos favorece cache de prompt/KV do back-end.
+- **Prompt do turno** (volátil): snapshot do mundo (JSON compacto), estado próprio, resultados do último turno, memória atual.
+- **Contrato de saída:** exigir no prompt **apenas** um JSON aderente ao schema de ações; quando o CLI suportar, usar `--output-format json`/modo estruturado. Validar sempre com `zod`.
+- **Streaming:** ler stdout do subprocesso incrementalmente para exibir o raciocínio na UI.
+- **Limites:** timeout por turno, teto de saída e cancelamento do processo se estourar.
 
-> Exemplo (TypeScript, esqueleto de um turno de agente com Ollama):
+> Exemplo (TypeScript — runner que aciona um CLI de agente em headless):
 > ```ts
-> import { Ollama } from "ollama";
-> const ollama = new Ollama({ host: "http://localhost:11434" });
+> import { spawn } from "node:child_process";
 >
-> const ACTION_SCHEMA = {
->   type: "object",
->   properties: {
->     reasoning: { type: "string" },                 // "porquê" para a UI
->     actions: {
->       type: "array",
->       items: {
->         type: "object",
->         properties: {
->           tool: { type: "string",
->             enum: ["build","research","move_army","attack","set_diplomacy","trade","set_strategy"] },
->           args: { type: "object" }
->         },
->         required: ["tool","args"]
->       }
->     }
->   },
->   required: ["reasoning","actions"]
-> } as const;
->
-> const res = await ollama.chat({
->   model: "qwen2.5:14b",                 // modelo local com bom suporte a JSON/tools
->   stream: true,                          // para exibir tokens/raciocínio ao vivo
->   format: ACTION_SCHEMA,                 // força JSON válido no schema das ações
->   keep_alive: "30m",                     // mantém o modelo carregado entre turnos
->   options: { num_ctx: 8192, num_predict: 512, temperature: 0.8 },
->   messages: [
->     { role: "system", content: GAME_RULES + "\n\n" + CIV_PERSONA[civId] }, // estável
->     { role: "user", content: worldSnapshotJson + "\n" + ownStateAndMemory + "\n" + lastTurnResults },
->   ],
-> });
-> // acumular tokens (stream) → JSON.parse do resultado final → VALIDAR no World Engine
-> // se inválido: re-perguntar 1x; se falhar de novo: "passar o turno".
+> // Comando configurável por env, ex.:
+> //   claude   -p --output-format json
+> //   codex    exec
+> //   opencode run
+> function runCliAgent(cmd: string, args: string[], prompt: string,
+>                      onToken: (t: string) => void, timeoutMs = 60_000): Promise<string> {
+>   return new Promise((resolve, reject) => {
+>     const child = spawn(cmd, args, { stdio: ["pipe", "pipe", "pipe"] });
+>     let out = "";
+>     const t = setTimeout(() => { child.kill("SIGKILL"); reject(new Error("timeout")); }, timeoutMs);
+>     child.stdout.on("data", (d) => { const s = d.toString(); out += s; onToken(s); });
+>     child.on("error", reject);
+>     child.on("close", () => { clearTimeout(t); resolve(out); });
+>     child.stdin.write(prompt);   // envia o prompt do turno via stdin
+>     child.stdin.end();
+>   });
+> }
+> // → extrair o JSON da saída → zod.parse(ACTION_SCHEMA) → VALIDAR no World Engine
+> // → se inválido: re-perguntar 1x; se falhar de novo: "passar o turno".
 > ```
-> Regras: sempre `JSON.parse` + validação de schema (ex.: `zod`) antes de aplicar; nunca confiar cegamente no JSON do modelo local. Devolver erros de validação como contexto no próximo turno para autocorreção.
+> Regras: sempre extrair/`JSON.parse` + validar com `zod` antes de aplicar; nunca confiar cegamente na saída. Devolver erros de validação como contexto no próximo turno (autocorreção). O runner **Ollama-direto** (§7.3) é a alternativa: fala HTTP com `localhost:11434` usando `format` (JSON schema) — mesmo contrato de saída.
 
-### 7.3 Interface de troca de runtime (`LLMClient`)
-Definir uma interface fina para não acoplar ao Ollama:
+### 7.3 Interface de troca de runner (`AgentRunner`)
+Interface fina para não acoplar a um CLI/back-end específico:
 ```ts
-interface LLMClient {
+interface AgentRunner {
+  name: string;
+  healthy(): Promise<boolean>;               // o runner configurado responde?
   decide(input: { system: string; user: string; schema: object;
-                  onToken?: (t: string) => void }): Promise<AgentDecision>;
+                  onToken?: (t: string) => void; timeoutMs?: number }): Promise<AgentDecision>;
 }
-// Implementações: OllamaClient (default), LlamaCppClient, LmStudioClient...
+// Implementações:
+//   ClaudeCodeRunner → spawn("claude", ["-p","--output-format","json"])
+//   CodexRunner      → spawn("codex", ["exec"])
+//   OpencodeRunner   → spawn("opencode", ["run"])
+//   OllamaRunner     → HTTP POST localhost:11434/api/chat (format = JSON schema)
+// Selecionada por env RUNNER=claude|codex|opencode|ollama (+ AGENT_CMD p/ override).
 ```
 
 ---
@@ -288,10 +283,10 @@ Layout em disco: `./data/saves/<partida>.json`, `./data/memory/<civ>.md`, `./dat
 
 Você pode construir o projeto com o Claude Code/Codex **ou** com um agente de codificação local (ex.: `aider` apontado para o Ollama). O produto final, porém, roda 100% local.
 
-### Fase 0 — Setup local (0,5 dia)
-- Instalar Ollama; `ollama pull qwen2.5:14b` (e um modelo pequeno para o narrador).
-- Monorepo TS: `apps/backend` (Node + `ollama` + `ws`) e `apps/frontend` (React/Vite). `.env` local (`OLLAMA_HOST`, `MODEL`).
-- **Prompt:** *"Crie um monorepo TypeScript com backend Node (WebSocket) e frontend React/Vite. No backend, adicione o cliente `ollama` e um `LLMClient` com implementação `OllamaClient` apontando para localhost:11434. Health check que confirma que o Ollama responde."*
+### Fase 0 — Setup (0,5 dia)
+- Ter ao menos um runner disponível: um CLI de agente (`claude`, `codex` ou `opencode`) **ou** Ollama (`ollama pull qwen2.5:14b`).
+- Monorepo TS: `apps/backend` (Node + `ws`) e `apps/frontend` (React/Vite). `.env` local (`RUNNER`, `AGENT_CMD`, `MODEL`).
+- **Prompt:** *"Crie um monorepo TypeScript com backend Node (WebSocket) e frontend React/Vite. No backend, defina a interface `AgentRunner` com implementações `ClaudeCodeRunner`/`CodexRunner`/`OpencodeRunner` (spawn de CLI headless) e `OllamaRunner` (HTTP). Selecione por env `RUNNER`. Health check que confirma que o runner configurado responde."*
 
 ### Fase 1 — World Engine determinístico + testes (1–2 dias)
 - Estado, tiles, recursos, regras (produção, crescimento, combate), tick, eventos. Testes unitários. **Sem LLM.**
@@ -356,8 +351,8 @@ Você pode construir o projeto com o Claude Code/Codex **ou** com um agente de c
 
 ## 14. Considerações Técnicas de LLM Local (fixar no time)
 
-- **Runtime:** Ollama em `localhost:11434` (padrão). Endpoint nativo (`/api/chat`) ou compatível OpenAI (`/v1`). Manter tudo atrás de `LLMClient`.
-- **Modelos:** default `qwen2.5:14b`; presets `qwen2.5:7b` / `llama3.1:8b` (hardware modesto) e `qwen2.5:3b` (CPU). Escolher modelos com bom suporte a JSON/ferramentas.
+- **Runner:** um CLI de agente headless (`claude -p` / `codex exec` / `opencode run`) ou Ollama direto (`localhost:11434`), tudo atrás de `AgentRunner` e selecionado por env `RUNNER`.
+- **Provedor/modelo:** escolha do usuário via o CLI/config. Modo local preferido (ex.: opencode+Ollama, `qwen2.5:14b`; presets `7b`/`8b` p/ hardware modesto, `3b` p/ CPU). Escolher modelos com bom suporte a JSON.
 - **Saída estruturada:** usar `format` (JSON schema) como mecanismo primário das ações; tool-calling só para modelos fortes. **Sempre** validar com `zod` antes de aplicar.
 - **KV-cache:** manter `system` (regras+persona) byte-idêntico entre turnos; volátil (snapshot) sempre depois. `keep_alive` alto para não recarregar pesos.
 - **Contexto/saída:** `num_ctx` mínimo necessário, snapshot compacto, `num_predict` curto.
@@ -369,7 +364,7 @@ Você pode construir o projeto com o Claude Code/Codex **ou** com um agente de c
 
 ## 15. Anexo — Prompt inicial sugerido para o agente de codificação
 
-> "Vamos construir **GeniusAI Civilizations**, uma simulação 'watchable AI' **100% local**: 4 civilizações (Roma, Egito, Grécia, Mali) são agentes de um **LLM local (Ollama em localhost:11434)** que tomam decisões em tempo real sobre um mundo compartilhado, e o usuário **assiste** por uma UI servida em localhost (sem comandar, sem nuvem). Todo estado, memória e trace ficam em `./data/`. Comece pela **Fase 0** deste PRD (`docs/PRD-watchable-ai-civilizations.md`): monorepo TypeScript (backend Node + WebSocket, frontend React/Vite), com um `LLMClient` e a implementação `OllamaClient` conversando com o modelo local, e um health check. Depois seguimos para o World Engine determinístico (Fase 1) com testes, sem LLM."
+> "Vamos construir **GeniusAI Civilizations**, uma simulação 'watchable AI': 4 civilizações (Roma, Egito, Grécia, Mali) são agentes acionados por um **CLI de agente headless** (`claude -p` / `codex exec` / `opencode run`) ou por Ollama, tomando decisões em tempo real sobre um mundo compartilhado; o usuário **assiste** por uma UI em localhost (sem comandar). Provedor plugável, local preferido; estado/memória/trace em `./data/`. Comece pela **Fase 0** (`docs/PRD-watchable-ai-civilizations.md`): monorepo TypeScript (backend Node + WebSocket, frontend React/Vite), a interface `AgentRunner` com implementações de CLI e Ollama selecionadas por env, e um health check. Depois seguimos para o World Engine determinístico (Fase 1) com testes, sem LLM."
 
 ---
 
