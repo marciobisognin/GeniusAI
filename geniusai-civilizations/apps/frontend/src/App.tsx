@@ -1,28 +1,38 @@
+import { useState } from "react";
 import { Controls } from "./components/Controls";
-import { CivPanel } from "./components/CivPanel";
+import { CivilizationRail } from "./components/CivilizationRail";
+import { EraInspector } from "./components/EraInspector";
 import { EventTimeline } from "./components/EventTimeline";
+import { EvolutionBoard } from "./components/EvolutionBoard";
 import { SavesPanel } from "./components/SavesPanel";
-import { WorldMap } from "./components/WorldMap";
 import { useGameSocket } from "./useGameSocket";
+import type { CivId } from "./types";
 
 export function App() {
   const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, civIds } = useGameSocket();
   const { world, loopState, civs, connected, runner, healthy } = state;
+  const [selected, setSelected] = useState<CivId>("rome");
 
   return (
-    <main className="app">
-      <header className="app-header">
-        <div>
-          <h1>GeniusAI Civilizations</h1>
-          <p className="tag">Watchable AI — observe, não comande</p>
+    <main className="app-shell">
+      <header className="topbar">
+        <div className="topbar-brand">
+          <span className="brand-seal">G</span>
+          <div>
+            <h1>GeniusAI Civilizations</h1>
+            <p>Simulação observável · civilizações decidindo por LLM</p>
+          </div>
         </div>
-        <div className="status-chip">
+        <nav className="topbar-tabs" aria-label="Modos de visualização">
+          <span className="active">Evolução</span>
+          <span>Diplomacia</span>
+          <span>Crônicas</span>
+        </nav>
+        <div className="status-strip">
           <span className={connected ? "ok" : "bad"}>{connected ? "● conectado" : "○ desconectado"}</span>
-          <span className="muted">
-            runner: <b>{runner ?? "—"}</b>
-          </span>
+          <span>runner <b>{runner ?? "—"}</b></span>
           <span className={healthy ? "ok" : healthy === false ? "bad" : "muted"}>
-            {healthy === undefined ? "" : healthy ? "saudável" : "indisponível"}
+            {healthy === undefined ? "verificando" : healthy ? "saudável" : "indisponível"}
           </span>
         </div>
       </header>
@@ -37,26 +47,27 @@ export function App() {
         onSpeedChange={setSpeed}
       />
 
-      <div className="layout">
-        <WorldMap world={world} />
-
-        <div className="civ-grid">
-          {civIds.map((id) => (
-            <CivPanel key={id} civId={id} civ={world?.civilizations[id]} ui={civs[id]} />
-          ))}
-        </div>
+      <div className="factor-layout">
+        <CivilizationRail world={world} civs={civs} selected={selected} onSelect={setSelected} />
+        <EvolutionBoard world={world} civs={civs} selected={selected} events={state.timeline} onSelect={setSelected} />
+        <EraInspector world={world} selected={selected} ui={civs[selected]} events={state.timeline} />
       </div>
 
-      <EventTimeline events={state.timeline} />
+      <div className="lower-dock">
+        <EventTimeline events={state.timeline} />
+        <SavesPanel
+          saves={state.saves}
+          currentGameId={state.gameId}
+          lastError={state.lastError}
+          onListSaves={listSaves}
+          onNewGame={() => newGame()}
+          onLoadGame={loadGame}
+        />
+      </div>
 
-      <SavesPanel
-        saves={state.saves}
-        currentGameId={state.gameId}
-        lastError={state.lastError}
-        onListSaves={listSaves}
-        onNewGame={() => newGame()}
-        onLoadGame={loadGame}
-      />
+      <footer className="reference-note">
+        Reconstrução local inspirada no vídeo de referência: canvas claro, nós evolutivos, linhas curvas, inspector visual e feedback de IA em tempo real.
+      </footer>
     </main>
   );
 }
