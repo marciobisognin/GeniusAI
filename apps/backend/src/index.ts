@@ -6,4 +6,15 @@ const cfg = loadConfig();
 const runner = createRunner(cfg);
 
 console.log(`[backend] runner selecionado: ${runner.name}`);
-createServer(runner, cfg.port);
+const { loop } = createServer(runner, cfg.port);
+
+// Log de progresso no terminal — útil para acompanhar a simulação também
+// fora da UI (o "watchable" vale para o terminal do host, não só o browser).
+loop.on((e) => {
+  if (e.type === "turn_start") console.log(`[loop] tick ${e.tick} · ${e.civ} decidindo…`);
+  else if (e.type === "turn_end") {
+    const tools = e.actions.map((a) => a.tool).join(", ") || "nenhuma ação";
+    console.log(`[loop] tick ${e.tick} · ${e.civ}: ${e.passed ? "passou o turno" : tools}`);
+  } else if (e.type === "tick_end") console.log(`[loop] tick ${e.tick} concluído (${e.events.length} eventos)`);
+  else if (e.type === "loop_state") console.log(`[loop] estado: ${e.state}`);
+});

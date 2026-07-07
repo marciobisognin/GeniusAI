@@ -51,7 +51,22 @@ Demo do orquestrador (N ticks reais com LLM):
 RUNNER=claude TICKS=1 npm run loop:demo --workspace apps/backend
 ```
 
-Próximo: **Fase 4** — UI de observação em localhost: ligar os eventos do `GameLoop` ao WebSocket e renderizar mapa, painéis de raciocínio e linha do tempo.
+**Fase 4 — UI de observação em localhost:**
+- Backend: o WebSocket agora expõe **um `GameLoop` compartilhado** por servidor. Ao conectar, o cliente recebe `hello`/`health`/`world_init`; depois disso, todo `LoopEvent` do loop é retransmitido (broadcast) em tempo real. O cliente controla a reprodução via comandos `{type:"command", action:"play"|"pause"|"stop"|"step"|"set_speed"}` — **não** existe comando para agir por uma civilização.
+- Frontend: `WorldMap` (mapa em Canvas — terreno, território, cidades, exércitos), `CivPanel` ×4 (stats + raciocínio **em streaming** + ações do turno + erros de validação), `EventTimeline` (eventos narrados) e `Controls` (play/pause/step/velocidade).
+- Log de progresso também no terminal do backend (`[loop] tick N · civ: ...`) — "watchable" vale para o terminal, não só o browser.
+
+Rodar (2 terminais):
+```bash
+RUNNER=claude npm run dev:backend    # :8787
+npm run dev:frontend                 # http://localhost:5173
+```
+
+**Verificado com um navegador real** (Playwright/Chromium) contra o backend com o runner `claude` de verdade: conexão WebSocket, clique em "Step", e o tick avançou na UI (1→2) refletindo as decisões reais dos 4 agentes — incluindo uma proposta de comércio de Mali no tick 1 se concretizando (`trade_executed`) no tick 2.
+
+**Limitação conhecida:** o histórico de raciocínio dos painéis vive só na memória do cliente enquanto a aba está aberta — reconectar (ou abrir nova aba) traz o estado atual do mundo (`world_init`) mas não repõe o raciocínio de turnos passados nem a timeline. Repor isso a partir do trace em disco (`./data/traces/<id>.jsonl`) fica para a Fase 5.
+
+Próximo: **Fase 5** — Persistência/replay: carregar a timeline e o raciocínio a partir do trace ao reconectar, salvar/carregar partidas pela UI, e narrador de eventos (modelo pequeno).
 
 ## Pré-requisitos
 

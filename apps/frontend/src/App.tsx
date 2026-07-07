@@ -1,86 +1,52 @@
-import { useEffect, useRef, useState } from "react";
-
-const BACKEND_WS = import.meta.env.VITE_BACKEND_WS ?? "ws://localhost:8787";
-
-interface Status {
-  connected: boolean;
-  runner?: string;
-  healthy?: boolean;
-}
+import { Controls } from "./components/Controls";
+import { CivPanel } from "./components/CivPanel";
+import { EventTimeline } from "./components/EventTimeline";
+import { WorldMap } from "./components/WorldMap";
+import { useGameSocket } from "./useGameSocket";
 
 export function App() {
-  const [status, setStatus] = useState<Status>({ connected: false });
-  const [log, setLog] = useState<string[]>([]);
-  const wsRef = useRef<WebSocket | null>(null);
-
-  useEffect(() => {
-    const ws = new WebSocket(BACKEND_WS);
-    wsRef.current = ws;
-
-    ws.onopen = () => setStatus((s) => ({ ...s, connected: true }));
-    ws.onclose = () => setStatus((s) => ({ ...s, connected: false }));
-    ws.onmessage = (ev) => {
-      let msg: { type?: string; runner?: string; healthy?: boolean };
-      try {
-        msg = JSON.parse(ev.data as string);
-      } catch {
-        return;
-      }
-      setLog((l) => [JSON.stringify(msg), ...l].slice(0, 20));
-      if (msg.type === "hello" || msg.type === "health") {
-        setStatus((s) => ({
-          ...s,
-          runner: msg.runner ?? s.runner,
-          healthy: msg.healthy ?? s.healthy,
-        }));
-      }
-    };
-
-    return () => ws.close();
-  }, []);
+  const { state, play, pause, stop, step, setSpeed, civIds } = useGameSocket();
+  const { world, loopState, civs, connected, runner, healthy } = state;
 
   return (
     <main className="app">
-      <header>
-        <h1>GeniusAI Civilizations</h1>
-        <p className="tag">Watchable AI · Fase 0 (scaffold)</p>
+      <header className="app-header">
+        <div>
+          <h1>GeniusAI Civilizations</h1>
+          <p className="tag">Watchable AI — observe, não comande</p>
+        </div>
+        <div className="status-chip">
+          <span className={connected ? "ok" : "bad"}>{connected ? "● conectado" : "○ desconectado"}</span>
+          <span className="muted">
+            runner: <b>{runner ?? "—"}</b>
+          </span>
+          <span className={healthy ? "ok" : healthy === false ? "bad" : "muted"}>
+            {healthy === undefined ? "" : healthy ? "saudável" : "indisponível"}
+          </span>
+        </div>
       </header>
 
-      <section className="card">
-        <h2>Status</h2>
-        <div className="row">
-          <span>Backend</span>
-          <b className={status.connected ? "ok" : "bad"}>
-            {status.connected ? "conectado" : "desconectado"}
-          </b>
-        </div>
-        <div className="row">
-          <span>Runner</span>
-          <b>{status.runner ?? "—"}</b>
-        </div>
-        <div className="row">
-          <span>Saúde do runner</span>
-          <b className={status.healthy ? "ok" : status.healthy === false ? "bad" : ""}>
-            {status.healthy === undefined ? "—" : status.healthy ? "OK" : "indisponível"}
-          </b>
-        </div>
-      </section>
+      <Controls
+        loopState={loopState}
+        tick={world?.tick ?? 0}
+        onPlay={play}
+        onPause={pause}
+        onStop={stop}
+        onStep={step}
+        onSpeedChange={setSpeed}
+      />
 
-      <section className="card">
-        <h2>Eventos (WebSocket)</h2>
-        <ul className="log">
-          {log.length === 0 ? (
-            <li className="muted">aguardando mensagens…</li>
-          ) : (
-            log.map((l, i) => <li key={i}>{l}</li>)
-          )}
-        </ul>
-      </section>
+      <div className="layout">
+        <WorldMap world={world} />
 
-      <footer className="muted">
-        Aqui, nas próximas fases: o mapa do mundo, os painéis de raciocínio das
-        civilizações e a linha do tempo de eventos.
-      </footer>
+        <div className="civ-grid">
+          {civIds.map((id) => (
+            <CivPanel key={id} civId={id} civ={world?.civilizations[id]} ui={civs[id]} />
+          ))}
+        </div>
+      </div>
+
+      <EventTimeline events={state.timeline} />
     </main>
   );
 }
