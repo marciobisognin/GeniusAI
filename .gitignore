@@ -1,9 +1,5 @@
+# Ignorados em qualquer projeto deste repositório (cada projeto também tem o seu próprio .gitignore)
 node_modules/
 dist/
-.env
-data/*
-!data/.gitkeep
-logs/*
-!logs/.gitkeep
 *.log
 .DS_Store
