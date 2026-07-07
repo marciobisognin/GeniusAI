@@ -1,11 +1,12 @@
 import { Controls } from "./components/Controls";
 import { CivPanel } from "./components/CivPanel";
 import { EventTimeline } from "./components/EventTimeline";
+import { SavesPanel } from "./components/SavesPanel";
 import { WorldMap } from "./components/WorldMap";
 import { useGameSocket } from "./useGameSocket";
 
 export function App() {
-  const { state, play, pause, stop, step, setSpeed, civIds } = useGameSocket();
+  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, civIds } = useGameSocket();
   const { world, loopState, civs, connected, runner, healthy } = state;
 
   return (
@@ -47,6 +48,15 @@ export function App() {
       </div>
 
       <EventTimeline events={state.timeline} />
+
+      <SavesPanel
+        saves={state.saves}
+        currentGameId={state.gameId}
+        lastError={state.lastError}
+        onListSaves={listSaves}
+        onNewGame={() => newGame()}
+        onLoadGame={loadGame}
+      />
     </main>
   );
 }

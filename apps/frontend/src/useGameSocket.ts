@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Action, CivId, GameEvent, LoopState, ServerMessage, World } from "./types";
+import type { Action, CivId, GameEvent, LoopState, SaveInfo, ServerMessage, World } from "./types";
 import { CIV_IDS } from "./types";
 
 export type CivStatus = "idle" | "thinking" | "done";
@@ -28,27 +28,33 @@ export interface GameSocketState {
   runner?: string;
   healthy?: boolean;
   world: World | null;
+  gameId?: string;
   loopState: LoopState;
   civs: Record<CivId, CivUiState>;
   /** Eventos mais recentes primeiro. */
   timeline: GameEvent[];
+  saves: SaveInfo[];
+  lastError?: string;
 }
 
 const BACKEND_WS = import.meta.env.VITE_BACKEND_WS ?? "ws://localhost:8787";
 const TIMELINE_LIMIT = 60;
+
+const initialCivs = (): Record<CivId, CivUiState> => ({
+  rome: emptyCivState(),
+  egypt: emptyCivState(),
+  greece: emptyCivState(),
+  mali: emptyCivState(),
+});
 
 export function useGameSocket() {
   const [state, setState] = useState<GameSocketState>({
     connected: false,
     world: null,
     loopState: "idle",
-    civs: {
-      rome: emptyCivState(),
-      egypt: emptyCivState(),
-      greece: emptyCivState(),
-      mali: emptyCivState(),
-    },
+    civs: initialCivs(),
     timeline: [],
+    saves: [],
   });
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -76,7 +82,36 @@ export function useGameSocket() {
             return { ...s, runner: msg.runner, healthy: msg.healthy };
 
           case "world_init":
-            return { ...s, world: msg.world, loopState: msg.loopState };
+            // Novo mundo (reconexão, new_game ou load_game): reseta os
+            // painéis de raciocínio — `history` (mensagem seguinte) repõe o
+            // que houver de conhecido para a partida carregada.
+            return {
+              ...s,
+              world: msg.world,
+              gameId: msg.gameId,
+              loopState: msg.loopState,
+              civs: initialCivs(),
+              lastError: undefined,
+            };
+
+          case "history": {
+            const timeline = [...msg.timeline].reverse().slice(0, TIMELINE_LIMIT);
+            const civs = { ...s.civs };
+            for (const civId of CIV_IDS) {
+              const last = msg.civs[civId];
+              if (last) {
+                civs[civId] = {
+                  status: "done",
+                  chunksReceived: 0,
+                  reasoning: last.reasoning,
+                  actions: last.actions,
+                  passed: last.passed,
+                  errors: last.errors,
+                };
+              }
+            }
+            return { ...s, timeline, civs };
+          }
 
           case "loop_state":
             return { ...s, loopState: msg.state };
@@ -112,6 +147,12 @@ export function useGameSocket() {
             return { ...s, world: msg.world, timeline };
           }
 
+          case "saves":
+            return { ...s, saves: msg.saves };
+
+          case "error":
+            return { ...s, lastError: msg.message };
+
           default:
             return s;
         }
@@ -134,6 +175,15 @@ export function useGameSocket() {
     (speedMs: number) => send({ type: "command", action: "set_speed", speedMs }),
     [send],
   );
+  const listSaves = useCallback(() => send({ type: "command", action: "list_saves" }), [send]);
+  const newGame = useCallback(
+    (seed?: number) => send({ type: "command", action: "new_game", seed }),
+    [send],
+  );
+  const loadGame = useCallback(
+    (gameId: string) => send({ type: "command", action: "load_game", gameId }),
+    [send],
+  );
 
-  return { state, play, pause, stop, step, setSpeed, civIds: CIV_IDS };
+  return { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, civIds: CIV_IDS };
 }

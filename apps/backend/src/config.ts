@@ -10,6 +10,8 @@ export interface Config {
   ollamaHost: string;
   /** Porta do servidor HTTP/WebSocket do backend. */
   port: number;
+  /** Liga o narrador de eventos (manchete por tick) — decorativo, off por padrão. */
+  narrator: boolean;
 }
 
 const VALID_RUNNERS: RunnerKind[] = ["claude", "codex", "opencode", "ollama"];
@@ -26,5 +28,6 @@ export function loadConfig(): Config {
     model: process.env.MODEL ?? "qwen2.5:14b",
     ollamaHost: process.env.OLLAMA_HOST ?? "http://localhost:11434",
     port: Number(process.env.PORT ?? 8787),
+    narrator: process.env.NARRATOR === "true",
   };
 }

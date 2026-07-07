@@ -9,7 +9,7 @@
     "health": "tsx src/health-cli.ts",
     "turn:demo": "tsx src/agent/turn-demo.ts",
     "loop:demo": "tsx src/orchestrator/loop-demo.ts",
-    "test": "node --import tsx --test src/engine/rng.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/memory.test.ts src/orchestrator/GameLoop.test.ts",
+    "test": "node --import tsx --test src/engine/rng.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/memory.test.ts src/orchestrator/trace.test.ts src/orchestrator/narrator.test.ts src/orchestrator/GameLoop.test.ts src/server.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

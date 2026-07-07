@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 1 concluída
+## Estado atual: Fase 5 concluída (MVP completo)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -64,9 +64,20 @@ npm run dev:frontend                 # http://localhost:5173
 
 **Verificado com um navegador real** (Playwright/Chromium) contra o backend com o runner `claude` de verdade: conexão WebSocket, clique em "Step", e o tick avançou na UI (1→2) refletindo as decisões reais dos 4 agentes — incluindo uma proposta de comércio de Mali no tick 1 se concretizando (`trade_executed`) no tick 2.
 
-**Limitação conhecida:** o histórico de raciocínio dos painéis vive só na memória do cliente enquanto a aba está aberta — reconectar (ou abrir nova aba) traz o estado atual do mundo (`world_init`) mas não repõe o raciocínio de turnos passados nem a timeline. Repor isso a partir do trace em disco (`./data/traces/<id>.jsonl`) fica para a Fase 5.
+~~**Limitação conhecida:** o histórico de raciocínio dos painéis vive só na memória do cliente...~~ — **resolvido na Fase 5** (mensagem `history` abaixo).
 
-Próximo: **Fase 5** — Persistência/replay: carregar a timeline e o raciocínio a partir do trace ao reconectar, salvar/carregar partidas pela UI, e narrador de eventos (modelo pequeno).
+**Fase 5 — Persistência/replay, save/load e narrador (`apps/backend/src/orchestrator/`):**
+- **Retomada automática:** `createGameLoop()` tenta `loadWorld(gameId)` antes de criar um mundo novo — reiniciar o backend continua a mesma partida de onde parou (tick, mapa, civilizações), sem qualquer ação do usuário.
+- **Reconexão com histórico:** ao conectar, o cliente recebe `world_init` (estado atual) **e** `history` (`{timeline, civs}`, lido do trace em disco) — resolve a limitação da Fase 4: reabrir a UI (ou reconectar) repõe a timeline inteira e o último raciocínio de cada civilização, não só o estado presente.
+- **Save/load pela UI:** comandos WS `list_saves` (lista partidas salvas com tick/seed/data), `new_game` (opcional `seed`) e `load_game` (`gameId`) — trocam o `GameLoop` ativo em tempo real, sem reiniciar o servidor; `load_game` para um `gameId` inexistente devolve `{type:"error"}` em vez de criar um mundo silenciosamente. Componente `SavesPanel` no frontend.
+- **Narrador de eventos** (`narrator.ts`, opcional via `NARRATOR=true`): reaproveita o mesmo `AgentRunner`/schema dos agentes — o campo `reasoning` vira a manchete do tick, `actions` é ignorado. Decorativo: qualquer falha é engolida (nunca derruba um tick). A manchete é injetada como um evento sintético `{type:"narration"}` **na mesma lista de eventos do tick** — assim streaming ao vivo e replay do trace usam exatamente o mesmo caminho.
+- **24 novos testes:** `trace.test.ts` (round-trip de save/trace/summarizeTrace, sem LLM), `narrator.test.ts` (runner falso — sucesso, lista vazia, só `tick_started`, reasoning vazio, exceção engolida) e `server.test.ts` (WebSocket ponta a ponta contra um runner falso: conexão/history, `step`, `list_saves`, `load_game` inexistente, `new_game`→`load_game`, reconexão com histórico).
+
+Rodar os testes: `npm run test --workspace apps/backend` (**70 no total**).
+
+**Verificado com o runner `claude` real** (narrador ligado): um tick completo com as 4 civilizações gerou a manchete *"Egito, Roma, Grécia e Mali selam paz e comércio enquanto o Egito firma acordo comercial com Mali no amanhecer das civilizações."* — coerente com os eventos de diplomacia do tick. `list_saves` refletiu a partida corretamente, e uma segunda conexão (simulando reload da página) recebeu a `history` completa (25 eventos, incluindo a narração) e o raciocínio de Roma, sem precisar reprocessar nada.
+
+Isso fecha o roadmap do MVP (§11 do PRD).
 
 ## Pré-requisitos
 
@@ -98,7 +109,9 @@ RUNNER=ollama npm run health
 
 Endpoints do backend (porta `PORT`, padrão 8787):
 - `GET /health` → `{ ok, runner }`
-- WebSocket `ws://localhost:8787` → mensagens `hello` e `health`.
+- WebSocket `ws://localhost:8787`:
+  - servidor → cliente: `hello`, `health`, `world_init` (`{world, loopState, gameId}`), `history` (`{timeline, civs}`), `loop_state`, `turn_start`, `turn_token`, `turn_end`, `tick_end`, `saves`, `error`.
+  - cliente → servidor: `{type:"command", action:"play"|"pause"|"stop"|"step"}`, `{action:"set_speed", speedMs}`, `{action:"list_saves"}`, `{action:"new_game", seed?}`, `{action:"load_game", gameId}`.
 
 ## Configuração (env)
 
@@ -109,6 +122,10 @@ Endpoints do backend (porta `PORT`, padrão 8787):
 | `MODEL` | `qwen2.5:14b` | Modelo (runner ollama / CLIs que aceitem) |
 | `OLLAMA_HOST` | `http://localhost:11434` | Endpoint do Ollama |
 | `PORT` | `8787` | Porta do backend |
+| `NARRATOR` | `false` | `true` liga o narrador de eventos (1 chamada extra de LLM por tick) |
+| `SEED` | `42` | Seed do mundo (define o `gameId` padrão: `game-<seed>`) |
+| `TICK_SPEED_MS` | `2000` | Atraso entre ticks no modo play |
+| `TURN_TIMEOUT_MS` | `60000` | Timeout por turno de agente |
 
 ## Estrutura
 

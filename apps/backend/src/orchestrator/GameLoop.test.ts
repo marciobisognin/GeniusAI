@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import os from "node:os";
 import path from "node:path";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
-import { GameLoop } from "./GameLoop";
-import { loadWorld } from "./trace";
+import { createGameLoop, GameLoop } from "./GameLoop";
+import { loadWorld, readTrace } from "./trace";
 import type { AgentDecision, AgentRunner } from "../agent/AgentRunner";
 
 function fixedRunner(decision: AgentDecision): AgentRunner {
@@ -93,4 +93,73 @@ test("auto-stop quando resta ≤ 1 civilização viva", async () => {
   });
   assert.equal(loop.getState(), "stopped");
   assert.ok(loop.isOver());
+});
+
+// ── Fase 5: retomar partida salva + narrador ────────────────────────────────
+
+test("createGameLoop: sem save existente, começa um mundo novo (tick 0)", async () => {
+  tempDataDir();
+  const loop = await createGameLoop({ runner: passRunner, seed: 9, gameId: "resume-1" });
+  assert.equal(loop.world.tick, 0);
+});
+
+test("createGameLoop: com save existente, retoma de onde parou", async () => {
+  tempDataDir();
+  const first = new GameLoop({ runner: passRunner, seed: 9, gameId: "resume-2" });
+  await first.step();
+  await first.step();
+  assert.equal(first.world.tick, 2);
+
+  // Uma nova instância (simulando reinício do servidor) deve carregar o save.
+  const resumed = await createGameLoop({ runner: passRunner, seed: 9, gameId: "resume-2" });
+  assert.equal(resumed.world.tick, 2);
+  assert.deepEqual(resumed.world, first.world);
+});
+
+test("createGameLoop: memória persistida é restaurada (hydrate automático)", async () => {
+  tempDataDir();
+  const first = new GameLoop({
+    runner: fixedRunner({ reasoning: "", actions: [{ tool: "set_strategy", args: { note: "focar em ciência" } }] }),
+    seed: 9,
+    gameId: "resume-3",
+  });
+  await first.step();
+  assert.ok(first.world.civilizations.rome.memory.includes("focar em ciência"));
+
+  const resumed = await createGameLoop({ runner: passRunner, seed: 9, gameId: "resume-3" });
+  assert.ok(resumed.world.civilizations.rome.memory.includes("focar em ciência"));
+});
+
+test("step: com narrador configurado, grava a manchete no trace", async () => {
+  tempDataDir();
+  const narrator = fixedRunner({ reasoning: "Uma manchete e tanto!", actions: [] });
+  const loop = new GameLoop({ runner: passRunner, narrator, seed: 5, gameId: "narr-1" });
+  await loop.step();
+
+  const [record] = await readTrace("narr-1");
+  assert.equal(record.narration, "Uma manchete e tanto!");
+});
+
+test("tick_end: eventos transmitidos incluem a narração como evento sintético", async () => {
+  tempDataDir();
+  const narrator = fixedRunner({ reasoning: "Manchete ao vivo", actions: [] });
+  const loop = new GameLoop({ runner: passRunner, narrator, seed: 5, gameId: "narr-2" });
+
+  let tickEndEvents: unknown[] = [];
+  loop.on((e) => {
+    if (e.type === "tick_end") tickEndEvents = e.events;
+  });
+  await loop.step();
+
+  const narrationEntry = tickEndEvents.find((e) => (e as { type: string }).type === "narration");
+  assert.ok(narrationEntry);
+  assert.equal((narrationEntry as { text: string }).text, "Manchete ao vivo");
+});
+
+test("step: sem narrador, nenhuma narração é gravada nem emitida", async () => {
+  tempDataDir();
+  const loop = new GameLoop({ runner: passRunner, seed: 5, gameId: "narr-3" });
+  await loop.step();
+  const [record] = await readTrace("narr-3");
+  assert.equal(record.narration, undefined);
 });

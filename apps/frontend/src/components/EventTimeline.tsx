@@ -12,11 +12,15 @@ export function EventTimeline({ events }: Props) {
         {events.length === 0 ? (
           <li className="muted">nenhum evento ainda — dê play para começar.</li>
         ) : (
-          events.map((e, i) => (
-            <li key={i} className={e.type === "tick_started" ? "timeline-tick" : undefined}>
-              {describeEvent(e)}
-            </li>
-          ))
+          events.map((e, i) => {
+            const cls =
+              e.type === "tick_started" ? "timeline-tick" : e.type === "narration" ? "timeline-narration" : undefined;
+            return (
+              <li key={i} className={cls}>
+                {describeEvent(e)}
+              </li>
+            );
+          })
         )}
       </ul>
     </section>

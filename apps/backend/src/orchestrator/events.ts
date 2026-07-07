@@ -2,6 +2,13 @@ import type { Action, CivId, GameEvent, World } from "../engine/types";
 
 export type LoopState = "idle" | "running" | "paused" | "stopped";
 
+/**
+ * `GameEvent` são fatos do motor (puros, determinísticos). `narration` é uma
+ * anotação decorativa gerada pelo narrador (LLM) — nunca vai para
+ * `world.events`, só para o que é exibido/persistido na timeline.
+ */
+export type DisplayEvent = GameEvent | { type: "narration"; text: string };
+
 /** Eventos de progresso emitidos pelo orquestrador (base do streaming). */
 export type LoopEvent =
   | { type: "loop_state"; state: LoopState }
@@ -16,4 +23,4 @@ export type LoopEvent =
       passed: boolean;
       errors: string[];
     }
-  | { type: "tick_end"; tick: number; events: GameEvent[]; world: World };
+  | { type: "tick_end"; tick: number; events: DisplayEvent[]; world: World };

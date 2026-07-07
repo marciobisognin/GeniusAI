@@ -1,5 +1,14 @@
-export { GameLoop } from "./GameLoop";
+export { GameLoop, createGameLoop } from "./GameLoop";
 export type { GameLoopOptions } from "./GameLoop";
-export type { LoopEvent, LoopState } from "./events";
-export { appendTrace, saveWorld, loadWorld } from "./trace";
-export type { TraceRecord } from "./trace";
+export type { LoopEvent, LoopState, DisplayEvent } from "./events";
+export {
+  appendTrace,
+  saveWorld,
+  loadWorld,
+  readTrace,
+  listSaves,
+  summarizeTrace,
+  readTraceSummary,
+} from "./trace";
+export type { TraceRecord, SaveInfo, CivLastTurn, TraceSummary } from "./trace";
+export { narrate } from "./narrator";

@@ -217,3 +217,35 @@ body {
   font-weight: 600;
   border-bottom-style: solid !important;
 }
+.timeline-narration {
+  color: #fbbf24;
+  font-style: italic;
+}
+
+/* Partidas salvas */
+.saves-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.saves-header h2 { margin: 0; }
+.saves-actions { display: flex; gap: 8px; }
+.saves-error { margin: 8px 0 0; font-size: 0.82rem; }
+
+.saves-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  font-size: 0.82rem;
+}
+.saves-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  border-bottom: 1px dashed var(--border);
+}
+.saves-list li.current { color: var(--ok); }
+.save-id { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.btn-small { padding: 4px 10px; font-size: 0.76rem; margin-left: auto; }

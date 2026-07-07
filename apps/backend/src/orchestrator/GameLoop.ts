@@ -6,8 +6,9 @@ import type { AgentRunner } from "../agent/AgentRunner";
 import { runCivilizationTurn } from "../agent/runTurn";
 import type { TurnResult } from "../agent/runTurn";
 import { hydrateMemory, persistMemory } from "../agent/memory";
-import { appendTrace, saveWorld } from "./trace";
-import type { LoopEvent, LoopState } from "./events";
+import { appendTrace, loadWorld, saveWorld } from "./trace";
+import { narrate } from "./narrator";
+import type { DisplayEvent, LoopEvent, LoopState } from "./events";
 
 const delay = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 
@@ -22,6 +23,13 @@ export interface GameLoopOptions {
   gameId?: string;
   /** Grava memória/trace/save em disco (padrão true). */
   persist?: boolean;
+  /**
+   * Runner opcional para narrar os eventos de cada tick (manchete curta).
+   * Decorativo — omitido por padrão. Se fornecido, reaproveita o mesmo
+   * AgentRunner/schema dos agentes de civilização (ver orchestrator/narrator.ts).
+   */
+  narrator?: AgentRunner;
+  narratorTimeoutMs?: number;
 }
 
 /**
@@ -43,6 +51,8 @@ export class GameLoop {
   private speedMs: number;
   private turnTimeoutMs: number;
   private persist: boolean;
+  private readonly narrator?: AgentRunner;
+  private readonly narratorTimeoutMs: number;
 
   constructor(opts: GameLoopOptions) {
     this.runner = opts.runner;
@@ -51,6 +61,8 @@ export class GameLoop {
     this.turnTimeoutMs = opts.turnTimeoutMs ?? 60_000;
     this.gameId = opts.gameId ?? `game-${this.world.seed}`;
     this.persist = opts.persist ?? true;
+    this.narrator = opts.narrator;
+    this.narratorTimeoutMs = opts.narratorTimeoutMs ?? 30_000;
   }
 
   on(fn: (e: LoopEvent) => void): () => void {
@@ -111,6 +123,10 @@ export class GameLoop {
 
     this.world = tick(this.world, decisions);
 
+    const narrationText = this.narrator
+      ? await narrate(this.narrator, this.world.events, this.narratorTimeoutMs)
+      : null;
+
     if (this.persist) {
       await persistMemory(this.world);
       await appendTrace(this.gameId, {
@@ -123,11 +139,15 @@ export class GameLoop {
           errors: r.errors,
         })),
         events: this.world.events,
+        narration: narrationText ?? undefined,
       });
       await saveWorld(this.gameId, this.world);
     }
 
-    this.emit({ type: "tick_end", tick: this.world.tick, events: this.world.events, world: this.world });
+    const outboundEvents: DisplayEvent[] = narrationText
+      ? [...this.world.events, { type: "narration", text: narrationText }]
+      : this.world.events;
+    this.emit({ type: "tick_end", tick: this.world.tick, events: outboundEvents, world: this.world });
     return this.world;
   }
 
@@ -161,4 +181,20 @@ export class GameLoop {
       await delay(this.speedMs);
     }
   }
+}
+
+/**
+ * Cria um GameLoop retomando automaticamente de um save existente para o
+ * `gameId` (ou seed) informado — "salvar/carregar partida" acontece de forma
+ * transparente: se há um save em disco, a simulação continua de onde parou;
+ * senão, começa um mundo novo. Também hidrata a memória das civilizações.
+ */
+export async function createGameLoop(opts: GameLoopOptions): Promise<GameLoop> {
+  const seed = opts.seed ?? 42;
+  const gameId = opts.gameId ?? `game-${seed}`;
+  const saved = opts.world ? null : await loadWorld(gameId);
+
+  const loop = new GameLoop({ ...opts, gameId, world: opts.world ?? saved ?? undefined });
+  await loop.hydrate();
+  return loop;
 }

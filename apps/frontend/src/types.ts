@@ -72,10 +72,25 @@ export interface World {
 
 export type LoopState = "idle" | "running" | "paused" | "stopped";
 
+export interface CivLastTurn {
+  reasoning: string;
+  actions: Action[];
+  passed: boolean;
+  errors: string[];
+}
+
+export interface SaveInfo {
+  gameId: string;
+  tick: number;
+  seed: number;
+  updatedAt: string;
+}
+
 export type ServerMessage =
   | { type: "hello"; runner: string }
   | { type: "health"; runner: string; healthy: boolean }
-  | { type: "world_init"; world: World; loopState: LoopState }
+  | { type: "world_init"; world: World; loopState: LoopState; gameId: string }
+  | { type: "history"; timeline: GameEvent[]; civs: Partial<Record<CivId, CivLastTurn>> }
   | { type: "loop_state"; state: LoopState }
   | { type: "turn_start"; tick: number; civ: CivId }
   | { type: "turn_token"; tick: number; civ: CivId; chunk: string }
@@ -88,7 +103,9 @@ export type ServerMessage =
       passed: boolean;
       errors: string[];
     }
-  | { type: "tick_end"; tick: number; events: GameEvent[]; world: World };
+  | { type: "tick_end"; tick: number; events: GameEvent[]; world: World }
+  | { type: "saves"; saves: SaveInfo[] }
+  | { type: "error"; message: string };
 
 export const CIV_LABEL: Record<CivId, string> = {
   rome: "Roma",
@@ -136,6 +153,8 @@ export function describeEvent(e: GameEvent): string {
       return `${civLabel(e.civ)} foi eliminada!`;
     case "action_rejected":
       return `${civLabel(e.civ)}: ação "${e.tool}" rejeitada (${e.reason})`;
+    case "narration":
+      return `📰 ${e.text}`;
     default:
       return e.type;
   }

@@ -1,13 +1,19 @@
 import http from "node:http";
+import type { AddressInfo } from "node:net";
 import { WebSocketServer, type WebSocket } from "ws";
 import type { AgentRunner } from "./agent";
-import { GameLoop } from "./orchestrator/GameLoop";
+import type { Config } from "./config";
+import { createGameLoop, type GameLoop } from "./orchestrator/GameLoop";
 import type { LoopEvent } from "./orchestrator/events";
+import { listSaves, loadWorld, readTraceSummary } from "./orchestrator/trace";
 
 /** Mensagens que o cliente (UI) pode enviar ao servidor. */
 type ClientCommand =
   | { type: "command"; action: "play" | "pause" | "stop" | "step" }
-  | { type: "command"; action: "set_speed"; speedMs: number };
+  | { type: "command"; action: "set_speed"; speedMs: number }
+  | { type: "command"; action: "list_saves" }
+  | { type: "command"; action: "new_game"; seed?: number }
+  | { type: "command"; action: "load_game"; gameId: string };
 
 function isClientCommand(msg: unknown): msg is ClientCommand {
   return !!msg && typeof msg === "object" && (msg as { type?: unknown }).type === "command";
@@ -16,20 +22,21 @@ function isClientCommand(msg: unknown): msg is ClientCommand {
 /**
  * Servidor HTTP + WebSocket do backend.
  * - GET /health → saúde do runner configurado.
- * - WebSocket: ao conectar, envia hello/health/world_init; em seguida
- *   retransmite (broadcast) todo LoopEvent do GameLoop compartilhado.
- *   Aceita comandos do cliente para controlar a simulação (play/pause/step/
- *   stop/set_speed) — não há "comandar civilização", só controle de reprodução.
+ * - WebSocket: ao conectar, envia hello/health/world_init/history (histórico
+ *   completo da partida, para repor timeline e raciocínio de uma reconexão);
+ *   em seguida retransmite (broadcast) todo LoopEvent do GameLoop ativo.
+ *   Aceita comandos do cliente: play/pause/stop/step/set_speed (controle de
+ *   reprodução — nunca "comandar" uma civilização) e list_saves/new_game/
+ *   load_game (persistência — Fase 5).
  */
-export function createServer(runner: AgentRunner, port: number) {
-  const loop = new GameLoop({
+export async function createServer(cfg: Config, runner: AgentRunner) {
+  let loop: GameLoop = await createGameLoop({
     runner,
     seed: Number(process.env.SEED ?? 42),
     speedMs: Number(process.env.TICK_SPEED_MS ?? 2000),
     turnTimeoutMs: Number(process.env.TURN_TIMEOUT_MS ?? 60_000),
+    narrator: cfg.narrator ? runner : undefined,
   });
-  // Retoma memórias persistidas de uma execução anterior, se houver.
-  void loop.hydrate();
 
   const clients = new Set<WebSocket>();
   const broadcast = (payload: unknown) => {
@@ -38,7 +45,40 @@ export function createServer(runner: AgentRunner, port: number) {
       if (ws.readyState === ws.OPEN) ws.send(data);
     }
   };
-  loop.on((event: LoopEvent) => broadcast(event));
+
+  // Listeners externos (ex.: log no terminal) sobrevivem a troca de partida —
+  // `notify` é sempre religado ao loop ativo por `attachLoop`.
+  const externalListeners = new Set<(e: LoopEvent) => void>();
+  const notify = (event: LoopEvent) => {
+    broadcast(event);
+    for (const fn of externalListeners) fn(event);
+  };
+
+  let unsubscribe = loop.on(notify);
+  function attachLoop(next: GameLoop): void {
+    unsubscribe();
+    loop = next;
+    unsubscribe = loop.on(notify);
+  }
+
+  /** Envia (ou transmite) o estado completo: mundo atual + histórico da partida. */
+  async function sendFullState(target: WebSocket | "broadcast"): Promise<void> {
+    const summary = await readTraceSummary(loop.gameId);
+    const worldInit = {
+      type: "world_init",
+      world: loop.world,
+      loopState: loop.getState(),
+      gameId: loop.gameId,
+    };
+    const history = { type: "history", timeline: summary.timeline, civs: summary.civs };
+    if (target === "broadcast") {
+      broadcast(worldInit);
+      broadcast(history);
+    } else {
+      target.send(JSON.stringify(worldInit));
+      target.send(JSON.stringify(history));
+    }
+  }
 
   const httpServer = http.createServer(async (req, res) => {
     res.setHeader("access-control-allow-origin", "*");
@@ -66,7 +106,7 @@ export function createServer(runner: AgentRunner, port: number) {
       ws.send(JSON.stringify({ type: "health", runner: runner.name, healthy: false }));
     }
 
-    ws.send(JSON.stringify({ type: "world_init", world: loop.world, loopState: loop.getState() }));
+    await sendFullState(ws);
 
     ws.on("message", (raw) => {
       let msg: unknown;
@@ -93,17 +133,69 @@ export function createServer(runner: AgentRunner, port: number) {
         case "set_speed":
           loop.setSpeed(msg.speedMs);
           break;
+        case "list_saves":
+          void listSaves().then((saves) => ws.send(JSON.stringify({ type: "saves", saves })));
+          break;
+        case "new_game": {
+          loop.stop();
+          const gameId = `game-${Date.now()}`;
+          void createGameLoop({
+            runner,
+            seed: msg.seed ?? Math.floor(Math.random() * 1_000_000),
+            gameId,
+            speedMs: Number(process.env.TICK_SPEED_MS ?? 2000),
+            turnTimeoutMs: Number(process.env.TURN_TIMEOUT_MS ?? 60_000),
+            narrator: cfg.narrator ? runner : undefined,
+          }).then((next) => {
+            attachLoop(next);
+            void sendFullState("broadcast");
+          });
+          break;
+        }
+        case "load_game": {
+          const gameId = msg.gameId;
+          void loadWorld(gameId).then(async (world) => {
+            if (!world) {
+              ws.send(JSON.stringify({ type: "error", message: `partida não encontrada: ${gameId}` }));
+              return;
+            }
+            loop.stop();
+            const next = await createGameLoop({
+              runner,
+              world,
+              gameId,
+              speedMs: Number(process.env.TICK_SPEED_MS ?? 2000),
+              turnTimeoutMs: Number(process.env.TURN_TIMEOUT_MS ?? 60_000),
+              narrator: cfg.narrator ? runner : undefined,
+            });
+            attachLoop(next);
+            await sendFullState("broadcast");
+          });
+          break;
+        }
       }
     });
 
     ws.on("close", () => clients.delete(ws));
   });
 
-  httpServer.listen(port, () => {
-    console.log(
-      `[backend] HTTP+WebSocket em http://localhost:${port} (runner: ${runner.name})`,
-    );
+  const port = await new Promise<number>((resolve) => {
+    httpServer.listen(cfg.port, () => resolve((httpServer.address() as AddressInfo).port));
   });
+  console.log(
+    `[backend] HTTP+WebSocket em http://localhost:${port} (runner: ${runner.name}${cfg.narrator ? ", narrador ligado" : ""})`,
+  );
 
-  return { httpServer, wss, loop };
+  return {
+    httpServer,
+    wss,
+    port,
+    /** Loop ativo no momento — pode mudar após new_game/load_game. */
+    getLoop: () => loop,
+    /** Assina eventos do loop ativo, sobrevivendo a troca de partida. */
+    onLoopEvent: (fn: (e: LoopEvent) => void): (() => void) => {
+      externalListeners.add(fn);
+      return () => externalListeners.delete(fn);
+    },
+  };
 }
