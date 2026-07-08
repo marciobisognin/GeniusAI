@@ -4,6 +4,7 @@ import { CivilizationRail } from "./components/CivilizationRail";
 import { EraInspector } from "./components/EraInspector";
 import { EventTimeline } from "./components/EventTimeline";
 import { EvolutionBoard } from "./components/EvolutionBoard";
+import { LivingHistoryMode } from "./components/LivingHistoryMode";
 import { SavesPanel } from "./components/SavesPanel";
 import { useGameSocket } from "./useGameSocket";
 import type { CivId } from "./types";
@@ -52,6 +53,8 @@ export function App() {
         <EvolutionBoard world={world} civs={civs} selected={selected} events={state.timeline} onSelect={setSelected} />
         <EraInspector world={world} selected={selected} ui={civs[selected]} events={state.timeline} />
       </div>
+
+      <LivingHistoryMode world={world} events={state.timeline} selected={selected} onSelect={setSelected} />
 
       <div className="lower-dock">
         <EventTimeline events={state.timeline} />
