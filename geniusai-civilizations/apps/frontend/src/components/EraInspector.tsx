@@ -1,3 +1,4 @@
+import { eventHasCiv } from "../simulationInsights";
 import { CIV_COLOR, CIV_LABEL, describeEvent, type CivId, type GameEvent, type World } from "../types";
 import type { CivUiState } from "../useGameSocket";
 
@@ -36,7 +37,7 @@ function actionName(tool: string): string {
 export function EraInspector({ world, selected, ui, events }: Props) {
   const civ = world?.civilizations[selected];
   const total = Math.max(1, (civ?.resources.food ?? 0) + (civ?.resources.gold ?? 0) + (civ?.resources.science ?? 0));
-  const recent = events.filter((e) => JSON.stringify(e).includes(selected)).slice(0, 5);
+  const recent = events.filter((e) => eventHasCiv(e, selected)).slice(0, 5);
 
   return (
     <aside className="era-inspector" style={{ "--civ": CIV_COLOR[selected] } as React.CSSProperties}>
@@ -76,7 +77,7 @@ export function EraInspector({ world, selected, ui, events }: Props) {
       <section className="inspector-card decision-card">
         <h3>Decisão da IA</h3>
         {ui.status === "thinking" ? (
-          <p className="live-text">Maeve/GPT está deliberando… {ui.chunksReceived} fragmento(s)</p>
+          <p className="live-text">O agente está deliberando… {ui.chunksReceived} fragmento(s)</p>
         ) : ui.reasoning ? (
           <p className="quote">“{ui.reasoning}”</p>
         ) : (

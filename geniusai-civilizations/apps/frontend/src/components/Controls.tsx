@@ -52,6 +52,7 @@ export function Controls({ loopState, tick, onPlay, onPause, onStop, onStep, onS
       <div className="controls-meta">
         <span>Tick: {tick}</span>
         <span className={`loop-state ${loopState}`}>{loopState}</span>
+        <span><kbd>espaço</kbd> play/pause · <kbd>S</kbd> step</span>
       </div>
     </section>
   );

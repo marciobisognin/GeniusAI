@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 5 concluída (MVP completo)
+## Estado atual: Fase 6 concluída (MVP completo + redesign da UI)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -78,6 +78,22 @@ Rodar os testes: `npm run test --workspace apps/backend` (**70 no total**).
 **Verificado com o runner `claude` real** (narrador ligado): um tick completo com as 4 civilizações gerou a manchete *"Egito, Roma, Grécia e Mali selam paz e comércio enquanto o Egito firma acordo comercial com Mali no amanhecer das civilizações."* — coerente com os eventos de diplomacia do tick. `list_saves` refletiu a partida corretamente, e uma segunda conexão (simulando reload da página) recebeu a `history` completa (25 eventos, incluindo a narração) e o raciocínio de Roma, sem precisar reprocessar nada.
 
 Isso fecha o roadmap do MVP (§11 do PRD).
+
+**Fase 6 — Redesign da UI: navegação real, tema duplo e mapa reintegrado:**
+- **Três modos de visualização funcionais** (as abas do topo agora navegam de verdade):
+  - **Evolução** — trilho de civilizações, canvas de evolução e inspector da civilização selecionada.
+  - **Mundo & Diplomacia** — o **mapa canvas do motor** (terreno, território, cidades, exércitos) voltou à UI: renderização nítida em qualquer DPI (`devicePixelRatio`), responsivo via `ResizeObserver`, paleta por tema, contorno do território da civilização selecionada e legenda. Ao lado: rede diplomática, árvore tecnológica e sistema de crises.
+  - **Crônicas** — linha das eras, crônica narrativa, "pergunte à civilização" e Museu Vivo.
+- **Tema claro e escuro** ("atlas de pergaminho" / "observatório"): design system com tokens CSS, toggle no topo, persistido em `localStorage` e respeitando `prefers-color-scheme`.
+- **Reconexão automática do WebSocket** com backoff exponencial — se o backend reiniciar, a UI reconecta sozinha e o servidor repõe `world_init` + `history` (nada se perde).
+- **Atalhos de teclado**: `espaço` = play/pause, `S` = step.
+- Limpeza: componentes mortos removidos, filtro de eventos por civilização corrigido (não usa mais `JSON.stringify().includes()`), textos residuais eliminados, `prefers-reduced-motion` respeitado.
+
+| Evolução (claro) | Mundo & Diplomacia (escuro) | Tick real com LLM (escuro) |
+|---|---|---|
+| ![Evolução, tema claro](docs/screenshots/evolution-light.png) | ![Mundo & Diplomacia, tema escuro](docs/screenshots/world-dark.png) | ![Tick 1 com agentes reais](docs/screenshots/evolution-tick1-dark.png) |
+
+**Verificado com um navegador real** (Playwright/Chromium) contra o runner `claude` de verdade: conexão, troca de abas, troca de tema, e um tick completo — os 4 agentes decidiram, o raciocínio de Roma apareceu em streaming no inspector e os eventos viraram toasts, timeline e crônica.
 
 ## Pré-requisitos
 

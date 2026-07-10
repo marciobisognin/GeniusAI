@@ -103,7 +103,7 @@ function normalizeTech(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
 }
 
-function eventHasCiv(e: GameEvent, civ: CivId): boolean {
+export function eventHasCiv(e: GameEvent, civ: CivId): boolean {
   return Object.values(e).some((value) => value === civ);
 }
 
