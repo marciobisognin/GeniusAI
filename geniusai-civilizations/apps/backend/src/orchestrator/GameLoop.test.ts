@@ -163,3 +163,40 @@ test("step: sem narrador, nenhuma narração é gravada nem emitida", async () =
   const [record] = await readTrace("narr-3");
   assert.equal(record.narration, undefined);
 });
+
+test("concorrência: dois step() simultâneos são serializados (nenhum tick se perde ou duplica)", async () => {
+  tempDataDir();
+  const slowRunner: AgentRunner = {
+    name: "fake",
+    healthy: async () => true,
+    decide: async () => {
+      await new Promise((r) => setTimeout(r, 20));
+      return { reasoning: "devagar", actions: [] };
+    },
+  };
+  const loop = new GameLoop({ runner: slowRunner, seed: 5, gameId: "t-conc", persist: false });
+
+  const ticksVistos: number[] = [];
+  loop.on((e) => {
+    if (e.type === "tick_end") ticksVistos.push(e.tick);
+  });
+
+  assert.equal(loop.isBusy(), false);
+  const [a, b] = await Promise.all([loop.step(), loop.step()]);
+  assert.equal(loop.world.tick, 2);
+  assert.deepEqual(ticksVistos, [1, 2], "os ticks devem sair em ordem, sem intercalar");
+  assert.notEqual(a.tick, b.tick);
+
+  await loop.whenIdle();
+  assert.equal(loop.isBusy(), false);
+});
+
+test("createGameLoop: mundo carregado de save mantém a memória do save (sem sobrescrita global)", async () => {
+  tempDataDir();
+  const loop = new GameLoop({ runner: passRunner, seed: 11, gameId: "t-mem" });
+  loop.world.civilizations.rome.memory = "memória da partida t-mem";
+  await loop.step(); // persiste save + memória por partida
+
+  const retomado = await createGameLoop({ runner: passRunner, gameId: "t-mem" });
+  assert.equal(retomado.world.civilizations.rome.memory, "memória da partida t-mem");
+});

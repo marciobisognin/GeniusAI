@@ -105,7 +105,8 @@ export type ServerMessage =
     }
   | { type: "tick_end"; tick: number; events: GameEvent[]; world: World }
   | { type: "saves"; saves: SaveInfo[] }
-  | { type: "error"; message: string };
+  | { type: "answer"; civ: CivId; question: string; text: string; runner: string }
+  | { type: "error"; code?: string; message: string };
 
 export const CIV_LABEL: Record<CivId, string> = {
   rome: "Roma",

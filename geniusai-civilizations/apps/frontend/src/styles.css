@@ -558,6 +558,8 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
   background: var(--accent-soft);
   cursor: pointer;
 }
+.ask-hint, .ask-error { margin: 0 0 8px; font-size: 0.74rem; }
+.answer-source { margin: 8px 0 0; color: var(--muted); font-size: 0.7rem; text-align: right; }
 .ask-card blockquote {
   margin: 0;
   padding: 12px 14px;

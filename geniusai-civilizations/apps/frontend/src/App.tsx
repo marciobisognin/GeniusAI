@@ -34,7 +34,7 @@ function initialTheme(): Theme {
 }
 
 export function App() {
-  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame } = useGameSocket();
+  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask } = useGameSocket();
   const { world, loopState, civs, connected, reconnecting, runner, healthy } = state;
   const [selected, setSelected] = useState<CivId>("rome");
   const [view, setView] = useState<ViewMode>("evolution");
@@ -133,7 +133,13 @@ export function App() {
           <EraTimeline world={world} />
           <div className="split">
             <ChroniclePanel events={state.timeline} />
-            <AskCivilizationPanel world={world} selected={selected} events={state.timeline} />
+            <AskCivilizationPanel
+              world={world}
+              selected={selected}
+              events={state.timeline}
+              answer={state.answers[selected]}
+              onAsk={ask}
+            />
           </div>
           <MuseumMode world={world} events={state.timeline} selected={selected} />
         </div>

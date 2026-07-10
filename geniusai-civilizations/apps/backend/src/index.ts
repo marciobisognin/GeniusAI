@@ -1,8 +1,19 @@
-import { loadConfig } from "./config";
+import { ConfigError, loadConfig, loadDotEnv } from "./config";
 import { createRunner } from "./agent";
 import { createServer } from "./server";
 
-const cfg = loadConfig();
+loadDotEnv();
+
+let cfg;
+try {
+  cfg = loadConfig();
+} catch (err) {
+  if (err instanceof ConfigError) {
+    console.error(`[backend] configuração inválida: ${err.message}`);
+    process.exit(1);
+  }
+  throw err;
+}
 const runner = createRunner(cfg);
 
 console.log(`[backend] runner selecionado: ${runner.name}`);

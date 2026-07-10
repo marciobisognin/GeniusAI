@@ -204,6 +204,12 @@ function applyAction(
     case "trade": {
       const { civ: other, offer, request } = action.args;
       if (other === civ.id) return reject("não é possível comerciar consigo");
+      // Defesa em profundidade: quantias negativas inverteriam a transferência
+      // e não-finitas corromperiam a economia — revalida mesmo após o schema.
+      const amounts = [...Object.values(offer), ...Object.values(request)];
+      if (amounts.some((v) => typeof v !== "number" || !Number.isFinite(v) || v < 0)) {
+        return reject("quantias de comércio devem ser números finitos e não-negativos");
+      }
       const partner = w.civilizations[other];
       if (!partner || !partner.alive) return reject("parceiro indisponível");
       const stance = getStance(w, civ.id, other);

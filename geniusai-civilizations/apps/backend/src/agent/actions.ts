@@ -16,11 +16,17 @@ export const ACTION_TOOLS = [
 const CivIdSchema = z.enum([...CIV_IDS] as [CivId, ...CivId[]]);
 const StanceSchema = z.enum(["peace", "war", "alliance", "trade"]);
 // Coerção tolerante: modelos fracos às vezes emitem números como strings.
-const Coord = z.coerce.number().int();
+// Coordenadas limitadas a um intervalo são defesa extra contra lixo numérico
+// (o motor ainda valida contra as dimensões reais do mapa).
+const Coord = z.coerce.number().int().min(-1000).max(1000);
+// Quantias de recursos: inteiras, finitas, não-negativas e limitadas —
+// oferta/pedido negativos inverteriam a transferência (roubo), e Infinity
+// corromperia a economia inteira.
+const ResourceAmount = z.coerce.number().int().nonnegative().max(1_000_000);
 const ResourcesPartial = z.object({
-  food: z.coerce.number().optional(),
-  gold: z.coerce.number().optional(),
-  science: z.coerce.number().optional(),
+  food: ResourceAmount.optional(),
+  gold: ResourceAmount.optional(),
+  science: ResourceAmount.optional(),
 });
 
 /** Validação estrita (zod) de UMA ação vinda do runner. */

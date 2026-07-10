@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 6 concluída (MVP completo + redesign da UI)
+## Estado atual: Fase 7 concluída (correções estruturais do PRD complementar)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -94,6 +94,19 @@ Isso fecha o roadmap do MVP (§11 do PRD).
 | ![Evolução, tema claro](docs/screenshots/evolution-light.png) | ![Mundo & Diplomacia, tema escuro](docs/screenshots/world-dark.png) | ![Tick 1 com agentes reais](docs/screenshots/evolution-tick1-dark.png) |
 
 **Verificado com um navegador real** (Playwright/Chromium) contra o runner `claude` de verdade: conexão, troca de abas, troca de tema, e um tick completo — os 4 agentes decidiram, o raciocínio de Roma apareceu em streaming no inspector e os eventos viraram toasts, timeline e crônica.
+
+**Fase 7 — Correções estruturais (PRD complementar de correção e agentes):**
+- **`.env` carregado de verdade** (`process.loadEnvFile`, raiz do projeto ou `apps/backend`); configuração inválida (RUNNER/PORT) impede a inicialização com mensagem clara.
+- **Runner `mock`** (`RUNNER=mock`): decisões determinísticas sem LLM — desenvolvimento da UI, testes e smoke tests de ponta a ponta sem custo.
+- **Segurança:** `gameId` restrito a `^[a-zA-Z0-9_-]{1,64}$` com verificação de caminho (anti path traversal em save/trace/memória), comandos WebSocket validados com zod (`INVALID_COMMAND` com código), `maxPayload` de 64 KiB, validação de `Origin` (localhost + `ALLOWED_ORIGINS`), bind padrão em `127.0.0.1` (`HOST`).
+- **Economia blindada:** quantias de comércio precisam ser inteiras, finitas e não-negativas — no schema (zod) e revalidadas no motor (oferta negativa invertia a transferência).
+- **Concorrência:** ticks nunca executam em paralelo — mutex no `GameLoop.step()` + `GAME_BUSY` no servidor para step/new_game/load_game concorrentes.
+- **Persistência segura:** saves com envelope versionado (`schemaVersion`), escrita atômica (tmp + rename) e validação de schema em runtime; formato legado migra de forma transparente; save corrompido → `SAVE_CORRUPTED`, versão futura → `SAVE_VERSION_UNSUPPORTED` (falha visível, nunca silenciosa).
+- **Memória isolada por partida:** `data/memory/<gameId>/<civ>.md` — partidas não se contaminam, e carregar um save não sobrescreve mais a memória salva com uma memória global.
+- **"Pergunte à civilização" real:** novo comando WS `ask {civ, question}` consulta o **agente real** em modo somente leitura (não avança turno, não altera memória); a UI mostra loading, resposta com o runner de origem, e em caso de falha um erro visível + estimativa local claramente rotulada.
+- **+13 testes** (segurança, concorrência, versionamento, ask): **83 no total**.
+
+Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`.
 
 ## Pré-requisitos
 

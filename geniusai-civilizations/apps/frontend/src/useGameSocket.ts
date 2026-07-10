@@ -23,6 +23,15 @@ const emptyCivState = (): CivUiState => ({
   errors: [],
 });
 
+/** Estado de uma consulta "pergunte à civilização" (comando ask). */
+export interface AskState {
+  status: "loading" | "done" | "error";
+  question: string;
+  text?: string;
+  runner?: string;
+  error?: string;
+}
+
 export interface GameSocketState {
   connected: boolean;
   /** true enquanto uma nova tentativa de conexão está agendada. */
@@ -36,6 +45,8 @@ export interface GameSocketState {
   /** Eventos mais recentes primeiro. */
   timeline: GameEvent[];
   saves: SaveInfo[];
+  /** Última consulta ask por civilização. */
+  answers: Partial<Record<CivId, AskState>>;
   lastError?: string;
 }
 
@@ -124,8 +135,26 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
     case "saves":
       return { ...s, saves: msg.saves };
 
-    case "error":
+    case "answer": {
+      const answers = {
+        ...s.answers,
+        [msg.civ]: { status: "done" as const, question: msg.question, text: msg.text, runner: msg.runner },
+      };
+      return { ...s, answers };
+    }
+
+    case "error": {
+      if (msg.code === "ASK_FAILED") {
+        // Anexa o erro à consulta pendente (se houver), em vez do banner global.
+        const answers = { ...s.answers };
+        for (const civId of CIV_IDS) {
+          const a = answers[civId];
+          if (a?.status === "loading") answers[civId] = { ...a, status: "error", error: msg.message };
+        }
+        return { ...s, answers };
+      }
       return { ...s, lastError: msg.message };
+    }
 
     default:
       return s;
@@ -141,6 +170,7 @@ export function useGameSocket() {
     civs: initialCivs(),
     timeline: [],
     saves: [],
+    answers: {},
   });
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -211,6 +241,13 @@ export function useGameSocket() {
     (gameId: string) => send({ type: "command", action: "load_game", gameId }),
     [send],
   );
+  const ask = useCallback(
+    (civ: CivId, question: string) => {
+      setState((s) => ({ ...s, answers: { ...s.answers, [civ]: { status: "loading", question } } }));
+      send({ type: "command", action: "ask", civ, question });
+    },
+    [send],
+  );
 
-  return { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, civIds: CIV_IDS };
+  return { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask, civIds: CIV_IDS };
 }
