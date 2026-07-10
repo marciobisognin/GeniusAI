@@ -25,6 +25,8 @@ const emptyCivState = (): CivUiState => ({
 
 export interface GameSocketState {
   connected: boolean;
+  /** true enquanto uma nova tentativa de conexão está agendada. */
+  reconnecting: boolean;
   runner?: string;
   healthy?: boolean;
   world: World | null;
@@ -39,6 +41,7 @@ export interface GameSocketState {
 
 const BACKEND_WS = import.meta.env.VITE_BACKEND_WS ?? "ws://localhost:8787";
 const TIMELINE_LIMIT = 60;
+const RECONNECT_MAX_MS = 15_000;
 
 const initialCivs = (): Record<CivId, CivUiState> => ({
   rome: emptyCivState(),
@@ -47,9 +50,92 @@ const initialCivs = (): Record<CivId, CivUiState> => ({
   mali: emptyCivState(),
 });
 
+function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState {
+  switch (msg.type) {
+    case "hello":
+      return { ...s, runner: msg.runner };
+
+    case "health":
+      return { ...s, runner: msg.runner, healthy: msg.healthy };
+
+    case "world_init":
+      // Novo mundo (reconexão, new_game ou load_game): reseta os
+      // painéis de raciocínio — `history` (mensagem seguinte) repõe o
+      // que houver de conhecido para a partida carregada.
+      return {
+        ...s,
+        world: msg.world,
+        gameId: msg.gameId,
+        loopState: msg.loopState,
+        civs: initialCivs(),
+        lastError: undefined,
+      };
+
+    case "history": {
+      const timeline = [...msg.timeline].reverse().slice(0, TIMELINE_LIMIT);
+      const civs = { ...s.civs };
+      for (const civId of CIV_IDS) {
+        const last = msg.civs[civId];
+        if (last) {
+          civs[civId] = {
+            status: "done",
+            chunksReceived: 0,
+            reasoning: last.reasoning,
+            actions: last.actions,
+            passed: last.passed,
+            errors: last.errors,
+          };
+        }
+      }
+      return { ...s, timeline, civs };
+    }
+
+    case "loop_state":
+      return { ...s, loopState: msg.state };
+
+    case "turn_start":
+      return { ...s, civs: { ...s.civs, [msg.civ]: { ...emptyCivState(), status: "thinking" as const } } };
+
+    case "turn_token": {
+      const prev = s.civs[msg.civ];
+      return { ...s, civs: { ...s.civs, [msg.civ]: { ...prev, chunksReceived: prev.chunksReceived + 1 } } };
+    }
+
+    case "turn_end": {
+      const civs: typeof s.civs = {
+        ...s.civs,
+        [msg.civ]: {
+          status: "done",
+          chunksReceived: s.civs[msg.civ]?.chunksReceived ?? 0,
+          reasoning: msg.reasoning,
+          actions: msg.actions,
+          passed: msg.passed,
+          errors: msg.errors,
+        },
+      };
+      return { ...s, civs };
+    }
+
+    case "tick_end": {
+      const timeline = [...msg.events].reverse().concat(s.timeline).slice(0, TIMELINE_LIMIT);
+      return { ...s, world: msg.world, timeline };
+    }
+
+    case "saves":
+      return { ...s, saves: msg.saves };
+
+    case "error":
+      return { ...s, lastError: msg.message };
+
+    default:
+      return s;
+  }
+}
+
 export function useGameSocket() {
   const [state, setState] = useState<GameSocketState>({
     connected: false,
+    reconnecting: false,
     world: null,
     loopState: "idle",
     civs: initialCivs(),
@@ -59,107 +145,48 @@ export function useGameSocket() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(BACKEND_WS);
-    wsRef.current = ws;
+    let disposed = false;
+    let attempt = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
-    ws.onopen = () => setState((s) => ({ ...s, connected: true }));
-    ws.onclose = () => setState((s) => ({ ...s, connected: false }));
+    const connect = () => {
+      if (disposed) return;
+      const ws = new WebSocket(BACKEND_WS);
+      wsRef.current = ws;
 
-    ws.onmessage = (ev) => {
-      let msg: ServerMessage;
-      try {
-        msg = JSON.parse(ev.data as string);
-      } catch {
-        return;
-      }
+      ws.onopen = () => {
+        attempt = 0;
+        setState((s) => ({ ...s, connected: true, reconnecting: false }));
+      };
 
-      setState((s) => {
-        switch (msg.type) {
-          case "hello":
-            return { ...s, runner: msg.runner };
+      // O backend retoma a partida e reenvia `world_init` + `history` a cada
+      // conexão, então reconectar restaura a UI inteira sem perder nada.
+      ws.onclose = () => {
+        if (disposed) return;
+        const delay = Math.min(RECONNECT_MAX_MS, 500 * 2 ** attempt);
+        attempt += 1;
+        setState((s) => ({ ...s, connected: false, reconnecting: true }));
+        retryTimer = setTimeout(connect, delay);
+      };
 
-          case "health":
-            return { ...s, runner: msg.runner, healthy: msg.healthy };
-
-          case "world_init":
-            // Novo mundo (reconexão, new_game ou load_game): reseta os
-            // painéis de raciocínio — `history` (mensagem seguinte) repõe o
-            // que houver de conhecido para a partida carregada.
-            return {
-              ...s,
-              world: msg.world,
-              gameId: msg.gameId,
-              loopState: msg.loopState,
-              civs: initialCivs(),
-              lastError: undefined,
-            };
-
-          case "history": {
-            const timeline = [...msg.timeline].reverse().slice(0, TIMELINE_LIMIT);
-            const civs = { ...s.civs };
-            for (const civId of CIV_IDS) {
-              const last = msg.civs[civId];
-              if (last) {
-                civs[civId] = {
-                  status: "done",
-                  chunksReceived: 0,
-                  reasoning: last.reasoning,
-                  actions: last.actions,
-                  passed: last.passed,
-                  errors: last.errors,
-                };
-              }
-            }
-            return { ...s, timeline, civs };
-          }
-
-          case "loop_state":
-            return { ...s, loopState: msg.state };
-
-          case "turn_start": {
-            const civs = { ...s.civs, [msg.civ]: { ...emptyCivState(), status: "thinking" as const } };
-            return { ...s, civs };
-          }
-
-          case "turn_token": {
-            const prev = s.civs[msg.civ];
-            const civs = { ...s.civs, [msg.civ]: { ...prev, chunksReceived: prev.chunksReceived + 1 } };
-            return { ...s, civs };
-          }
-
-          case "turn_end": {
-            const civs: typeof s.civs = {
-              ...s.civs,
-              [msg.civ]: {
-                status: "done",
-                chunksReceived: s.civs[msg.civ]?.chunksReceived ?? 0,
-                reasoning: msg.reasoning,
-                actions: msg.actions,
-                passed: msg.passed,
-                errors: msg.errors,
-              },
-            };
-            return { ...s, civs };
-          }
-
-          case "tick_end": {
-            const timeline = [...msg.events].reverse().concat(s.timeline).slice(0, TIMELINE_LIMIT);
-            return { ...s, world: msg.world, timeline };
-          }
-
-          case "saves":
-            return { ...s, saves: msg.saves };
-
-          case "error":
-            return { ...s, lastError: msg.message };
-
-          default:
-            return s;
+      ws.onmessage = (ev) => {
+        let msg: ServerMessage;
+        try {
+          msg = JSON.parse(ev.data as string);
+        } catch {
+          return;
         }
-      });
+        setState((s) => reduceMessage(s, msg));
+      };
     };
 
-    return () => ws.close();
+    connect();
+
+    return () => {
+      disposed = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      wsRef.current?.close();
+    };
   }, []);
 
   const send = useCallback((payload: unknown) => {
