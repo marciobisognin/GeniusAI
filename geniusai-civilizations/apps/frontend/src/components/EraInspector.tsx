@@ -27,6 +27,7 @@ function actionName(tool: string): string {
     research: "Pesquisa",
     move_army: "Movimento",
     attack: "Ataque",
+    recruit: "Recrutamento",
     set_diplomacy: "Diplomacia",
     propose_trade: "Propor comércio",
     propose_alliance: "Propor aliança",

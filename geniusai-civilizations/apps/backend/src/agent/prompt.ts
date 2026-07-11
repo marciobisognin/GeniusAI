@@ -55,8 +55,15 @@ export function snapshotForCiv(world: World, civId: CivId) {
     },
     catalog: {
       structures: Object.entries(STRUCTURES).map(([name, s]) => ({ name, gold: s.gold })),
-      techs: Object.entries(TECHS).map(([name, t]) => ({ name, cost: t.cost, requires: t.requires })),
+      techs: Object.entries(TECHS).map(([name, t]) => ({
+        name,
+        cost: t.cost,
+        requires: t.requires,
+        description: t.description,
+        effects: t.effects,
+      })),
     },
+    victory: world.victory,
   };
 }
 
@@ -72,6 +79,7 @@ export function buildSystemPrompt(persona: string, civId: CivId): string {
     `- research: { technology } — respeite os pré-requisitos do catálogo.`,
     `- move_army: { armyId, x, y } — destino adjacente; montanha é intransponível.`,
     `- attack: { armyId, x, y } — alvo adjacente; exige estar em guerra.`,
+    `- recruit: { cityId } — recruta um exército (custa 30 de ouro; exige bronze_working E um quartel/barracks na cidade).`,
     `- set_diplomacy: { civ, stance } — stance ∈ peace | war | trade (aliança é bilateral: use propose_alliance).`,
     `- propose_trade: { civ, offer, request } — PROPÕE uma troca {food?,gold?,science?}; nada é transferido até o parceiro aceitar. Proibido em guerra.`,
     `- propose_alliance: { civ } — propõe aliança; só vale se o parceiro aceitar.`,

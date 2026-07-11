@@ -2,17 +2,23 @@ import { Rng } from "./rng";
 import {
   CITY_BASE_YIELD,
   PROPOSAL_TTL_TICKS,
+  PROSPERITY_THRESHOLD,
+  RECRUIT_GOLD_COST,
   RESOURCE_YIELDS,
   STRUCTURES,
   TECHS,
   TERRAIN_YIELDS,
+  TURN_LIMIT,
   addInto,
   canAfford,
+  canRecruit,
+  civScore,
   getStance,
   growthCost,
   inBounds,
   isAdjacent,
   neighbors,
+  recruitStrength,
   setStance,
   subInto,
 } from "./rules";
@@ -25,6 +31,7 @@ import type {
   GameEvent,
   Proposal,
   Resources,
+  Victory,
   World,
 } from "./types";
 
@@ -36,6 +43,9 @@ import type {
  * A não-determinância vem apenas das decisões dos agentes (fora daqui).
  */
 export function tick(world: World, decisions: CivDecision[]): World {
+  // Partida encerrada é imutável: o mundo final é devolvido como está.
+  if (world.victory) return world;
+
   const w: World = structuredClone(world);
   const rng = new Rng(w.rngState);
   const events: GameEvent[] = [{ type: "tick_started", tick: w.tick + 1 }];
@@ -76,8 +86,48 @@ export function tick(world: World, decisions: CivDecision[]): World {
 
   w.tick += 1;
   w.rngState = rng.state;
+  checkVictory(w, events);
   w.events = events;
   return w;
+}
+
+/**
+ * Condições de vitória (RF-026), avaliadas ao fim do tick em ordem
+ * determinística de prioridade: dominação > científica > prosperidade >
+ * limite de turnos. Uma vez definida, a vitória nunca é sobrescrita.
+ */
+function checkVictory(w: World, events: GameEvent[]): void {
+  if (w.victory) return;
+
+  const alive = CIV_IDS.filter((id) => w.civilizations[id].alive);
+  const declare = (civ: CivId, kind: Victory["kind"]): void => {
+    w.victory = { civ, kind, tick: w.tick };
+    events.push({ type: "victory", civ, kind, tick: w.tick });
+  };
+
+  // Dominação: restou exatamente uma civilização.
+  if (alive.length === 1) return declare(alive[0], "domination");
+
+  const allTechs = Object.keys(TECHS);
+  for (const id of alive) {
+    const civ = w.civilizations[id];
+    // Científica: dominou o catálogo inteiro.
+    if (allTechs.every((t) => civ.tech.includes(t))) return declare(id, "scientific");
+  }
+  for (const id of alive) {
+    const r = w.civilizations[id].resources;
+    // Prosperidade: reservas acumuladas acima do limiar.
+    if (r.food + r.gold + r.science >= PROSPERITY_THRESHOLD) return declare(id, "prosperity");
+  }
+
+  // Limite de turnos: vence a maior pontuação (desempate pela ordem de CIV_IDS).
+  if (w.tick >= TURN_LIMIT && alive.length > 0) {
+    let best = alive[0];
+    for (const id of alive) {
+      if (civScore(w.civilizations[id]) > civScore(w.civilizations[best])) best = id;
+    }
+    declare(best, "turn_limit");
+  }
 }
 
 function applyAction(
@@ -200,6 +250,27 @@ function applyAction(
         army.strength -= 2;
         if (army.strength <= 0) civ.armies = civ.armies.filter((a) => a.id !== army.id);
       }
+      return;
+    }
+
+    case "recruit": {
+      const { cityId } = action.args;
+      const city = civ.cities.find((c) => c.id === cityId);
+      if (!city) return reject("cidade não encontrada");
+      if (!canRecruit(civ.tech)) return reject("recrutamento exige a tecnologia bronze_working");
+      if (!city.buildings.includes("barracks")) return reject("recrutamento exige um quartel nesta cidade");
+      if (civ.resources.gold < RECRUIT_GOLD_COST) return reject("ouro insuficiente para recrutar");
+
+      civ.resources.gold -= RECRUIT_GOLD_COST;
+      const strength = recruitStrength(civ.tech);
+      const army = {
+        id: `${civ.id}-army-t${w.tick + 1}-${civ.armies.length + 1}`,
+        x: city.x,
+        y: city.y,
+        strength,
+      };
+      civ.armies.push(army);
+      events.push({ type: "army_recruited", civ: civ.id, cityId, armyId: army.id, strength });
       return;
     }
 
@@ -386,6 +457,11 @@ function economyStep(w: World, civ: Civilization, events: GameEvent[]): void {
     for (const b of city.buildings) {
       const spec = STRUCTURES[b];
       if (spec?.yields) addInto(income, spec.yields);
+    }
+    // Efeitos reais das tecnologias (RF-024): rendimento extra por cidade.
+    for (const t of civ.tech) {
+      const effects = TECHS[t]?.effects;
+      if (effects?.cityYield) addInto(income, effects.cityYield);
     }
   }
 

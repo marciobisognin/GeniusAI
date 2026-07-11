@@ -15,7 +15,7 @@ import { SavesPanel } from "./components/SavesPanel";
 import { TechTreePanel } from "./components/TechTreePanel";
 import { WorldMap } from "./components/WorldMap";
 import { useGameSocket } from "./useGameSocket";
-import type { CivId } from "./types";
+import { CIV_COLOR, CIV_LABEL, VICTORY_LABEL, type CivId } from "./types";
 
 type ViewMode = "evolution" | "world" | "chronicle";
 type Theme = "light" | "dark";
@@ -107,6 +107,23 @@ export function App() {
         onStep={step}
         onSpeedChange={setSpeed}
       />
+
+      {world?.victory && (
+        <div
+          className="victory-banner view-enter"
+          style={{ "--civ": CIV_COLOR[world.victory.civ] } as React.CSSProperties}
+          role="status"
+        >
+          <span className="victory-trophy">🏆</span>
+          <div>
+            <strong>{CIV_LABEL[world.victory.civ]} venceu a partida!</strong>
+            <p>
+              Vitória por {VICTORY_LABEL[world.victory.kind]} no tick {world.victory.tick}. A simulação foi
+              encerrada — inicie uma nova partida ou explore a crônica final.
+            </p>
+          </div>
+        </div>
+      )}
 
       {view === "evolution" && (
         <div className="factor-layout view-enter">

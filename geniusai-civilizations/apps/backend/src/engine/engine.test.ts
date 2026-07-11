@@ -389,3 +389,92 @@ test("economia: cidade cresce com food suficiente", () => {
   assert.ok(findEvent(next.events, "city_grew"));
   assert.ok(next.civilizations.rome.cities[0].population > popBefore);
 });
+
+// ── Fase 9: efeitos de tecnologia, recrutamento e vitória ───────────────────
+
+test("tecnologia tem efeito real: agriculture rende +2 de alimento por cidade", () => {
+  const base = createWorld(5);
+  // População alta → sem crescimento consumindo food neste tick.
+  base.civilizations.rome.cities[0].population = 50;
+  const withTech = structuredClone(base);
+  withTech.civilizations.rome.tech.push("agriculture");
+
+  const plain = tick(base, []);
+  const teched = tick(withTech, []);
+  assert.equal(
+    teched.civilizations.rome.resources.food,
+    plain.civilizations.rome.resources.food + 2,
+    "+2 de alimento pela tecnologia (1 cidade)",
+  );
+});
+
+test("recruit: exige bronze_working e quartel; cria exército com bônus de força", () => {
+  const base = createWorld(5);
+  const rome = base.civilizations.rome;
+  const cityId = rome.cities[0].id;
+  rome.resources.gold = 200;
+
+  // Sem tecnologia → rejeitado.
+  const noTech = tick(base, [{ civ: "rome", actions: [{ tool: "recruit", args: { cityId } }] }]);
+  let rej = findEvent(noTech.events, "action_rejected");
+  assert.ok(rej && /bronze_working/.test(String(rej.reason)));
+
+  // Com tecnologia mas sem quartel → rejeitado.
+  base.civilizations.rome.tech.push("agriculture", "bronze_working");
+  const noBarracks = tick(base, [{ civ: "rome", actions: [{ tool: "recruit", args: { cityId } }] }]);
+  rej = findEvent(noBarracks.events, "action_rejected");
+  assert.ok(rej && /quartel/.test(String(rej.reason)));
+
+  // Com quartel → recruta, deduz ouro e aplica o bônus (+1 do bronze).
+  base.civilizations.rome.cities[0].buildings.push("barracks");
+  const before = base.civilizations.rome.armies.length;
+  const recruited = tick(base, [{ civ: "rome", actions: [{ tool: "recruit", args: { cityId } }] }]);
+  const ev = findEvent(recruited.events, "army_recruited");
+  assert.ok(ev);
+  assert.equal(ev!.strength, 6, "força base 5 + 1 do bronze_working");
+  assert.equal(recruited.civilizations.rome.armies.length, before + 1);
+});
+
+test("vitória científica: dominar o catálogo inteiro encerra a partida", () => {
+  const base = createWorld(5);
+  base.civilizations.greece.tech = ["agriculture", "writing", "bronze_working", "currency", "mathematics"];
+
+  const next = tick(base, []);
+  assert.ok(next.victory);
+  assert.equal(next.victory!.civ, "greece");
+  assert.equal(next.victory!.kind, "scientific");
+  assert.ok(findEvent(next.events, "victory"));
+
+  // Partida encerrada é imutável: novos ticks não mudam nada.
+  const frozen = tick(next, []);
+  assert.equal(frozen.tick, next.tick);
+  assert.deepEqual(frozen.victory, next.victory);
+});
+
+test("vitória por dominação: restar uma civilização encerra a partida", () => {
+  const base = createWorld(5);
+  for (const id of ["egypt", "greece", "mali"] as const) {
+    base.civilizations[id].cities = [];
+  }
+  const next = tick(base, []);
+  assert.equal(next.victory?.civ, "rome");
+  assert.equal(next.victory?.kind, "domination");
+});
+
+test("vitória por prosperidade: reservas acima do limiar", () => {
+  const base = createWorld(5);
+  base.civilizations.mali.resources = { food: 200, gold: 200, science: 50 };
+  const next = tick(base, []);
+  assert.equal(next.victory?.civ, "mali");
+  assert.equal(next.victory?.kind, "prosperity");
+});
+
+test("limite de turnos: vence a maior pontuação", () => {
+  const base = createWorld(5);
+  base.tick = 79;
+  base.civilizations.egypt.tech = ["agriculture", "writing"]; // pontuação extra
+  const next = tick(base, []);
+  assert.equal(next.tick, 80);
+  assert.equal(next.victory?.kind, "turn_limit");
+  assert.equal(next.victory?.civ, "egypt");
+});

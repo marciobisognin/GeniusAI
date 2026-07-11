@@ -52,6 +52,7 @@ export function createWorld(seed: number): World {
     civilizations,
     diplomacy: {},
     pendingProposals: [],
+    victory: null,
     events: [],
   };
 

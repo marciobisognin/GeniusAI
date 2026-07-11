@@ -29,6 +29,7 @@ function actionTitle(tool: string): string {
     research: "Ideia em pesquisa",
     move_army: "Exército em marcha",
     attack: "Conflito aberto",
+    recruit: "Exército recrutado",
     set_diplomacy: "Diplomacia alterada",
     propose_trade: "Proposta comercial",
     propose_alliance: "Proposta de aliança",

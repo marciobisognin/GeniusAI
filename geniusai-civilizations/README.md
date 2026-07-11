@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 8 concluída (mecânicas bilaterais)
+## Estado atual: Fase 9 concluída (tecnologia com efeitos, recrutamento e vitória)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -116,6 +116,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **UI:** painel **"Negociações em aberto"** na vista Mundo & Diplomacia — quem propôs o quê a quem, termos e tick de expiração, direto do estado do motor.
 - **MockRunner bilateral:** responde propostas recebidas (aceitando) e, com ouro sobrando, propõe comércios modestos — o fluxo inteiro é observável sem nenhum LLM.
 - **+7 testes** (proposta sem transferência, aceite exato, recusa, expiração, resposta por terceiros, revalidação no aceite, aliança bilateral, guerra invalidando propostas): **90 no total**.
+
+**Fase 9 — Tecnologia com efeitos reais, recrutamento e condições de vitória:**
+- **Tecnologias com efeito real** (RF-024): o catálogo agora tem descrição e efeitos aplicados pelo motor — `agriculture` +2 alimento/cidade, `writing` +1 ciência/cidade, `currency` +2 ouro/cidade, `mathematics` +2 ciência/cidade e +2 de força ao recrutar, `bronze_working` habilita recrutamento e +1 de força. Descrição e efeitos vão no snapshot dos agentes.
+- **Recrutamento** (RF-020): ação `recruit {cityId}` — exige `bronze_working` **e** um quartel (`barracks`) na cidade; custa 30 de ouro; a força soma os bônus tecnológicos. Evento `army_recruited`.
+- **Condições de vitória** (RF-026): avaliadas ao fim de cada tick, em ordem determinística — **dominação** (restou uma civ), **científica** (catálogo completo), **prosperidade** (reservas ≥ 400) e **limite de turnos** (tick 80, vence a maior pontuação). `world.victory` é definitivo (partida encerrada é imutável no motor), o `GameLoop` para sozinho, e a UI mostra **banner de vitória** + evento 🏆 na timeline. Saves antigos migram com `victory: null`.
+- **+6 testes** (efeito de tecnologia isolado, recruit com/sem requisitos, vitória científica/dominação/prosperidade/limite de turnos, imutabilidade pós-vitória): **96 no total**.
+- **Verificado em partida real**: com `RUNNER=mock` em play contínuo, Roma venceu por prosperidade no tick 38 — o loop parou sozinho e o banner apareceu (screenshot em `docs/screenshots/victory-dark.png`).
 
 ## Pré-requisitos
 

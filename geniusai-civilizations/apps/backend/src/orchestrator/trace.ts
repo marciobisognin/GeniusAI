@@ -119,6 +119,15 @@ const WorldSchema = z
     diplomacy: z.record(z.string(), z.enum(["peace", "war", "alliance", "trade"])),
     // Saves anteriores à Fase 8 não têm propostas pendentes — migra para [].
     pendingProposals: z.array(ProposalSchema).default([]),
+    // Saves anteriores à Fase 9 não têm resultado final — migra para null.
+    victory: z
+      .object({
+        civ: z.enum([...CIV_IDS] as [CivId, ...CivId[]]),
+        kind: z.enum(["domination", "scientific", "prosperity", "turn_limit"]),
+        tick: z.number().int().nonnegative(),
+      })
+      .nullable()
+      .default(null),
     events: z.array(z.object({ type: z.string() }).passthrough()),
   })
   .passthrough();

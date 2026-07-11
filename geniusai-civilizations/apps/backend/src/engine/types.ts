@@ -67,6 +67,15 @@ export interface Proposal {
   request?: Partial<Resources>;
 }
 
+export type VictoryKind = "domination" | "scientific" | "prosperity" | "turn_limit";
+
+/** Resultado final da partida — uma vez definido, nunca é sobrescrito. */
+export interface Victory {
+  civ: CivId;
+  kind: VictoryKind;
+  tick: number;
+}
+
 export type GameEvent =
   | { type: "tick_started"; tick: number }
   | { type: "action_rejected"; civ: CivId; tool: string; reason: string }
@@ -86,7 +95,9 @@ export type GameEvent =
   | { type: "proposal_expired"; from: CivId; to: CivId; kind: Proposal["kind"]; proposalId: string }
   | { type: "city_grew"; civ: CivId; cityId: string; population: number }
   | { type: "strategy_updated"; civ: CivId }
-  | { type: "civ_eliminated"; civ: CivId };
+  | { type: "civ_eliminated"; civ: CivId }
+  | { type: "army_recruited"; civ: CivId; cityId: string; armyId: string; strength: number }
+  | { type: "victory"; civ: CivId; kind: VictoryKind; tick: number };
 
 export interface World {
   tick: number;
@@ -102,6 +113,8 @@ export interface World {
   diplomacy: Record<string, Stance>;
   /** Propostas bilaterais aguardando resposta do destinatário. */
   pendingProposals: Proposal[];
+  /** Resultado final (null enquanto a partida está em curso). */
+  victory: Victory | null;
   /** Eventos emitidos no último tick. */
   events: GameEvent[];
 }
@@ -112,6 +125,7 @@ export type Action =
   | { tool: "research"; args: { technology: string } }
   | { tool: "move_army"; args: { armyId: string; x: number; y: number } }
   | { tool: "attack"; args: { armyId: string; x: number; y: number } }
+  | { tool: "recruit"; args: { cityId: string } }
   | { tool: "set_diplomacy"; args: { civ: CivId; stance: Stance } }
   | { tool: "propose_trade"; args: { civ: CivId; offer: Partial<Resources>; request: Partial<Resources> } }
   | { tool: "propose_alliance"; args: { civ: CivId } }

@@ -8,6 +8,7 @@ export const ACTION_TOOLS = [
   "research",
   "move_army",
   "attack",
+  "recruit",
   "set_diplomacy",
   "propose_trade",
   "propose_alliance",
@@ -37,6 +38,7 @@ export const ActionSchema = z.discriminatedUnion("tool", [
   z.object({ tool: z.literal("research"), args: z.object({ technology: z.string() }) }),
   z.object({ tool: z.literal("move_army"), args: z.object({ armyId: z.string(), x: Coord, y: Coord }) }),
   z.object({ tool: z.literal("attack"), args: z.object({ armyId: z.string(), x: Coord, y: Coord }) }),
+  z.object({ tool: z.literal("recruit"), args: z.object({ cityId: z.string().min(1).max(80) }) }),
   z.object({ tool: z.literal("set_diplomacy"), args: z.object({ civ: CivIdSchema, stance: StanceSchema }) }),
   z.object({
     tool: z.literal("propose_trade"),

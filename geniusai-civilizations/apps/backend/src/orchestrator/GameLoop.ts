@@ -100,7 +100,7 @@ export class GameLoop {
   }
 
   isOver(): boolean {
-    return this.aliveCivs().length <= 1;
+    return this.world.victory !== null || this.aliveCivs().length <= 1;
   }
 
   /** Carrega memórias persistidas para dentro do mundo (partida nova). */
@@ -130,6 +130,9 @@ export class GameLoop {
   }
 
   private async doStep(): Promise<World> {
+    // Partida encerrada: não há mais turnos a decidir (o motor também recusa).
+    if (this.world.victory) return this.world;
+
     const nextTick = this.world.tick + 1;
     const decisions: CivDecision[] = [];
     const results: TurnResult[] = [];

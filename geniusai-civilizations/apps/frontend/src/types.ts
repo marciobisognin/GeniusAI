@@ -71,6 +71,21 @@ export interface Proposal {
   request?: Partial<Resources>;
 }
 
+export type VictoryKind = "domination" | "scientific" | "prosperity" | "turn_limit";
+
+export interface Victory {
+  civ: CivId;
+  kind: VictoryKind;
+  tick: number;
+}
+
+export const VICTORY_LABEL: Record<VictoryKind, string> = {
+  domination: "dominação",
+  scientific: "vitória científica",
+  prosperity: "prosperidade",
+  turn_limit: "maior pontuação no limite de turnos",
+};
+
 export interface World {
   tick: number;
   seed: number;
@@ -80,6 +95,7 @@ export interface World {
   civilizations: Record<CivId, Civilization>;
   diplomacy: Record<string, Stance>;
   pendingProposals?: Proposal[];
+  victory?: Victory | null;
   events: GameEvent[];
 }
 
@@ -175,6 +191,10 @@ export function describeEvent(e: GameEvent): string {
       return `${civLabel(e.civ)} atualizou sua estratégia`;
     case "civ_eliminated":
       return `${civLabel(e.civ)} foi eliminada!`;
+    case "army_recruited":
+      return `${civLabel(e.civ)} recrutou um exército (força ${e.strength})`;
+    case "victory":
+      return `🏆 ${civLabel(e.civ)} venceu a partida por ${VICTORY_LABEL[e.kind as VictoryKind] ?? e.kind} (tick ${e.tick})`;
     case "action_rejected":
       return `${civLabel(e.civ)}: ação "${e.tool}" rejeitada (${e.reason})`;
     case "narration":
