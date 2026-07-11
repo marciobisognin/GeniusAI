@@ -10,11 +10,12 @@ import { EraTimeline } from "./components/EraTimeline";
 import { EventTimeline } from "./components/EventTimeline";
 import { EvolutionBoard } from "./components/EvolutionBoard";
 import { MuseumMode } from "./components/MuseumMode";
+import { ProposalsPanel } from "./components/ProposalsPanel";
 import { SavesPanel } from "./components/SavesPanel";
 import { TechTreePanel } from "./components/TechTreePanel";
 import { WorldMap } from "./components/WorldMap";
 import { useGameSocket } from "./useGameSocket";
-import type { CivId } from "./types";
+import { CIV_COLOR, CIV_LABEL, VICTORY_LABEL, type CivId } from "./types";
 
 type ViewMode = "evolution" | "world" | "chronicle";
 type Theme = "light" | "dark";
@@ -34,7 +35,7 @@ function initialTheme(): Theme {
 }
 
 export function App() {
-  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame } = useGameSocket();
+  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask } = useGameSocket();
   const { world, loopState, civs, connected, reconnecting, runner, healthy } = state;
   const [selected, setSelected] = useState<CivId>("rome");
   const [view, setView] = useState<ViewMode>("evolution");
@@ -107,6 +108,23 @@ export function App() {
         onSpeedChange={setSpeed}
       />
 
+      {world?.victory && (
+        <div
+          className="victory-banner view-enter"
+          style={{ "--civ": CIV_COLOR[world.victory.civ] } as React.CSSProperties}
+          role="status"
+        >
+          <span className="victory-trophy">🏆</span>
+          <div>
+            <strong>{CIV_LABEL[world.victory.civ]} venceu a partida!</strong>
+            <p>
+              Vitória por {VICTORY_LABEL[world.victory.kind]} no tick {world.victory.tick}. A simulação foi
+              encerrada — inicie uma nova partida ou explore a crônica final.
+            </p>
+          </div>
+        </div>
+      )}
+
       {view === "evolution" && (
         <div className="factor-layout view-enter">
           <CivilizationRail world={world} civs={civs} selected={selected} onSelect={setSelected} />
@@ -123,6 +141,7 @@ export function App() {
           </div>
           <div className="world-column">
             <DiplomacyGraph world={world} selected={selected} onSelect={setSelected} />
+            <ProposalsPanel world={world} onSelect={setSelected} />
             <TechTreePanel world={world} selected={selected} />
           </div>
         </div>
@@ -133,7 +152,13 @@ export function App() {
           <EraTimeline world={world} />
           <div className="split">
             <ChroniclePanel events={state.timeline} />
-            <AskCivilizationPanel world={world} selected={selected} events={state.timeline} />
+            <AskCivilizationPanel
+              world={world}
+              selected={selected}
+              events={state.timeline}
+              answer={state.answers[selected]}
+              onAsk={ask}
+            />
           </div>
           <MuseumMode world={world} events={state.timeline} selected={selected} />
         </div>

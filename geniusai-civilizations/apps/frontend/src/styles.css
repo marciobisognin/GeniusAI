@@ -234,6 +234,23 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .loop-state.paused { color: var(--warn); }
 .loop-state.stopped { color: var(--bad); }
 
+/* ---------- Banner de vitória ---------- */
+.victory-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  border: 1px solid color-mix(in srgb, var(--civ) 45%, transparent);
+  border-left: 8px solid var(--civ);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--civ) 16%, var(--panel-strong)), var(--panel));
+  box-shadow: var(--shadow), 0 0 40px color-mix(in srgb, var(--civ) 22%, transparent);
+}
+.victory-trophy { font-size: 1.8rem; }
+.victory-banner strong { font-family: var(--font-display); font-size: 1.05rem; }
+.victory-banner p { margin: 3px 0 0; color: var(--muted); font-size: 0.78rem; }
+
 /* ---------- Vista Evolução ---------- */
 .factor-layout {
   display: grid;
@@ -488,6 +505,32 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .diplo-legend .trade { color: var(--warn); }
 .diplo-legend .war { color: var(--bad); }
 
+.proposal-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.proposal-item {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  padding: 9px 10px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--overlay);
+  font-size: 0.74rem;
+}
+.proposal-civ {
+  appearance: none; cursor: pointer;
+  border: 0; border-left: 4px solid var(--civ);
+  border-radius: 8px;
+  padding: 3px 8px;
+  font: inherit; font-weight: 800;
+  color: var(--ink);
+  background: var(--overlay-strong);
+}
+.proposal-arrow { color: var(--muted); }
+.proposal-body { flex: 1; min-width: 140px; color: var(--muted); }
+.proposal-body b { color: var(--ink); }
+.proposal-expiry { color: var(--faint); font-size: 0.66rem; white-space: nowrap; }
+
 .tech-branches { display: grid; gap: 8px; }
 .tech-branch {
   display: grid;
@@ -558,6 +601,8 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
   background: var(--accent-soft);
   cursor: pointer;
 }
+.ask-hint, .ask-error { margin: 0 0 8px; font-size: 0.74rem; }
+.answer-source { margin: 8px 0 0; color: var(--muted); font-size: 0.7rem; text-align: right; }
 .ask-card blockquote {
   margin: 0;
   padding: 12px 14px;

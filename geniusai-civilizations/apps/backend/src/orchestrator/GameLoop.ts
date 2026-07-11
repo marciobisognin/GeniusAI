@@ -79,7 +79,20 @@ export class GameLoop {
   }
 
   setSpeed(ms: number): void {
-    this.speedMs = Math.max(0, ms);
+    if (!Number.isFinite(ms)) return;
+    this.speedMs = Math.min(600_000, Math.max(0, ms));
+  }
+
+  /** Há um tick em execução neste momento? */
+  isBusy(): boolean {
+    return this.inFlight !== null;
+  }
+
+  /** Resolve quando o tick em andamento (se houver) terminar. */
+  async whenIdle(): Promise<void> {
+    while (this.inFlight) {
+      await this.inFlight.catch(() => {});
+    }
   }
 
   aliveCivs(): CivId[] {
@@ -87,16 +100,39 @@ export class GameLoop {
   }
 
   isOver(): boolean {
-    return this.aliveCivs().length <= 1;
+    return this.world.victory !== null || this.aliveCivs().length <= 1;
   }
 
-  /** Carrega memórias persistidas para dentro do mundo (retomar partida). */
+  /** Carrega memórias persistidas para dentro do mundo (partida nova). */
   async hydrate(): Promise<void> {
-    await hydrateMemory(this.world);
+    await hydrateMemory(this.gameId, this.world);
   }
 
-  /** Executa exatamente um tick (todas as civilizações vivas decidem). */
+  private inFlight: Promise<World> | null = null;
+
+  /**
+   * Executa exatamente um tick. Chamadas concorrentes são serializadas —
+   * nunca há dois ticks mutando o mesmo mundo ao mesmo tempo (proteção de
+   * concorrência exigida pelo PRD; o servidor ainda pode rejeitar com
+   * GAME_BUSY antes de chegar aqui, para dar feedback imediato).
+   */
   async step(): Promise<World> {
+    while (this.inFlight) {
+      await this.inFlight.catch(() => {});
+    }
+    const run = this.doStep();
+    this.inFlight = run;
+    try {
+      return await run;
+    } finally {
+      this.inFlight = null;
+    }
+  }
+
+  private async doStep(): Promise<World> {
+    // Partida encerrada: não há mais turnos a decidir (o motor também recusa).
+    if (this.world.victory) return this.world;
+
     const nextTick = this.world.tick + 1;
     const decisions: CivDecision[] = [];
     const results: TurnResult[] = [];
@@ -128,7 +164,7 @@ export class GameLoop {
       : null;
 
     if (this.persist) {
-      await persistMemory(this.world);
+      await persistMemory(this.gameId, this.world);
       await appendTrace(this.gameId, {
         tick: this.world.tick,
         decisions: results.map((r) => ({
@@ -195,6 +231,8 @@ export async function createGameLoop(opts: GameLoopOptions): Promise<GameLoop> {
   const saved = opts.world ? null : await loadWorld(gameId);
 
   const loop = new GameLoop({ ...opts, gameId, world: opts.world ?? saved ?? undefined });
-  await loop.hydrate();
+  // Mundo vindo de save já carrega a memória correta em civilizations[*].memory;
+  // hidratar do disco só faz sentido (e é seguro) para uma partida recém-criada.
+  if (!opts.world && !saved) await loop.hydrate();
   return loop;
 }

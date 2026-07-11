@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 6 concluída (MVP completo + redesign da UI)
+## Estado atual: Fase 9 concluída (tecnologia com efeitos, recrutamento e vitória)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -94,6 +94,35 @@ Isso fecha o roadmap do MVP (§11 do PRD).
 | ![Evolução, tema claro](docs/screenshots/evolution-light.png) | ![Mundo & Diplomacia, tema escuro](docs/screenshots/world-dark.png) | ![Tick 1 com agentes reais](docs/screenshots/evolution-tick1-dark.png) |
 
 **Verificado com um navegador real** (Playwright/Chromium) contra o runner `claude` de verdade: conexão, troca de abas, troca de tema, e um tick completo — os 4 agentes decidiram, o raciocínio de Roma apareceu em streaming no inspector e os eventos viraram toasts, timeline e crônica.
+
+**Fase 7 — Correções estruturais (PRD complementar de correção e agentes):**
+- **`.env` carregado de verdade** (`process.loadEnvFile`, raiz do projeto ou `apps/backend`); configuração inválida (RUNNER/PORT) impede a inicialização com mensagem clara.
+- **Runner `mock`** (`RUNNER=mock`): decisões determinísticas sem LLM — desenvolvimento da UI, testes e smoke tests de ponta a ponta sem custo.
+- **Segurança:** `gameId` restrito a `^[a-zA-Z0-9_-]{1,64}$` com verificação de caminho (anti path traversal em save/trace/memória), comandos WebSocket validados com zod (`INVALID_COMMAND` com código), `maxPayload` de 64 KiB, validação de `Origin` (localhost + `ALLOWED_ORIGINS`), bind padrão em `127.0.0.1` (`HOST`).
+- **Economia blindada:** quantias de comércio precisam ser inteiras, finitas e não-negativas — no schema (zod) e revalidadas no motor (oferta negativa invertia a transferência).
+- **Concorrência:** ticks nunca executam em paralelo — mutex no `GameLoop.step()` + `GAME_BUSY` no servidor para step/new_game/load_game concorrentes.
+- **Persistência segura:** saves com envelope versionado (`schemaVersion`), escrita atômica (tmp + rename) e validação de schema em runtime; formato legado migra de forma transparente; save corrompido → `SAVE_CORRUPTED`, versão futura → `SAVE_VERSION_UNSUPPORTED` (falha visível, nunca silenciosa).
+- **Memória isolada por partida:** `data/memory/<gameId>/<civ>.md` — partidas não se contaminam, e carregar um save não sobrescreve mais a memória salva com uma memória global.
+- **"Pergunte à civilização" real:** novo comando WS `ask {civ, question}` consulta o **agente real** em modo somente leitura (não avança turno, não altera memória); a UI mostra loading, resposta com o runner de origem, e em caso de falha um erro visível + estimativa local claramente rotulada.
+- **+13 testes** (segurança, concorrência, versionamento, ask): **83 no total**.
+
+Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`.
+
+**Fase 8 — Mecânicas bilaterais (comércio e aliança exigem aceite):**
+- **Comércio em duas etapas** (RF-022): `propose_trade` cria uma proposta pendente — **nada é transferido antes do aceite**. `respond_proposal {proposalId, accept}` aceita (revalidando as condições **no momento do aceite**: quem gastou a oferta não paga mais) ou recusa. Propostas não respondidas **expiram em 3 ticks** (`proposal_expired`).
+- **Aliança bilateral** (RF-023): `set_diplomacy(alliance)` unilateral agora é rejeitado; aliança só via `propose_alliance` + aceite. Declarar guerra invalida as propostas pendentes entre o par.
+- **Estado no motor:** `world.pendingProposals` (ids determinísticos, `createdTick`/`expiresTick`) — serializado nos saves (com migração: saves antigos ganham `[]`), visível no snapshot dos agentes (`proposals.incoming/outgoing`) e no prompt.
+- **Novos eventos:** `trade_proposed`, `alliance_proposed`, `proposal_accepted`, `proposal_rejected`, `proposal_expired` — narrados na timeline e na crônica.
+- **UI:** painel **"Negociações em aberto"** na vista Mundo & Diplomacia — quem propôs o quê a quem, termos e tick de expiração, direto do estado do motor.
+- **MockRunner bilateral:** responde propostas recebidas (aceitando) e, com ouro sobrando, propõe comércios modestos — o fluxo inteiro é observável sem nenhum LLM.
+- **+7 testes** (proposta sem transferência, aceite exato, recusa, expiração, resposta por terceiros, revalidação no aceite, aliança bilateral, guerra invalidando propostas): **90 no total**.
+
+**Fase 9 — Tecnologia com efeitos reais, recrutamento e condições de vitória:**
+- **Tecnologias com efeito real** (RF-024): o catálogo agora tem descrição e efeitos aplicados pelo motor — `agriculture` +2 alimento/cidade, `writing` +1 ciência/cidade, `currency` +2 ouro/cidade, `mathematics` +2 ciência/cidade e +2 de força ao recrutar, `bronze_working` habilita recrutamento e +1 de força. Descrição e efeitos vão no snapshot dos agentes.
+- **Recrutamento** (RF-020): ação `recruit {cityId}` — exige `bronze_working` **e** um quartel (`barracks`) na cidade; custa 30 de ouro; a força soma os bônus tecnológicos. Evento `army_recruited`.
+- **Condições de vitória** (RF-026): avaliadas ao fim de cada tick, em ordem determinística — **dominação** (restou uma civ), **científica** (catálogo completo), **prosperidade** (reservas ≥ 400) e **limite de turnos** (tick 80, vence a maior pontuação). `world.victory` é definitivo (partida encerrada é imutável no motor), o `GameLoop` para sozinho, e a UI mostra **banner de vitória** + evento 🏆 na timeline. Saves antigos migram com `victory: null`.
+- **+6 testes** (efeito de tecnologia isolado, recruit com/sem requisitos, vitória científica/dominação/prosperidade/limite de turnos, imutabilidade pós-vitória): **96 no total**.
+- **Verificado em partida real**: com `RUNNER=mock` em play contínuo, Roma venceu por prosperidade no tick 38 — o loop parou sozinho e o banner apareceu (screenshot em `docs/screenshots/victory-dark.png`).
 
 ## Pré-requisitos
 

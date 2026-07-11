@@ -17,14 +17,89 @@ export const STRUCTURES: Record<string, { gold: number; yields?: Partial<Resourc
   barracks: { gold: 40 },
 };
 
-/** Árvore tecnológica mínima. */
-export const TECHS: Record<string, { cost: number; requires: string[] }> = {
-  agriculture: { cost: 20, requires: [] },
-  writing: { cost: 30, requires: ["agriculture"] },
-  bronze_working: { cost: 35, requires: ["agriculture"] },
-  currency: { cost: 40, requires: ["writing"] },
-  mathematics: { cost: 60, requires: ["writing"] },
+/** Efeitos passivos de uma tecnologia, aplicados de verdade pelo motor. */
+export interface TechEffects {
+  /** Rendimento extra POR CIDADE a cada tick. */
+  cityYield?: Partial<Resources>;
+  /** Força extra de exércitos recrutados após esta tecnologia. */
+  armyStrengthBonus?: number;
+  /** Habilita a ação recruit (junto com um quartel na cidade). */
+  unlocksRecruit?: boolean;
+}
+
+export interface TechSpec {
+  cost: number;
+  requires: string[];
+  description: string;
+  effects: TechEffects;
+}
+
+/** Árvore tecnológica mínima — cada tecnologia tem efeito real no motor. */
+export const TECHS: Record<string, TechSpec> = {
+  agriculture: {
+    cost: 20,
+    requires: [],
+    description: "Cultivo organizado: +2 de alimento por cidade a cada tick.",
+    effects: { cityYield: { food: 2 } },
+  },
+  writing: {
+    cost: 30,
+    requires: ["agriculture"],
+    description: "Registros e escribas: +1 de ciência por cidade a cada tick.",
+    effects: { cityYield: { science: 1 } },
+  },
+  bronze_working: {
+    cost: 35,
+    requires: ["agriculture"],
+    description: "Metalurgia do bronze: habilita recrutar exércitos (com quartel) e +1 de força ao recrutar.",
+    effects: { unlocksRecruit: true, armyStrengthBonus: 1 },
+  },
+  currency: {
+    cost: 40,
+    requires: ["writing"],
+    description: "Moeda cunhada: +2 de ouro por cidade a cada tick.",
+    effects: { cityYield: { gold: 2 } },
+  },
+  mathematics: {
+    cost: 60,
+    requires: ["writing"],
+    description: "Geometria e engenharia: +2 de ciência por cidade e +2 de força ao recrutar.",
+    effects: { cityYield: { science: 2 }, armyStrengthBonus: 2 },
+  },
 };
+
+/** Recrutamento (ação recruit): custo e força base. */
+export const RECRUIT_GOLD_COST = 30;
+export const RECRUIT_BASE_STRENGTH = 5;
+
+/** Força de um exército recém-recrutado, somando bônus das tecnologias. */
+export function recruitStrength(techs: string[]): number {
+  return techs.reduce(
+    (s, t) => s + (TECHS[t]?.effects.armyStrengthBonus ?? 0),
+    RECRUIT_BASE_STRENGTH,
+  );
+}
+
+/** A civilização já domina alguma tecnologia que habilita recrutamento? */
+export function canRecruit(techs: string[]): boolean {
+  return techs.some((t) => TECHS[t]?.effects.unlocksRecruit);
+}
+
+// ── Vitória (RF-026) ────────────────────────────────────────────────────────
+
+export const PROSPERITY_THRESHOLD = 400;
+export const TURN_LIMIT = 80;
+
+/** Pontuação usada no desempate do limite de turnos. */
+export function civScore(civ: {
+  cities: { population: number }[];
+  tech: string[];
+  resources: Resources;
+}): number {
+  const population = civ.cities.reduce((s, c) => s + c.population, 0);
+  const resources = civ.resources.food + civ.resources.gold + civ.resources.science;
+  return civ.cities.length * 20 + civ.tech.length * 15 + population * 5 + resources;
+}
 
 export const TERRAIN_YIELDS: Record<Terrain, Partial<Resources>> = {
   plains: { food: 1 },
@@ -46,6 +121,9 @@ export const CITY_BASE_YIELD: Resources = { food: 3, gold: 2, science: 1 };
 export function growthCost(population: number): number {
   return population * 4;
 }
+
+/** Nº de ticks em que uma proposta bilateral pode ser respondida antes de expirar. */
+export const PROPOSAL_TTL_TICKS = 3;
 
 const RES_KEYS = ["food", "gold", "science"] as const;
 

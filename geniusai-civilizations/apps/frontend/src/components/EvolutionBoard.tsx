@@ -29,8 +29,11 @@ function actionTitle(tool: string): string {
     research: "Ideia em pesquisa",
     move_army: "Exército em marcha",
     attack: "Conflito aberto",
+    recruit: "Exército recrutado",
     set_diplomacy: "Diplomacia alterada",
-    trade: "Rota comercial",
+    propose_trade: "Proposta comercial",
+    propose_alliance: "Proposta de aliança",
+    respond_proposal: "Resposta diplomática",
     set_strategy: "Doutrina atualizada",
   };
   return labels[tool] ?? "Ação civilizacional";

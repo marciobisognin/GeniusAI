@@ -59,6 +59,33 @@ export interface Action {
 
 export type GameEvent = { type: string } & Record<string, unknown>;
 
+/** Proposta bilateral pendente (comércio/aliança) aguardando resposta. */
+export interface Proposal {
+  id: string;
+  kind: "trade" | "alliance";
+  from: CivId;
+  to: CivId;
+  createdTick: number;
+  expiresTick: number;
+  offer?: Partial<Resources>;
+  request?: Partial<Resources>;
+}
+
+export type VictoryKind = "domination" | "scientific" | "prosperity" | "turn_limit";
+
+export interface Victory {
+  civ: CivId;
+  kind: VictoryKind;
+  tick: number;
+}
+
+export const VICTORY_LABEL: Record<VictoryKind, string> = {
+  domination: "dominação",
+  scientific: "vitória científica",
+  prosperity: "prosperidade",
+  turn_limit: "maior pontuação no limite de turnos",
+};
+
 export interface World {
   tick: number;
   seed: number;
@@ -67,6 +94,8 @@ export interface World {
   map: Tile[][];
   civilizations: Record<CivId, Civilization>;
   diplomacy: Record<string, Stance>;
+  pendingProposals?: Proposal[];
+  victory?: Victory | null;
   events: GameEvent[];
 }
 
@@ -105,7 +134,8 @@ export type ServerMessage =
     }
   | { type: "tick_end"; tick: number; events: GameEvent[]; world: World }
   | { type: "saves"; saves: SaveInfo[] }
-  | { type: "error"; message: string };
+  | { type: "answer"; civ: CivId; question: string; text: string; runner: string }
+  | { type: "error"; code?: string; message: string };
 
 export const CIV_LABEL: Record<CivId, string> = {
   rome: "Roma",
@@ -145,12 +175,26 @@ export function describeEvent(e: GameEvent): string {
       return `${civLabel(e.a)} e ${civLabel(e.b)}: relação agora é "${e.stance}"`;
     case "trade_executed":
       return `${civLabel(e.from)} comerciou com ${civLabel(e.to)}`;
+    case "trade_proposed":
+      return `${civLabel(e.civ)} propôs comércio a ${civLabel(e.to)}`;
+    case "alliance_proposed":
+      return `${civLabel(e.civ)} propôs aliança a ${civLabel(e.to)}`;
+    case "proposal_accepted":
+      return `${civLabel(e.civ)} aceitou a proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)}`;
+    case "proposal_rejected":
+      return `${civLabel(e.civ)} recusou a proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)}`;
+    case "proposal_expired":
+      return `Proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)} para ${civLabel(e.to)} expirou`;
     case "city_grew":
       return `Uma cidade de ${civLabel(e.civ)} cresceu para população ${e.population}`;
     case "strategy_updated":
       return `${civLabel(e.civ)} atualizou sua estratégia`;
     case "civ_eliminated":
       return `${civLabel(e.civ)} foi eliminada!`;
+    case "army_recruited":
+      return `${civLabel(e.civ)} recrutou um exército (força ${e.strength})`;
+    case "victory":
+      return `🏆 ${civLabel(e.civ)} venceu a partida por ${VICTORY_LABEL[e.kind as VictoryKind] ?? e.kind} (tick ${e.tick})`;
     case "action_rejected":
       return `${civLabel(e.civ)}: ação "${e.tool}" rejeitada (${e.reason})`;
     case "narration":

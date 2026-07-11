@@ -100,3 +100,53 @@ test("listSaves: vazio sem partidas salvas, lista após salvar", async () => {
   assert.deepEqual(ids, ["g3", "g4"]);
   assert.ok(saves.every((s) => typeof s.tick === "number" && typeof s.seed === "number"));
 });
+
+test("saveWorld: grava envelope versionado e loadWorld valida o snapshot", async () => {
+  const dir = tempDataDir();
+  const w = createWorld(7);
+  await saveWorld("g-v1", w);
+
+  const raw = JSON.parse(
+    await (await import("node:fs/promises")).readFile(path.join(dir, "saves", "g-v1.json"), "utf8"),
+  ) as { schemaVersion: number; savedAt: string; world: unknown };
+  assert.equal(raw.schemaVersion, 1);
+  assert.ok(raw.savedAt);
+
+  const loaded = await loadWorld("g-v1");
+  assert.deepEqual(loaded, w);
+});
+
+test("loadWorld: formato legado (World na raiz) ainda carrega (migração)", async () => {
+  const dir = tempDataDir();
+  const w = createWorld(9);
+  const fs = await import("node:fs/promises");
+  await fs.mkdir(path.join(dir, "saves"), { recursive: true });
+  await fs.writeFile(path.join(dir, "saves", "legado.json"), JSON.stringify(w), "utf8");
+
+  const loaded = await loadWorld("legado");
+  assert.equal(loaded?.tick, w.tick);
+  assert.equal(loaded?.seed, 9);
+});
+
+test("loadWorld: save corrompido e versão futura lançam erros explícitos", async () => {
+  const dir = tempDataDir();
+  const fs = await import("node:fs/promises");
+  await fs.mkdir(path.join(dir, "saves"), { recursive: true });
+  await fs.writeFile(path.join(dir, "saves", "corrompido.json"), "{ nem é json", "utf8");
+  await fs.writeFile(
+    path.join(dir, "saves", "futuro.json"),
+    JSON.stringify({ schemaVersion: 999, savedAt: "2099-01-01", world: {} }),
+    "utf8",
+  );
+
+  await assert.rejects(() => loadWorld("corrompido"), /JSON inválido/);
+  await assert.rejects(() => loadWorld("futuro"), /versão de save não suportada/);
+});
+
+test("segurança: gameId com path traversal é rejeitado em save/load/trace", async () => {
+  tempDataDir();
+  const w = createWorld(1);
+  await assert.rejects(() => saveWorld("../fora", w), /gameId inválido/);
+  await assert.rejects(() => loadWorld("../../etc/passwd"), /gameId inválido/);
+  await assert.rejects(() => appendTrace("a/b", { tick: 1, decisions: [], events: [] }), /gameId inválido/);
+});

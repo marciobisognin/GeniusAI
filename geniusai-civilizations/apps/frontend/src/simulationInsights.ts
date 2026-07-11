@@ -218,7 +218,20 @@ export function buildChronicle(events: GameEvent[]): ChronicleChapter[] {
   ];
   for (const e of relevant) {
     if (["structure_built", "tile_claimed", "city_grew"].includes(e.type)) chapters[1].events.push(e);
-    else if (["diplomacy_changed", "trade_executed", "battle", "city_captured", "civ_eliminated"].includes(e.type)) chapters[2].events.push(e);
+    else if (
+      [
+        "diplomacy_changed",
+        "trade_executed",
+        "trade_proposed",
+        "alliance_proposed",
+        "proposal_accepted",
+        "proposal_rejected",
+        "proposal_expired",
+        "battle",
+        "city_captured",
+        "civ_eliminated",
+      ].includes(e.type)
+    ) chapters[2].events.push(e);
     else if (["research_started", "tech_researched", "narration", "strategy_updated"].includes(e.type)) chapters[3].events.push(e);
     else chapters[0].events.push(e);
   }

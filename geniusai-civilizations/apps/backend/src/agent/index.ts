@@ -1,6 +1,7 @@
 import type { Config } from "../config";
 import type { AgentRunner } from "./AgentRunner";
 import { CliAgentRunner } from "./CliAgentRunner";
+import { MockRunner } from "./MockRunner";
 import { OllamaRunner } from "./OllamaRunner";
 
 export type { AgentRunner, AgentDecision, AgentAction, DecideInput } from "./AgentRunner";
@@ -25,6 +26,9 @@ export function createRunner(cfg: Config): AgentRunner {
   const cmd = cfg.agentCmd;
 
   switch (cfg.runner) {
+    case "mock":
+      return new MockRunner();
+
     case "ollama":
       return new OllamaRunner(cfg.ollamaHost, cfg.model);
 

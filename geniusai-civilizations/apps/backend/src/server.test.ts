@@ -24,8 +24,10 @@ function baseConfig(overrides: Partial<Config> = {}): Config {
     runner: "claude",
     model: "unused",
     ollamaHost: "unused",
+    host: "127.0.0.1",
     port: 0, // porta livre escolhida pelo SO — testes não colidem entre si
     narrator: false,
+    allowedOrigins: [],
     ...overrides,
   };
 }
@@ -170,5 +172,107 @@ test("reconexão: novo cliente recebe a timeline e o raciocínio já registrados
   assert.ok((history.civs as Record<string, unknown>).rome);
 
   second.ws.close();
+  httpServer.close();
+});
+
+test("segurança: comando malformado devolve INVALID_COMMAND (não é ignorado)", async () => {
+  tempDataDir();
+  const { httpServer, port } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "set_speed", speedMs: Infinity });
+  const err1 = await client.waitFor((m) => m.type === "error");
+  assert.equal(err1.code, "INVALID_COMMAND");
+
+  client.ws.send("isto não é json");
+  await client.waitFor((m) => m.type === "error" && m !== err1);
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("segurança: load_game com path traversal é rejeitado pelo schema", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+  const before = getLoop().gameId;
+
+  client.send({ type: "command", action: "load_game", gameId: "../../etc/passwd" });
+  const error = await client.waitFor((m) => m.type === "error");
+  assert.equal(error.code, "INVALID_COMMAND");
+  assert.equal(getLoop().gameId, before, "o loop ativo não pode mudar");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("concorrência: segundo step em paralelo recebe GAME_BUSY e o tick avança 1", async () => {
+  tempDataDir();
+  // Runner lento o bastante para o segundo step chegar durante o primeiro.
+  const slowRunner: AgentRunner = {
+    name: "fake",
+    healthy: async () => true,
+    decide: async () => {
+      await new Promise((r) => setTimeout(r, 150));
+      return { reasoning: "devagar", actions: [] };
+    },
+  };
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), slowRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "step" });
+  await new Promise((r) => setTimeout(r, 50)); // primeiro step já em andamento
+  client.send({ type: "command", action: "step" });
+
+  const busy = await client.waitFor((m) => m.type === "error");
+  assert.equal(busy.code, "GAME_BUSY");
+
+  await client.waitFor((m) => m.type === "tick_end", 10_000);
+  await new Promise((r) => setTimeout(r, 200));
+  assert.equal(getLoop().world.tick, 1, "apenas um tick deveria ter executado");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("ask: consulta o agente real em modo somente leitura (não avança o tick)", async () => {
+  tempDataDir();
+  const askRunner = fixedRunner({ reasoning: "Sou Roma; seguimos firmes rumo à expansão.", actions: [] });
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), askRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "ask", civ: "rome", question: "Qual é o seu plano?" });
+  const answer = await client.waitFor((m) => m.type === "answer");
+  assert.equal(answer.civ, "rome");
+  assert.match(answer.text as string, /Roma/);
+  assert.equal(answer.runner, "fake");
+  assert.equal(getLoop().world.tick, 0, "ask não pode avançar a simulação");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("ask: falha do runner vira erro ASK_FAILED visível", async () => {
+  tempDataDir();
+  const failingRunner: AgentRunner = {
+    name: "fake",
+    healthy: async () => true,
+    decide: async () => {
+      throw new Error("runner indisponível");
+    },
+  };
+  const { httpServer, port } = await createServer(baseConfig(), failingRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "ask", civ: "mali", question: "Como está o comércio?" });
+  const error = await client.waitFor((m) => m.type === "error");
+  assert.equal(error.code, "ASK_FAILED");
+
+  client.ws.close();
   httpServer.close();
 });

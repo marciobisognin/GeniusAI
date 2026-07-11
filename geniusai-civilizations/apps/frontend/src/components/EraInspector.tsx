@@ -27,8 +27,11 @@ function actionName(tool: string): string {
     research: "Pesquisa",
     move_army: "Movimento",
     attack: "Ataque",
+    recruit: "Recrutamento",
     set_diplomacy: "Diplomacia",
-    trade: "Comércio",
+    propose_trade: "Propor comércio",
+    propose_alliance: "Propor aliança",
+    respond_proposal: "Responder proposta",
     set_strategy: "Estratégia",
   };
   return labels[tool] ?? tool;

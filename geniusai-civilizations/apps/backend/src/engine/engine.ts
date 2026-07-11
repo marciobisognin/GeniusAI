@@ -1,17 +1,24 @@
 import { Rng } from "./rng";
 import {
   CITY_BASE_YIELD,
+  PROPOSAL_TTL_TICKS,
+  PROSPERITY_THRESHOLD,
+  RECRUIT_GOLD_COST,
   RESOURCE_YIELDS,
   STRUCTURES,
   TECHS,
   TERRAIN_YIELDS,
+  TURN_LIMIT,
   addInto,
   canAfford,
+  canRecruit,
+  civScore,
   getStance,
   growthCost,
   inBounds,
   isAdjacent,
   neighbors,
+  recruitStrength,
   setStance,
   subInto,
 } from "./rules";
@@ -22,7 +29,9 @@ import type {
   CivId,
   Civilization,
   GameEvent,
+  Proposal,
   Resources,
+  Victory,
   World,
 } from "./types";
 
@@ -34,9 +43,21 @@ import type {
  * A não-determinância vem apenas das decisões dos agentes (fora daqui).
  */
 export function tick(world: World, decisions: CivDecision[]): World {
+  // Partida encerrada é imutável: o mundo final é devolvido como está.
+  if (world.victory) return world;
+
   const w: World = structuredClone(world);
   const rng = new Rng(w.rngState);
   const events: GameEvent[] = [{ type: "tick_started", tick: w.tick + 1 }];
+
+  // Propostas cujo prazo venceu expiram ANTES das ações deste tick —
+  // uma resposta baseada em um snapshot antigo falha de forma explícita.
+  const nextTick = w.tick + 1;
+  w.pendingProposals = w.pendingProposals.filter((p) => {
+    if (nextTick <= p.expiresTick) return true;
+    events.push({ type: "proposal_expired", from: p.from, to: p.to, kind: p.kind, proposalId: p.id });
+    return false;
+  });
 
   // Ordem determinística: civs por id, ações na ordem informada.
   const ordered = [...decisions].sort((a, b) => a.civ.localeCompare(b.civ));
@@ -65,8 +86,48 @@ export function tick(world: World, decisions: CivDecision[]): World {
 
   w.tick += 1;
   w.rngState = rng.state;
+  checkVictory(w, events);
   w.events = events;
   return w;
+}
+
+/**
+ * Condições de vitória (RF-026), avaliadas ao fim do tick em ordem
+ * determinística de prioridade: dominação > científica > prosperidade >
+ * limite de turnos. Uma vez definida, a vitória nunca é sobrescrita.
+ */
+function checkVictory(w: World, events: GameEvent[]): void {
+  if (w.victory) return;
+
+  const alive = CIV_IDS.filter((id) => w.civilizations[id].alive);
+  const declare = (civ: CivId, kind: Victory["kind"]): void => {
+    w.victory = { civ, kind, tick: w.tick };
+    events.push({ type: "victory", civ, kind, tick: w.tick });
+  };
+
+  // Dominação: restou exatamente uma civilização.
+  if (alive.length === 1) return declare(alive[0], "domination");
+
+  const allTechs = Object.keys(TECHS);
+  for (const id of alive) {
+    const civ = w.civilizations[id];
+    // Científica: dominou o catálogo inteiro.
+    if (allTechs.every((t) => civ.tech.includes(t))) return declare(id, "scientific");
+  }
+  for (const id of alive) {
+    const r = w.civilizations[id].resources;
+    // Prosperidade: reservas acumuladas acima do limiar.
+    if (r.food + r.gold + r.science >= PROSPERITY_THRESHOLD) return declare(id, "prosperity");
+  }
+
+  // Limite de turnos: vence a maior pontuação (desempate pela ordem de CIV_IDS).
+  if (w.tick >= TURN_LIMIT && alive.length > 0) {
+    let best = alive[0];
+    for (const id of alive) {
+      if (civScore(w.civilizations[id]) > civScore(w.civilizations[best])) best = id;
+    }
+    declare(best, "turn_limit");
+  }
 }
 
 function applyAction(
@@ -192,32 +253,147 @@ function applyAction(
       return;
     }
 
+    case "recruit": {
+      const { cityId } = action.args;
+      const city = civ.cities.find((c) => c.id === cityId);
+      if (!city) return reject("cidade não encontrada");
+      if (!canRecruit(civ.tech)) return reject("recrutamento exige a tecnologia bronze_working");
+      if (!city.buildings.includes("barracks")) return reject("recrutamento exige um quartel nesta cidade");
+      if (civ.resources.gold < RECRUIT_GOLD_COST) return reject("ouro insuficiente para recrutar");
+
+      civ.resources.gold -= RECRUIT_GOLD_COST;
+      const strength = recruitStrength(civ.tech);
+      const army = {
+        id: `${civ.id}-army-t${w.tick + 1}-${civ.armies.length + 1}`,
+        x: city.x,
+        y: city.y,
+        strength,
+      };
+      civ.armies.push(army);
+      events.push({ type: "army_recruited", civ: civ.id, cityId, armyId: army.id, strength });
+      return;
+    }
+
     case "set_diplomacy": {
       const { civ: other, stance } = action.args;
       if (other === civ.id) return reject("não é possível mudar diplomacia consigo");
       if (!(CIV_IDS as readonly string[]).includes(other)) return reject("civilização inválida");
+      if (stance === "alliance") {
+        return reject("aliança é bilateral: use propose_alliance e aguarde o aceite");
+      }
       setStance(w, civ.id, other, stance);
+      // Declarar guerra invalida as propostas pendentes entre o par.
+      if (stance === "war") {
+        w.pendingProposals = w.pendingProposals.filter((p) => {
+          const between = (p.from === civ.id && p.to === other) || (p.from === other && p.to === civ.id);
+          if (!between) return true;
+          events.push({ type: "proposal_expired", from: p.from, to: p.to, kind: p.kind, proposalId: p.id });
+          return false;
+        });
+      }
       events.push({ type: "diplomacy_changed", a: civ.id, b: other, stance });
       return;
     }
 
-    case "trade": {
+    case "propose_trade": {
       const { civ: other, offer, request } = action.args;
       if (other === civ.id) return reject("não é possível comerciar consigo");
+      // Defesa em profundidade: quantias negativas inverteriam a transferência
+      // e não-finitas corromperiam a economia — revalida mesmo após o schema.
+      const amounts = [...Object.values(offer), ...Object.values(request)];
+      if (amounts.some((v) => typeof v !== "number" || !Number.isFinite(v) || v < 0)) {
+        return reject("quantias de comércio devem ser números finitos e não-negativos");
+      }
       const partner = w.civilizations[other];
       if (!partner || !partner.alive) return reject("parceiro indisponível");
-      const stance = getStance(w, civ.id, other);
-      if (stance !== "trade" && stance !== "alliance") {
-        return reject("é preciso relação de comércio ou aliança");
-      }
+      if (getStance(w, civ.id, other) === "war") return reject("não se comercia em guerra");
       if (!canAfford(civ.resources, offer)) return reject("você não pode pagar a oferta");
-      if (!canAfford(partner.resources, request)) return reject("parceiro não pode pagar o pedido");
+      if (w.pendingProposals.some((p) => p.kind === "trade" && p.from === civ.id && p.to === other)) {
+        return reject("já existe uma proposta de comércio sua pendente para essa civilização");
+      }
 
-      subInto(civ.resources, offer);
-      addInto(partner.resources, offer);
-      subInto(partner.resources, request);
-      addInto(civ.resources, request);
-      events.push({ type: "trade_executed", from: civ.id, to: other });
+      const proposal = createProposal(w, "trade", civ.id, other, { offer, request });
+      events.push({
+        type: "trade_proposed",
+        civ: civ.id,
+        to: other,
+        proposalId: proposal.id,
+        offer,
+        request,
+      });
+      return;
+    }
+
+    case "propose_alliance": {
+      const other = action.args.civ;
+      if (other === civ.id) return reject("não é possível aliar-se consigo");
+      if (!(CIV_IDS as readonly string[]).includes(other)) return reject("civilização inválida");
+      const partner = w.civilizations[other];
+      if (!partner || !partner.alive) return reject("parceiro indisponível");
+      if (getStance(w, civ.id, other) === "alliance") return reject("vocês já são aliados");
+      if (getStance(w, civ.id, other) === "war") return reject("faça a paz antes de propor aliança");
+      if (w.pendingProposals.some((p) => p.kind === "alliance" && p.from === civ.id && p.to === other)) {
+        return reject("já existe uma proposta de aliança sua pendente para essa civilização");
+      }
+
+      const proposal = createProposal(w, "alliance", civ.id, other);
+      events.push({ type: "alliance_proposed", civ: civ.id, to: other, proposalId: proposal.id });
+      return;
+    }
+
+    case "respond_proposal": {
+      const { proposalId, accept } = action.args;
+      const proposal = w.pendingProposals.find((p) => p.id === proposalId);
+      if (!proposal) return reject(`proposta não encontrada ou expirada: ${proposalId}`);
+      if (proposal.to !== civ.id) return reject("essa proposta não é endereçada a você");
+
+      // A resposta consome a proposta, aceita ou não.
+      w.pendingProposals = w.pendingProposals.filter((p) => p.id !== proposalId);
+
+      if (!accept) {
+        events.push({
+          type: "proposal_rejected",
+          civ: civ.id,
+          from: proposal.from,
+          kind: proposal.kind,
+          proposalId,
+        });
+        return;
+      }
+
+      const proposer = w.civilizations[proposal.from];
+      if (!proposer.alive) return reject("o proponente não existe mais");
+
+      if (proposal.kind === "alliance") {
+        if (getStance(w, civ.id, proposal.from) === "war") {
+          return reject("guerra declarada depois da proposta — aliança impossível");
+        }
+        setStance(w, civ.id, proposal.from, "alliance");
+        events.push({ type: "proposal_accepted", civ: civ.id, from: proposal.from, kind: "alliance", proposalId });
+        events.push({ type: "diplomacy_changed", a: proposal.from, b: civ.id, stance: "alliance" });
+        return;
+      }
+
+      // Comércio: as condições são revalidadas NO MOMENTO DO ACEITE — o
+      // mundo pode ter mudado desde a proposta.
+      const offer = proposal.offer ?? {};
+      const request = proposal.request ?? {};
+      if (getStance(w, civ.id, proposal.from) === "war") {
+        return reject("guerra declarada depois da proposta — comércio impossível");
+      }
+      if (!canAfford(proposer.resources, offer)) {
+        return reject("o proponente não pode mais pagar a oferta");
+      }
+      if (!canAfford(civ.resources, request)) {
+        return reject("você não pode pagar o que foi pedido");
+      }
+
+      subInto(proposer.resources, offer);
+      addInto(civ.resources, offer);
+      subInto(civ.resources, request);
+      addInto(proposer.resources, request);
+      events.push({ type: "proposal_accepted", civ: civ.id, from: proposal.from, kind: "trade", proposalId });
+      events.push({ type: "trade_executed", from: proposal.from, to: civ.id });
       return;
     }
 
@@ -227,6 +403,28 @@ function applyAction(
       return;
     }
   }
+}
+
+/** Cria e registra uma proposta com id determinístico e prazo de expiração. */
+function createProposal(
+  w: World,
+  kind: "trade" | "alliance",
+  from: CivId,
+  to: CivId,
+  terms: { offer?: Partial<Resources>; request?: Partial<Resources> } = {},
+): Proposal {
+  const nextTick = w.tick + 1;
+  const proposal: Proposal = {
+    id: `prop-${nextTick}-${kind}-${from}-${to}`,
+    kind,
+    from,
+    to,
+    createdTick: nextTick,
+    expiresTick: nextTick + PROPOSAL_TTL_TICKS,
+    ...terms,
+  };
+  w.pendingProposals.push(proposal);
+  return proposal;
 }
 
 function findDefender(w: World, x: number, y: number, exclude: CivId): Civilization | null {
@@ -259,6 +457,11 @@ function economyStep(w: World, civ: Civilization, events: GameEvent[]): void {
     for (const b of city.buildings) {
       const spec = STRUCTURES[b];
       if (spec?.yields) addInto(income, spec.yields);
+    }
+    // Efeitos reais das tecnologias (RF-024): rendimento extra por cidade.
+    for (const t of civ.tech) {
+      const effects = TECHS[t]?.effects;
+      if (effects?.cityYield) addInto(income, effects.cityYield);
     }
   }
 
