@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 7 concluída (correções estruturais do PRD complementar)
+## Estado atual: Fase 8 concluída (mecânicas bilaterais)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -107,6 +107,15 @@ Isso fecha o roadmap do MVP (§11 do PRD).
 - **+13 testes** (segurança, concorrência, versionamento, ask): **83 no total**.
 
 Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`.
+
+**Fase 8 — Mecânicas bilaterais (comércio e aliança exigem aceite):**
+- **Comércio em duas etapas** (RF-022): `propose_trade` cria uma proposta pendente — **nada é transferido antes do aceite**. `respond_proposal {proposalId, accept}` aceita (revalidando as condições **no momento do aceite**: quem gastou a oferta não paga mais) ou recusa. Propostas não respondidas **expiram em 3 ticks** (`proposal_expired`).
+- **Aliança bilateral** (RF-023): `set_diplomacy(alliance)` unilateral agora é rejeitado; aliança só via `propose_alliance` + aceite. Declarar guerra invalida as propostas pendentes entre o par.
+- **Estado no motor:** `world.pendingProposals` (ids determinísticos, `createdTick`/`expiresTick`) — serializado nos saves (com migração: saves antigos ganham `[]`), visível no snapshot dos agentes (`proposals.incoming/outgoing`) e no prompt.
+- **Novos eventos:** `trade_proposed`, `alliance_proposed`, `proposal_accepted`, `proposal_rejected`, `proposal_expired` — narrados na timeline e na crônica.
+- **UI:** painel **"Negociações em aberto"** na vista Mundo & Diplomacia — quem propôs o quê a quem, termos e tick de expiração, direto do estado do motor.
+- **MockRunner bilateral:** responde propostas recebidas (aceitando) e, com ouro sobrando, propõe comércios modestos — o fluxo inteiro é observável sem nenhum LLM.
+- **+7 testes** (proposta sem transferência, aceite exato, recusa, expiração, resposta por terceiros, revalidação no aceite, aliança bilateral, guerra invalidando propostas): **90 no total**.
 
 ## Pré-requisitos
 

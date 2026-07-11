@@ -171,44 +171,196 @@ test("set_diplomacy: atualiza a relação par-a-par", () => {
   assert.ok(findEvent(next.events, "diplomacy_changed"));
 });
 
-test("trade: transfere recursos exatamente (isolando a economia)", () => {
+// ── Comércio bilateral (proposta → aceite/rejeição, com expiração) ─────────
+
+test("propose_trade: cria proposta pendente e NADA é transferido antes do aceite", () => {
   const base = createWorld(5);
-  // Populações altas → limiar de crescimento inalcançável neste tick, para que
-  // a economia seja idêntica nas duas rodadas e a diferença isole o trade.
-  base.civilizations.rome.cities[0].population = 50;
-  base.civilizations.egypt.cities[0].population = 50;
-  // Controle: só define a relação de comércio.
-  const control = tick(base, [
-    { civ: "rome", actions: [{ tool: "set_diplomacy", args: { civ: "egypt", stance: "trade" } }] },
-  ]);
-  // Teste: mesma relação + um trade. A economia é idêntica nos dois → cancela.
-  const traded = tick(base, [
+  const control = tick(base, []);
+  const proposed = tick(base, [
     {
       civ: "rome",
-      actions: [
-        { tool: "set_diplomacy", args: { civ: "egypt", stance: "trade" } },
-        { tool: "trade", args: { civ: "egypt", offer: { gold: 10 }, request: { food: 5 } } },
-      ],
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 10 }, request: { food: 5 } } }],
     },
   ]);
-  assert.ok(findEvent(traded.events, "trade_executed"));
-  const g = (w: World, id: "rome" | "egypt") => w.civilizations[id].resources;
-  assert.equal(g(traded, "rome").gold, g(control, "rome").gold - 10);
-  assert.equal(g(traded, "rome").food, g(control, "rome").food + 5);
-  assert.equal(g(traded, "egypt").gold, g(control, "egypt").gold + 10);
-  assert.equal(g(traded, "egypt").food, g(control, "egypt").food - 5);
+
+  assert.ok(findEvent(proposed.events, "trade_proposed"));
+  assert.equal(proposed.pendingProposals.length, 1);
+  assert.equal(proposed.pendingProposals[0].from, "rome");
+  assert.equal(proposed.pendingProposals[0].to, "egypt");
+  assert.ok(!findEvent(proposed.events, "trade_executed"));
+  // Economia idêntica ao controle: nenhum recurso mudou de mãos.
+  assert.deepEqual(proposed.civilizations.rome.resources, control.civilizations.rome.resources);
+  assert.deepEqual(proposed.civilizations.egypt.resources, control.civilizations.egypt.resources);
 });
 
-test("trade: sem relação de comércio é rejeitado", () => {
-  const w = createWorld(5);
-  const next = tick(w, [
+test("respond_proposal(accept): transfere exatamente os termos, no momento do aceite", () => {
+  const base = createWorld(5);
+  // Populações altas → limiar de crescimento inalcançável nestes ticks, para
+  // que a economia seja idêntica nas duas rodadas e a diferença isole o trade.
+  for (const id of ["rome", "egypt", "greece", "mali"] as const) {
+    base.civilizations[id].cities[0].population = 50;
+  }
+  const withProposal = tick(base, [
     {
       civ: "rome",
-      actions: [{ tool: "trade", args: { civ: "egypt", offer: { gold: 1 }, request: { food: 1 } } }],
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 10 }, request: { food: 5 } } }],
+    },
+  ]);
+  const proposalId = withProposal.pendingProposals[0].id;
+
+  const control = tick(withProposal, []);
+  const accepted = tick(withProposal, [
+    { civ: "egypt", actions: [{ tool: "respond_proposal", args: { proposalId, accept: true } }] },
+  ]);
+
+  assert.ok(findEvent(accepted.events, "proposal_accepted"));
+  assert.ok(findEvent(accepted.events, "trade_executed"));
+  assert.equal(accepted.pendingProposals.length, 0);
+  const g = (w: World, id: "rome" | "egypt") => w.civilizations[id].resources;
+  assert.equal(g(accepted, "rome").gold, g(control, "rome").gold - 10);
+  assert.equal(g(accepted, "rome").food, g(control, "rome").food + 5);
+  assert.equal(g(accepted, "egypt").gold, g(control, "egypt").gold + 10);
+  assert.equal(g(accepted, "egypt").food, g(control, "egypt").food - 5);
+});
+
+test("respond_proposal(reject): consome a proposta sem transferir nada", () => {
+  const base = createWorld(5);
+  const withProposal = tick(base, [
+    {
+      civ: "rome",
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 10 }, request: { food: 5 } } }],
+    },
+  ]);
+  const proposalId = withProposal.pendingProposals[0].id;
+
+  const control = tick(withProposal, []);
+  const rejected = tick(withProposal, [
+    { civ: "egypt", actions: [{ tool: "respond_proposal", args: { proposalId, accept: false } }] },
+  ]);
+
+  assert.ok(findEvent(rejected.events, "proposal_rejected"));
+  assert.ok(!findEvent(rejected.events, "trade_executed"));
+  assert.equal(rejected.pendingProposals.length, 0);
+  assert.deepEqual(rejected.civilizations.rome.resources, control.civilizations.rome.resources);
+});
+
+test("respond_proposal: só o destinatário pode responder", () => {
+  const base = createWorld(5);
+  const withProposal = tick(base, [
+    {
+      civ: "rome",
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 1 }, request: {} } }],
+    },
+  ]);
+  const proposalId = withProposal.pendingProposals[0].id;
+
+  const intruded = tick(withProposal, [
+    { civ: "greece", actions: [{ tool: "respond_proposal", args: { proposalId, accept: true } }] },
+  ]);
+  const rej = findEvent(intruded.events, "action_rejected");
+  assert.ok(rej && /não é endereçada/.test(String(rej.reason)));
+  assert.equal(intruded.pendingProposals.length, 1, "a proposta continua pendente");
+});
+
+test("proposta expira após o TTL e responder depois falha explicitamente", () => {
+  const base = createWorld(5);
+  let w = tick(base, [
+    {
+      civ: "rome",
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 1 }, request: {} } }],
+    },
+  ]);
+  const proposalId = w.pendingProposals[0].id;
+  const expiresTick = w.pendingProposals[0].expiresTick;
+
+  while (w.tick < expiresTick) w = tick(w, []);
+  assert.equal(w.pendingProposals.length, 1, "válida até expiresTick, inclusive");
+
+  w = tick(w, []); // primeiro tick após o prazo
+  assert.equal(w.pendingProposals.length, 0);
+  assert.ok(findEvent(w.events, "proposal_expired"));
+
+  const late = tick(w, [
+    { civ: "egypt", actions: [{ tool: "respond_proposal", args: { proposalId, accept: true } }] },
+  ]);
+  const rej = findEvent(late.events, "action_rejected");
+  assert.ok(rej && /não encontrada ou expirada/.test(String(rej.reason)));
+});
+
+test("aceite revalida o presente: proponente que gastou a oferta não paga mais", () => {
+  const base = createWorld(5);
+  base.civilizations.rome.resources.gold = 55;
+  const withProposal = tick(base, [
+    {
+      civ: "rome",
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 50 }, request: {} } }],
+    },
+  ]);
+  const proposalId = withProposal.pendingProposals[0].id;
+  // Roma torra o ouro antes do aceite.
+  withProposal.civilizations.rome.resources.gold = 0;
+
+  const accepted = tick(withProposal, [
+    { civ: "egypt", actions: [{ tool: "respond_proposal", args: { proposalId, accept: true } }] },
+  ]);
+  const rej = findEvent(accepted.events, "action_rejected");
+  assert.ok(rej && /proponente não pode mais pagar/.test(String(rej.reason)));
+  assert.ok(!findEvent(accepted.events, "trade_executed"));
+});
+
+// ── Aliança bilateral ───────────────────────────────────────────────────────
+
+test("aliança exige aceite: set_diplomacy(alliance) é rejeitado; propose+accept funciona", () => {
+  const base = createWorld(5);
+
+  const unilateral = tick(base, [
+    { civ: "rome", actions: [{ tool: "set_diplomacy", args: { civ: "egypt", stance: "alliance" } }] },
+  ]);
+  const rej = findEvent(unilateral.events, "action_rejected");
+  assert.ok(rej && /bilateral/.test(String(rej.reason)));
+  assert.equal(getStance(unilateral, "rome", "egypt"), "peace");
+
+  const proposed = tick(base, [
+    { civ: "rome", actions: [{ tool: "propose_alliance", args: { civ: "egypt" } }] },
+  ]);
+  assert.ok(findEvent(proposed.events, "alliance_proposed"));
+  const proposalId = proposed.pendingProposals[0].id;
+
+  const allied = tick(proposed, [
+    { civ: "egypt", actions: [{ tool: "respond_proposal", args: { proposalId, accept: true } }] },
+  ]);
+  assert.equal(getStance(allied, "rome", "egypt"), "alliance");
+  assert.ok(findEvent(allied.events, "proposal_accepted"));
+  assert.ok(findEvent(allied.events, "diplomacy_changed"));
+});
+
+test("declarar guerra invalida as propostas pendentes entre o par", () => {
+  const base = createWorld(5);
+  const withProposal = tick(base, [
+    { civ: "rome", actions: [{ tool: "propose_alliance", args: { civ: "egypt" } }] },
+  ]);
+  assert.equal(withProposal.pendingProposals.length, 1);
+
+  const war = tick(withProposal, [
+    { civ: "egypt", actions: [{ tool: "set_diplomacy", args: { civ: "rome", stance: "war" } }] },
+  ]);
+  assert.equal(war.pendingProposals.length, 0);
+  assert.ok(findEvent(war.events, "proposal_expired"));
+});
+
+test("propose_trade: em guerra é rejeitado", () => {
+  const base = createWorld(5);
+  const war = tick(base, [
+    { civ: "rome", actions: [{ tool: "set_diplomacy", args: { civ: "egypt", stance: "war" } }] },
+  ]);
+  const next = tick(war, [
+    {
+      civ: "rome",
+      actions: [{ tool: "propose_trade", args: { civ: "egypt", offer: { gold: 1 }, request: { food: 1 } } }],
     },
   ]);
   const rej = findEvent(next.events, "action_rejected");
-  assert.ok(rej && rej.tool === "trade");
+  assert.ok(rej && rej.tool === "propose_trade");
 });
 
 // ── Memória e economia ──────────────────────────────────────────────────────

@@ -51,6 +51,7 @@ export function createWorld(seed: number): World {
     map,
     civilizations,
     diplomacy: {},
+    pendingProposals: [],
     events: [],
   };
 

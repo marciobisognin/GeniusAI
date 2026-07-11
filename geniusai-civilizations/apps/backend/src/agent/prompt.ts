@@ -47,6 +47,12 @@ export function snapshotForCiv(world: World, civId: CivId) {
       tiles,
     },
     others,
+    proposals: {
+      /** Propostas aguardando a SUA resposta (respond_proposal). */
+      incoming: world.pendingProposals.filter((p) => p.to === civId),
+      /** Suas propostas aguardando resposta do destinatário. */
+      outgoing: world.pendingProposals.filter((p) => p.from === civId),
+    },
     catalog: {
       structures: Object.entries(STRUCTURES).map(([name, s]) => ({ name, gold: s.gold })),
       techs: Object.entries(TECHS).map(([name, t]) => ({ name, cost: t.cost, requires: t.requires })),
@@ -66,8 +72,10 @@ export function buildSystemPrompt(persona: string, civId: CivId): string {
     `- research: { technology } — respeite os pré-requisitos do catálogo.`,
     `- move_army: { armyId, x, y } — destino adjacente; montanha é intransponível.`,
     `- attack: { armyId, x, y } — alvo adjacente; exige estar em guerra.`,
-    `- set_diplomacy: { civ, stance } — stance ∈ peace | war | alliance | trade.`,
-    `- trade: { civ, offer, request } — recursos {food?,gold?,science?}; exige relação trade/alliance.`,
+    `- set_diplomacy: { civ, stance } — stance ∈ peace | war | trade (aliança é bilateral: use propose_alliance).`,
+    `- propose_trade: { civ, offer, request } — PROPÕE uma troca {food?,gold?,science?}; nada é transferido até o parceiro aceitar. Proibido em guerra.`,
+    `- propose_alliance: { civ } — propõe aliança; só vale se o parceiro aceitar.`,
+    `- respond_proposal: { proposalId, accept } — aceita/rejeita uma proposta em "proposals.incoming". Propostas expiram em ~3 ticks; responda-as!`,
     `- set_strategy: { note } — anota sua estratégia de longo prazo na memória.`,
     ``,
     `Responda ESTRITAMENTE com um único objeto JSON: { "reasoning": string, "actions": Action[] }.`,

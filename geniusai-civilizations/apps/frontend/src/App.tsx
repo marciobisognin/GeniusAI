@@ -10,6 +10,7 @@ import { EraTimeline } from "./components/EraTimeline";
 import { EventTimeline } from "./components/EventTimeline";
 import { EvolutionBoard } from "./components/EvolutionBoard";
 import { MuseumMode } from "./components/MuseumMode";
+import { ProposalsPanel } from "./components/ProposalsPanel";
 import { SavesPanel } from "./components/SavesPanel";
 import { TechTreePanel } from "./components/TechTreePanel";
 import { WorldMap } from "./components/WorldMap";
@@ -123,6 +124,7 @@ export function App() {
           </div>
           <div className="world-column">
             <DiplomacyGraph world={world} selected={selected} onSelect={setSelected} />
+            <ProposalsPanel world={world} onSelect={setSelected} />
             <TechTreePanel world={world} selected={selected} />
           </div>
         </div>

@@ -28,7 +28,9 @@ function actionName(tool: string): string {
     move_army: "Movimento",
     attack: "Ataque",
     set_diplomacy: "Diplomacia",
-    trade: "Comércio",
+    propose_trade: "Propor comércio",
+    propose_alliance: "Propor aliança",
+    respond_proposal: "Responder proposta",
     set_strategy: "Estratégia",
   };
   return labels[tool] ?? tool;

@@ -47,6 +47,9 @@ export function growthCost(population: number): number {
   return population * 4;
 }
 
+/** Nº de ticks em que uma proposta bilateral pode ser respondida antes de expirar. */
+export const PROPOSAL_TTL_TICKS = 3;
+
 const RES_KEYS = ["food", "gold", "science"] as const;
 
 export function canAfford(have: Resources, cost: Partial<Resources>): boolean {

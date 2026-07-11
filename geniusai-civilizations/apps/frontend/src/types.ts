@@ -59,6 +59,18 @@ export interface Action {
 
 export type GameEvent = { type: string } & Record<string, unknown>;
 
+/** Proposta bilateral pendente (comércio/aliança) aguardando resposta. */
+export interface Proposal {
+  id: string;
+  kind: "trade" | "alliance";
+  from: CivId;
+  to: CivId;
+  createdTick: number;
+  expiresTick: number;
+  offer?: Partial<Resources>;
+  request?: Partial<Resources>;
+}
+
 export interface World {
   tick: number;
   seed: number;
@@ -67,6 +79,7 @@ export interface World {
   map: Tile[][];
   civilizations: Record<CivId, Civilization>;
   diplomacy: Record<string, Stance>;
+  pendingProposals?: Proposal[];
   events: GameEvent[];
 }
 
@@ -146,6 +159,16 @@ export function describeEvent(e: GameEvent): string {
       return `${civLabel(e.a)} e ${civLabel(e.b)}: relação agora é "${e.stance}"`;
     case "trade_executed":
       return `${civLabel(e.from)} comerciou com ${civLabel(e.to)}`;
+    case "trade_proposed":
+      return `${civLabel(e.civ)} propôs comércio a ${civLabel(e.to)}`;
+    case "alliance_proposed":
+      return `${civLabel(e.civ)} propôs aliança a ${civLabel(e.to)}`;
+    case "proposal_accepted":
+      return `${civLabel(e.civ)} aceitou a proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)}`;
+    case "proposal_rejected":
+      return `${civLabel(e.civ)} recusou a proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)}`;
+    case "proposal_expired":
+      return `Proposta de ${e.kind === "trade" ? "comércio" : "aliança"} de ${civLabel(e.from)} para ${civLabel(e.to)} expirou`;
     case "city_grew":
       return `Uma cidade de ${civLabel(e.civ)} cresceu para população ${e.population}`;
     case "strategy_updated":

@@ -48,6 +48,25 @@ export interface Civilization {
   alive: boolean;
 }
 
+/**
+ * Proposta bilateral pendente (comércio ou aliança). Nada é transferido nem
+ * pactuado antes do aceite do destinatário; propostas não respondidas
+ * expiram após PROPOSAL_TTL_TICKS.
+ */
+export interface Proposal {
+  id: string;
+  kind: "trade" | "alliance";
+  from: CivId;
+  to: CivId;
+  createdTick: number;
+  /** Último tick em que a proposta ainda pode ser respondida. */
+  expiresTick: number;
+  /** Somente kind="trade": o que o proponente entrega. */
+  offer?: Partial<Resources>;
+  /** Somente kind="trade": o que o proponente pede em troca. */
+  request?: Partial<Resources>;
+}
+
 export type GameEvent =
   | { type: "tick_started"; tick: number }
   | { type: "action_rejected"; civ: CivId; tool: string; reason: string }
@@ -60,6 +79,11 @@ export type GameEvent =
   | { type: "city_captured"; from: CivId; to: CivId; cityId: string }
   | { type: "diplomacy_changed"; a: CivId; b: CivId; stance: Stance }
   | { type: "trade_executed"; from: CivId; to: CivId }
+  | { type: "trade_proposed"; civ: CivId; to: CivId; proposalId: string; offer: Partial<Resources>; request: Partial<Resources> }
+  | { type: "alliance_proposed"; civ: CivId; to: CivId; proposalId: string }
+  | { type: "proposal_accepted"; civ: CivId; from: CivId; kind: Proposal["kind"]; proposalId: string }
+  | { type: "proposal_rejected"; civ: CivId; from: CivId; kind: Proposal["kind"]; proposalId: string }
+  | { type: "proposal_expired"; from: CivId; to: CivId; kind: Proposal["kind"]; proposalId: string }
   | { type: "city_grew"; civ: CivId; cityId: string; population: number }
   | { type: "strategy_updated"; civ: CivId }
   | { type: "civ_eliminated"; civ: CivId };
@@ -76,6 +100,8 @@ export interface World {
   civilizations: Record<CivId, Civilization>;
   /** Relações par-a-par, chave canônica "a|b" (ids ordenados). */
   diplomacy: Record<string, Stance>;
+  /** Propostas bilaterais aguardando resposta do destinatário. */
+  pendingProposals: Proposal[];
   /** Eventos emitidos no último tick. */
   events: GameEvent[];
 }
@@ -87,7 +113,9 @@ export type Action =
   | { tool: "move_army"; args: { armyId: string; x: number; y: number } }
   | { tool: "attack"; args: { armyId: string; x: number; y: number } }
   | { tool: "set_diplomacy"; args: { civ: CivId; stance: Stance } }
-  | { tool: "trade"; args: { civ: CivId; offer: Partial<Resources>; request: Partial<Resources> } }
+  | { tool: "propose_trade"; args: { civ: CivId; offer: Partial<Resources>; request: Partial<Resources> } }
+  | { tool: "propose_alliance"; args: { civ: CivId } }
+  | { tool: "respond_proposal"; args: { proposalId: string; accept: boolean } }
   | { tool: "set_strategy"; args: { note: string } };
 
 export interface CivDecision {

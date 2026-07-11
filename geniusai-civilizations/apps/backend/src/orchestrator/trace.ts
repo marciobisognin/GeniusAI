@@ -92,6 +92,17 @@ const CivilizationSchema = z
   })
   .passthrough();
 
+const ProposalSchema = z
+  .object({
+    id: z.string(),
+    kind: z.enum(["trade", "alliance"]),
+    from: z.enum([...CIV_IDS] as [CivId, ...CivId[]]),
+    to: z.enum([...CIV_IDS] as [CivId, ...CivId[]]),
+    createdTick: z.number().int().nonnegative(),
+    expiresTick: z.number().int().nonnegative(),
+  })
+  .passthrough();
+
 const WorldSchema = z
   .object({
     tick: z.number().int().nonnegative(),
@@ -106,6 +117,8 @@ const WorldSchema = z
       mali: CivilizationSchema,
     }),
     diplomacy: z.record(z.string(), z.enum(["peace", "war", "alliance", "trade"])),
+    // Saves anteriores à Fase 8 não têm propostas pendentes — migra para [].
+    pendingProposals: z.array(ProposalSchema).default([]),
     events: z.array(z.object({ type: z.string() }).passthrough()),
   })
   .passthrough();
