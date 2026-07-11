@@ -276,3 +276,27 @@ test("ask: falha do runner vira erro ASK_FAILED visível", async () => {
   client.ws.close();
   httpServer.close();
 });
+
+test("new_game: nome vira slug seguro no gameId e a seed é respeitada", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({
+    type: "command",
+    action: "new_game",
+    name: "Ascensão do Mediterrâneo!",
+    seed: 777,
+    speedMs: 500,
+  });
+  await client.waitFor((m) => m.type === "world_init" && (m.gameId as string).startsWith("ascensao-do-mediterraneo"));
+
+  assert.match(getLoop().gameId, /^ascensao-do-mediterraneo-\d+$/);
+  assert.match(getLoop().gameId, /^[a-zA-Z0-9_-]{1,64}$/, "gameId sempre dentro da allowlist");
+  assert.equal(getLoop().world.seed, 777);
+  assert.equal(getLoop().world.tick, 0);
+
+  client.ws.close();
+  httpServer.close();
+});

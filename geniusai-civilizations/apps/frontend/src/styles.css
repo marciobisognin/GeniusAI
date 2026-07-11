@@ -659,6 +659,59 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .btn-small { padding: 4px 10px; margin-left: auto; }
 .saves-error { color: var(--bad); font-size: 0.76rem; }
 
+/* ---------- Modal (nova partida) ---------- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  backdrop-filter: blur(6px);
+}
+.modal-card {
+  width: min(520px, 100%);
+  padding: 22px 24px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--panel-strong);
+  box-shadow: var(--shadow), 0 30px 80px rgba(0, 0, 0, 0.30);
+}
+.modal-card h2 { margin: 4px 0 0; font-size: 1.4rem; letter-spacing: 0.005em; }
+.modal-subtitle { margin: 8px 0 18px; color: var(--muted); font-size: 0.82rem; line-height: 1.5; }
+.modal-field { display: block; margin-bottom: 14px; flex: 1; }
+.modal-field span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--heading-soft);
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.modal-field input,
+.modal-field select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--overlay);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.85rem;
+  outline: none;
+}
+.modal-field input:focus,
+.modal-field select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.field-error { display: block; margin-top: 5px; color: var(--bad); font-size: 0.7rem; font-style: normal; }
+.modal-row { display: flex; gap: 12px; }
+.modal-runner { margin: 4px 0 18px; font-size: 0.75rem; color: var(--ink); }
+.modal-actions { display: flex; justify-content: end; gap: 8px; }
+
 /* ---------- Animações ---------- */
 @keyframes dash { to { stroke-dashoffset: -80; } }
 @keyframes toastDrop { from { opacity: 0; transform: translateY(-10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }

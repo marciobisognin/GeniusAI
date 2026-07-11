@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 9 concluída (tecnologia com efeitos, recrutamento e vitória)
+## Estado atual: Fase 10 concluída (tela de criação de partida)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -123,6 +123,11 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **Condições de vitória** (RF-026): avaliadas ao fim de cada tick, em ordem determinística — **dominação** (restou uma civ), **científica** (catálogo completo), **prosperidade** (reservas ≥ 400) e **limite de turnos** (tick 80, vence a maior pontuação). `world.victory` é definitivo (partida encerrada é imutável no motor), o `GameLoop` para sozinho, e a UI mostra **banner de vitória** + evento 🏆 na timeline. Saves antigos migram com `victory: null`.
 - **+6 testes** (efeito de tecnologia isolado, recruit com/sem requisitos, vitória científica/dominação/prosperidade/limite de turnos, imutabilidade pós-vitória): **96 no total**.
 - **Verificado em partida real**: com `RUNNER=mock` em play contínuo, Roma venceu por prosperidade no tick 38 — o loop parou sozinho e o banner apareceu (screenshot em `docs/screenshots/victory-dark.png`).
+
+**Fase 10 — Tela de criação de partida (RF-010):**
+- Modal **"Nova partida"** (botão na dock de partidas): nome da partida, seed opcional e velocidade inicial; o botão fica desabilitado enquanto os dados forem inválidos; o runner ativo é informado (configurado no backend).
+- Backend: `new_game` aceita `name`/`seed`/`speedMs` validados por schema; o nome vira a parte legível do `gameId` (slug sem acentos, ex.: "Ascensão do Mediterrâneo!" → `ascensao-do-mediterraneo-<timestamp>`), sempre dentro da allowlist de segurança.
+- **97 testes**; verificado em Chromium: criar a partida pelo modal, avançar um tick e vê-la em "partidas salvas" com o gameId slugificado (`docs/screenshots/newgame-design.png` mostra o design nos dois temas).
 
 ## Pré-requisitos
 

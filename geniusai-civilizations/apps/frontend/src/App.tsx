@@ -10,6 +10,7 @@ import { EraTimeline } from "./components/EraTimeline";
 import { EventTimeline } from "./components/EventTimeline";
 import { EvolutionBoard } from "./components/EvolutionBoard";
 import { MuseumMode } from "./components/MuseumMode";
+import { NewGameModal } from "./components/NewGameModal";
 import { ProposalsPanel } from "./components/ProposalsPanel";
 import { SavesPanel } from "./components/SavesPanel";
 import { TechTreePanel } from "./components/TechTreePanel";
@@ -40,6 +41,7 @@ export function App() {
   const [selected, setSelected] = useState<CivId>("rome");
   const [view, setView] = useState<ViewMode>("evolution");
   const [theme, setTheme] = useState<Theme>(initialTheme);
+  const [showNewGame, setShowNewGame] = useState(false);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -171,10 +173,20 @@ export function App() {
           currentGameId={state.gameId}
           lastError={state.lastError}
           onListSaves={listSaves}
-          onNewGame={() => newGame()}
+          onNewGame={() => setShowNewGame(true)}
           onLoadGame={loadGame}
         />
       </div>
+
+      <NewGameModal
+        open={showNewGame}
+        runner={runner}
+        onClose={() => setShowNewGame(false)}
+        onCreate={(opts) => {
+          newGame(opts);
+          setShowNewGame(false);
+        }}
+      />
     </main>
   );
 }

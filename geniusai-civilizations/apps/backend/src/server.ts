@@ -34,6 +34,8 @@ const ClientCommandSchema = z.discriminatedUnion("action", [
     type: z.literal("command"),
     action: z.literal("new_game"),
     seed: z.number().int().min(0).max(2_147_483_647).optional(),
+    name: z.string().trim().min(1).max(40).optional(),
+    speedMs: z.number().finite().min(0).max(600_000).optional(),
   }),
   z.object({ type: z.literal("command"), action: z.literal("load_game"), gameId: GameIdSchema }),
   z.object({
@@ -45,6 +47,23 @@ const ClientCommandSchema = z.discriminatedUnion("action", [
 ]);
 
 type ClientCommand = z.infer<typeof ClientCommandSchema>;
+
+/**
+ * Converte o nome digitado pelo usuário na parte legível do gameId:
+ * minúsculas, sem acentos, apenas [a-z0-9-]. O sufixo de timestamp garante
+ * unicidade e o resultado sempre satisfaz a allowlist de gameId.
+ */
+function slugifyName(name: string | undefined): string {
+  const slug = (name ?? "")
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 24)
+    .replace(/-+$/, "");
+  return slug || "game";
+}
 
 /** Erro padronizado enviado ao cliente: sempre com `code` legível por máquina. */
 function sendError(ws: WebSocket, code: string, message: string): void {
@@ -215,10 +234,12 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
         try {
           loop.stop();
           await loop.whenIdle();
+          const opts = loopOptions();
           const next = await createGameLoop({
-            ...loopOptions(),
+            ...opts,
+            speedMs: msg.speedMs ?? opts.speedMs,
             seed: msg.seed ?? Math.floor(Math.random() * 1_000_000),
-            gameId: `game-${Date.now()}`,
+            gameId: `${slugifyName(msg.name)}-${Date.now()}`,
           });
           attachLoop(next);
           await sendFullState("broadcast");
