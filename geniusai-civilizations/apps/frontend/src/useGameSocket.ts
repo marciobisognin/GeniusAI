@@ -234,7 +234,8 @@ export function useGameSocket() {
   );
   const listSaves = useCallback(() => send({ type: "command", action: "list_saves" }), [send]);
   const newGame = useCallback(
-    (seed?: number) => send({ type: "command", action: "new_game", seed }),
+    (opts: { name?: string; seed?: number; speedMs?: number } = {}) =>
+      send({ type: "command", action: "new_game", ...opts }),
     [send],
   );
   const loadGame = useCallback(
