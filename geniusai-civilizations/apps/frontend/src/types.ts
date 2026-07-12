@@ -1,141 +1,35 @@
 /**
- * Tipos do estado de jogo consumidos pela UI. Espelham (de forma solta) os
- * tipos do backend (`apps/backend/src/engine/types.ts`) — frontend e backend
- * são pacotes npm separados, sem um workspace de tipos compartilhados no MVP.
+ * Tipos consumidos pela UI. O contrato de estado/eventos/protocolo vive em
+ * `@geniusai/shared` — uma única fonte de verdade com o backend. Aqui ficam
+ * apenas re-exports e helpers de apresentação (rótulos, cores, narrativa).
  */
+import type { CivId, DisplayEvent, VictoryKind } from "@geniusai/shared";
 
-export const CIV_IDS = ["rome", "egypt", "greece", "mali"] as const;
-export type CivId = (typeof CIV_IDS)[number];
+export {
+  CIV_IDS,
+  type Action,
+  type Army,
+  type City,
+  type CivId,
+  type CivLastTurn,
+  type Civilization,
+  type ClientCommand,
+  type LoopState,
+  type Proposal,
+  type ResourceKind,
+  type Resources,
+  type SaveInfo,
+  type ServerMessage,
+  type Stance,
+  type Terrain,
+  type Tile,
+  type Victory,
+  type VictoryKind,
+  type World,
+} from "@geniusai/shared";
 
-export type Terrain = "plains" | "forest" | "mountain" | "coast" | "desert";
-export type ResourceKind = "food" | "gold" | "science";
-export type Stance = "peace" | "war" | "alliance" | "trade";
-
-export interface Resources {
-  food: number;
-  gold: number;
-  science: number;
-}
-
-export interface Tile {
-  x: number;
-  y: number;
-  terrain: Terrain;
-  resource: ResourceKind | null;
-  owner: CivId | null;
-}
-
-export interface City {
-  id: string;
-  x: number;
-  y: number;
-  population: number;
-  buildings: string[];
-}
-
-export interface Army {
-  id: string;
-  x: number;
-  y: number;
-  strength: number;
-}
-
-export interface Civilization {
-  id: CivId;
-  persona: string;
-  resources: Resources;
-  tech: string[];
-  researching: string | null;
-  cities: City[];
-  armies: Army[];
-  memory: string;
-  alive: boolean;
-}
-
-export interface Action {
-  tool: string;
-  args: Record<string, unknown>;
-}
-
-export type GameEvent = { type: string } & Record<string, unknown>;
-
-/** Proposta bilateral pendente (comércio/aliança) aguardando resposta. */
-export interface Proposal {
-  id: string;
-  kind: "trade" | "alliance";
-  from: CivId;
-  to: CivId;
-  createdTick: number;
-  expiresTick: number;
-  offer?: Partial<Resources>;
-  request?: Partial<Resources>;
-}
-
-export type VictoryKind = "domination" | "scientific" | "prosperity" | "turn_limit";
-
-export interface Victory {
-  civ: CivId;
-  kind: VictoryKind;
-  tick: number;
-}
-
-export const VICTORY_LABEL: Record<VictoryKind, string> = {
-  domination: "dominação",
-  scientific: "vitória científica",
-  prosperity: "prosperidade",
-  turn_limit: "maior pontuação no limite de turnos",
-};
-
-export interface World {
-  tick: number;
-  seed: number;
-  width: number;
-  height: number;
-  map: Tile[][];
-  civilizations: Record<CivId, Civilization>;
-  diplomacy: Record<string, Stance>;
-  pendingProposals?: Proposal[];
-  victory?: Victory | null;
-  events: GameEvent[];
-}
-
-export type LoopState = "idle" | "running" | "paused" | "stopped";
-
-export interface CivLastTurn {
-  reasoning: string;
-  actions: Action[];
-  passed: boolean;
-  errors: string[];
-}
-
-export interface SaveInfo {
-  gameId: string;
-  tick: number;
-  seed: number;
-  updatedAt: string;
-}
-
-export type ServerMessage =
-  | { type: "hello"; runner: string }
-  | { type: "health"; runner: string; healthy: boolean }
-  | { type: "world_init"; world: World; loopState: LoopState; gameId: string }
-  | { type: "history"; timeline: GameEvent[]; civs: Partial<Record<CivId, CivLastTurn>> }
-  | { type: "loop_state"; state: LoopState }
-  | { type: "turn_start"; tick: number; civ: CivId }
-  | { type: "turn_token"; tick: number; civ: CivId; chunk: string }
-  | {
-      type: "turn_end";
-      tick: number;
-      civ: CivId;
-      reasoning: string;
-      actions: Action[];
-      passed: boolean;
-      errors: string[];
-    }
-  | { type: "tick_end"; tick: number; events: GameEvent[]; world: World }
-  | { type: "saves"; saves: SaveInfo[] }
-  | { type: "answer"; civ: CivId; question: string; text: string; runner: string }
-  | { type: "error"; code?: string; message: string };
+/** Na UI, a timeline mistura fatos do motor com narrações — DisplayEvent. */
+export type GameEvent = DisplayEvent;
 
 export const CIV_LABEL: Record<CivId, string> = {
   rome: "Roma",
@@ -151,9 +45,17 @@ export const CIV_COLOR: Record<CivId, string> = {
   mali: "#8e44ad",
 };
 
-/** Rótulo legível de um evento do motor (para a linha do tempo). */
+export const VICTORY_LABEL: Record<VictoryKind, string> = {
+  domination: "dominação",
+  scientific: "vitória científica",
+  prosperity: "prosperidade",
+  turn_limit: "maior pontuação no limite de turnos",
+};
+
+const civLabel = (id: CivId): string => CIV_LABEL[id] ?? id;
+
+/** Rótulo legível de um evento (motor ou narração) para a linha do tempo. */
 export function describeEvent(e: GameEvent): string {
-  const civLabel = (id: unknown) => (typeof id === "string" && id in CIV_LABEL ? CIV_LABEL[id as CivId] : String(id));
   switch (e.type) {
     case "tick_started":
       return `— Tick ${e.tick} —`;
@@ -194,12 +96,12 @@ export function describeEvent(e: GameEvent): string {
     case "army_recruited":
       return `${civLabel(e.civ)} recrutou um exército (força ${e.strength})`;
     case "victory":
-      return `🏆 ${civLabel(e.civ)} venceu a partida por ${VICTORY_LABEL[e.kind as VictoryKind] ?? e.kind} (tick ${e.tick})`;
+      return `🏆 ${civLabel(e.civ)} venceu a partida por ${VICTORY_LABEL[e.kind]} (tick ${e.tick})`;
     case "action_rejected":
       return `${civLabel(e.civ)}: ação "${e.tool}" rejeitada (${e.reason})`;
     case "narration":
       return `📰 ${e.text}`;
     default:
-      return e.type;
+      return (e as { type: string }).type;
   }
 }

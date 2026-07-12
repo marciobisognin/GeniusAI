@@ -1,0 +1,16 @@
+{
+  "name": "@geniusai/shared",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Tipos compartilhados entre backend e frontend — uma única fonte de verdade para o estado do jogo, eventos e o protocolo WebSocket.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}

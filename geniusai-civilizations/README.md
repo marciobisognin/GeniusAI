@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 10 concluída (tela de criação de partida)
+## Estado atual: Fase 11 concluída (dev único, tipos compartilhados e CI)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -128,6 +128,12 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - Modal **"Nova partida"** (botão na dock de partidas): nome da partida, seed opcional e velocidade inicial; o botão fica desabilitado enquanto os dados forem inválidos; o runner ativo é informado (configurado no backend).
 - Backend: `new_game` aceita `name`/`seed`/`speedMs` validados por schema; o nome vira a parte legível do `gameId` (slug sem acentos, ex.: "Ascensão do Mediterrâneo!" → `ascensao-do-mediterraneo-<timestamp>`), sempre dentro da allowlist de segurança.
 - **97 testes**; verificado em Chromium: criar a partida pelo modal, avançar um tick e vê-la em "partidas salvas" com o gameId slugificado (`docs/screenshots/newgame-design.png` mostra o design nos dois temas).
+
+**Fase 11 — Comando único, tipos compartilhados e CI (RF-002 + §6.1 + §13.6):**
+- **`npm run dev` único**: sobe backend e frontend juntos (`scripts/dev.mjs`, zero dependências); Ctrl+C encerra os dois. Também: `npm test`, `npm run build`, `npm run typecheck` (3 workspaces) e `npm run e2e` na raiz.
+- **`packages/shared` (`@geniusai/shared`)**: única fonte de verdade para os tipos que cruzam a fronteira backend ⇄ frontend — estado do jogo (World/Civilization/Proposal/Victory/GameEvent/Action), eventos do orquestrador (LoopEvent/DisplayEvent) e o protocolo WebSocket (ServerMessage/ClientCommand). Backend e frontend importam o mesmo contrato; os arquivos antigos viraram re-exports, então um campo novo agora é adicionado em UM lugar. A timeline do frontend passou a usar a união discriminada real do motor (fim do `{type:string} & Record<string,unknown>`).
+- **E2E versionado** (`e2e/smoke.mjs`): sobe backend mock + frontend buildado, abre Chromium e percorre conectar → criar partida pelo modal → 2 ticks → mapa/propostas → pergunta ao agente. Sai com código ≠ 0 em falha.
+- **CI no GitHub Actions** (`.github/workflows/ci.yml`): a cada push/PR roda typecheck (shared+backend+frontend), os 97 testes, o build e o E2E smoke com Chromium real — o PRD §16 ("nenhuma regressão") vira verificação automática.
 
 ## Pré-requisitos
 
