@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "ws": "^8.18.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@geniusai/shared": "*"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

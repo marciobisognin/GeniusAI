@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    name: typecheck · testes · build · e2e
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: geniusai-civilizations
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: geniusai-civilizations/package-lock.json
+
+      - name: Instalar dependências
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+
+      - name: Typecheck (shared + backend + frontend)
+        run: npm run typecheck
+
+      - name: Testes do backend (97, sem LLM)
+        run: npm test
+
+      - name: Build do frontend
+        run: npm run build
+
+      - name: Instalar Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke (RUNNER=mock, Chromium real)
+        run: npm run e2e
