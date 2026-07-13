@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Roma — a Cidade Eterna">
+  <defs>
+    <linearGradient id="rSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f6d8a8"/><stop offset=".55" stop-color="#e8a06a"/><stop offset="1" stop-color="#b3502f"/>
+    </linearGradient>
+    <linearGradient id="rHill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8a4630"/><stop offset="1" stop-color="#5d2c20"/>
+    </linearGradient>
+    <linearGradient id="rStone" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6e3323"/><stop offset="1" stop-color="#471f16"/>
+    </linearGradient>
+    <radialGradient id="rSun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff3c9"/><stop offset=".6" stop-color="#ffd980"/><stop offset="1" stop-color="#ffd980" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#rSky)"/>
+  <circle cx="700" cy="130" r="150" fill="url(#rSun)"/>
+  <circle cx="700" cy="130" r="52" fill="#ffe9ae"/>
+  <g stroke="#f9dfa0" stroke-opacity=".35" stroke-width="3">
+    <line x1="700" y1="130" x2="420" y2="30"/><line x1="700" y1="130" x2="930" y2="20"/><line x1="700" y1="130" x2="960" y2="220"/>
+  </g>
+  <path d="M0 320 Q240 270 480 305 T960 295 V420 H0 Z" fill="url(#rHill)"/>
+  <!-- Coliseu -->
+  <g>
+    <path d="M170 330 a190 105 0 0 1 380 0 Z" fill="url(#rStone)"/>
+    <path d="M195 330 a165 88 0 0 1 330 0 Z" fill="#7c3a28"/>
+    <g fill="#3a1811">
+      <ellipse cx="238" cy="290" rx="13" ry="20"/><ellipse cx="286" cy="273" rx="13" ry="21"/>
+      <ellipse cx="336" cy="263" rx="13" ry="22"/><ellipse cx="386" cy="261" rx="13" ry="22"/>
+      <ellipse cx="436" cy="268" rx="13" ry="21"/><ellipse cx="482" cy="283" rx="13" ry="20"/>
+    </g>
+    <g fill="#3a1811">
+      <ellipse cx="262" cy="316" rx="12" ry="17"/><ellipse cx="310" cy="306" rx="12" ry="18"/>
+      <ellipse cx="360" cy="301" rx="12" ry="18"/><ellipse cx="410" cy="303" rx="12" ry="18"/>
+      <ellipse cx="458" cy="311" rx="12" ry="17"/>
+    </g>
+    <rect x="170" y="328" width="380" height="6" fill="#3a1811"/>
+  </g>
+  <!-- Aqueduto -->
+  <g fill="#5d2a1e">
+    <rect x="560" y="286" width="400" height="16"/>
+    <g>
+      <rect x="580" y="296" width="18" height="70"/><rect x="650" y="296" width="18" height="70"/>
+      <rect x="720" y="296" width="18" height="70"/><rect x="790" y="296" width="18" height="70"/>
+      <rect x="860" y="296" width="18" height="70"/><rect x="930" y="296" width="18" height="70"/>
+    </g>
+    <g fill="#8a4630">
+      <path d="M598 366 v-46 a26 26 0 0 1 52 0 v46 Z"/><path d="M668 366 v-46 a26 26 0 0 1 52 0 v46 Z"/>
+      <path d="M738 366 v-46 a26 26 0 0 1 52 0 v46 Z"/><path d="M808 366 v-46 a26 26 0 0 1 52 0 v46 Z"/>
+      <path d="M878 366 v-46 a26 26 0 0 1 52 0 v46 Z"/>
+    </g>
+  </g>
+  <path d="M0 372 Q300 340 620 366 T960 358 V420 H0 Z" fill="#40160f"/>
+  <!-- Estandarte SPQR -->
+  <g transform="translate(74,150)">
+    <rect x="-4" y="0" width="8" height="216" fill="#3a1811"/>
+    <rect x="-42" y="18" width="84" height="104" rx="8" fill="#a32c20" stroke="#e9b869" stroke-width="4"/>
+    <text x="0" y="66" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="bold" fill="#f4d47a" letter-spacing="2">SPQR</text>
+    <path d="M-42 122 l16 22 h-32 Z M0 122 l16 22 h-32 Z M42 122 l16 22 h-32 Z" fill="#a32c20" stroke="#e9b869" stroke-width="3"/>
+    <circle cx="0" cy="6" r="12" fill="#e9b869"/>
+    <path d="M-14 -8 q14 -18 28 0 q-14 8 -28 0 Z" fill="#e9b869"/>
+  </g>
+  <rect width="960" height="420" fill="none" stroke="#3a1811" stroke-opacity=".35" stroke-width="10"/>
+</svg>

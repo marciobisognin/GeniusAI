@@ -1,3 +1,4 @@
+import { TECHS } from "@geniusai/shared";
 import {
   CIV_IDS,
   CIV_LABEL,
@@ -52,7 +53,7 @@ export interface CrisisSignal {
 export interface TechNode {
   id: string;
   label: string;
-  branch: "agricultura" | "militar" | "cultura" | "comércio" | "ciência";
+  branch: string;
   unlocked: boolean;
   active: boolean;
 }
@@ -77,30 +78,17 @@ const BASE_PERSONALITY: Record<CivId, Omit<PersonalityProfile, "mood" | "doctrin
   mali: { ambition: 58, fear: 25, trust: 67, curiosity: 55, aggression: 28, stability: 64 },
 };
 
-const TECH_CATALOG: Array<Omit<TechNode, "unlocked" | "active">> = [
-  { id: "agriculture", label: "Agricultura", branch: "agricultura" },
-  { id: "irrigation", label: "Irrigação", branch: "agricultura" },
-  { id: "granary", label: "Armazéns", branch: "agricultura" },
-  { id: "bronze", label: "Bronze", branch: "militar" },
-  { id: "walls", label: "Muralhas", branch: "militar" },
-  { id: "cavalry", label: "Cavalaria", branch: "militar" },
-  { id: "writing", label: "Escrita", branch: "cultura" },
-  { id: "philosophy", label: "Filosofia", branch: "cultura" },
-  { id: "law", label: "Direito", branch: "cultura" },
-  { id: "currency", label: "Moeda", branch: "comércio" },
-  { id: "caravans", label: "Caravanas", branch: "comércio" },
-  { id: "navigation", label: "Navegação", branch: "comércio" },
-  { id: "mathematics", label: "Matemática", branch: "ciência" },
-  { id: "astronomy", label: "Astronomia", branch: "ciência" },
-  { id: "engineering", label: "Engenharia", branch: "ciência" },
-];
+/** Rótulos PT das tecnologias do catálogo real (@geniusai/shared). */
+export const TECH_LABEL: Record<string, string> = {
+  agriculture: "Agricultura",
+  writing: "Escrita",
+  bronze_working: "Trabalho em Bronze",
+  currency: "Moeda",
+  mathematics: "Matemática",
+};
 
 function clamp(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function normalizeTech(text: string): string {
-  return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "");
 }
 
 export function eventHasCiv(e: GameEvent, civ: CivId): boolean {
@@ -171,18 +159,15 @@ export function derivePersonality(world: World | null, civId: CivId, events: Gam
   return profile;
 }
 
+/** Árvore tecnológica derivada 1:1 do catálogo real do motor (RF-024). */
 export function deriveTechTree(civ?: Civilization): TechNode[] {
-  const unlocked = new Set((civ?.tech ?? []).map(normalizeTech));
-  const active = normalizeTech(civ?.researching ?? "");
-  return TECH_CATALOG.map((node) => {
-    const key = normalizeTech(node.id + node.label);
-    const isUnlocked = [...unlocked].some((t) => key.includes(t) || t.includes(normalizeTech(node.id)) || t.includes(normalizeTech(node.label)));
-    return {
-      ...node,
-      unlocked: isUnlocked,
-      active: Boolean(active) && (active.includes(normalizeTech(node.id)) || active.includes(normalizeTech(node.label))),
-    };
-  });
+  return Object.entries(TECHS).map(([id, spec]) => ({
+    id,
+    label: TECH_LABEL[id] ?? id,
+    branch: spec.branch,
+    unlocked: civ?.tech.includes(id) ?? false,
+    active: civ?.researching === id,
+  }));
 }
 
 export function deriveCrises(world: World | null, events: GameEvent[]): CrisisSignal[] {

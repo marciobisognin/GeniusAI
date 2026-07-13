@@ -95,6 +95,13 @@ try {
   await page.waitForSelector(".proposals-card");
   console.log("✓ mapa e painel de propostas renderizados");
 
+  // Teatro de Decisões: palco, cartão de foco e cartão-herói com arte.
+  await page.click('.topbar-tabs button:text("Teatro")');
+  await page.waitForSelector(".theatre-stage");
+  await page.waitForSelector(".theatre-focus");
+  await page.waitForSelector(".hero-card img");
+  console.log("✓ Teatro de Decisões renderizado (foco + arte da civilização)");
+
   // Pergunte à civilização (agente real em modo somente leitura).
   await page.click('.topbar-tabs button:text("Crônicas")');
   await page.click('.ask-card button:text("Perguntar")');

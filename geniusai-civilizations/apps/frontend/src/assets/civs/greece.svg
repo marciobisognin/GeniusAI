@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Grécia — mar Egeu e a Acrópole">
+  <defs>
+    <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#dff0fb"/><stop offset=".6" stop-color="#9fcbe8"/><stop offset="1" stop-color="#5f9cc6"/>
+    </linearGradient>
+    <linearGradient id="gSea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3f7fae"/><stop offset="1" stop-color="#1f4c74"/>
+    </linearGradient>
+    <linearGradient id="gRock" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b7f6a"/><stop offset="1" stop-color="#5d5342"/>
+    </linearGradient>
+    <linearGradient id="gMarble" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fdfaf1"/><stop offset="1" stop-color="#d9d0b8"/>
+    </linearGradient>
+    <radialGradient id="gSun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#ffffff"/><stop offset=".6" stop-color="#fdf3c8"/><stop offset="1" stop-color="#fdf3c8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#gSky)"/>
+  <circle cx="790" cy="96" r="130" fill="url(#gSun)"/>
+  <circle cx="790" cy="96" r="42" fill="#fffbe6"/>
+  <!-- Mar -->
+  <path d="M0 316 H960 V420 H0 Z" fill="url(#gSea)"/>
+  <g stroke="#cfe7f4" stroke-opacity=".45" stroke-width="3" fill="none">
+    <path d="M20 340 q30 -8 60 0 M140 356 q30 -8 60 0 M320 344 q30 -8 60 0 M700 352 q30 -8 60 0 M850 338 q30 -8 60 0"/>
+  </g>
+  <!-- Colina da Acrópole -->
+  <path d="M120 316 Q300 176 560 200 Q760 216 860 316 Z" fill="url(#gRock)"/>
+  <!-- Parthenon -->
+  <g transform="translate(320,132)">
+    <path d="M-24 34 L150 12 L324 34 L300 52 L0 52 Z" fill="url(#gMarble)"/>
+    <path d="M150 -26 L318 30 L-18 30 Z" fill="url(#gMarble)" stroke="#b7ab8d" stroke-width="3"/>
+    <g fill="url(#gMarble)" stroke="#b7ab8d" stroke-width="2">
+      <rect x="0" y="52" width="22" height="86"/><rect x="42" y="52" width="22" height="86"/>
+      <rect x="84" y="52" width="22" height="86"/><rect x="126" y="52" width="22" height="86"/>
+      <rect x="168" y="52" width="22" height="86"/><rect x="210" y="52" width="22" height="86"/>
+      <rect x="252" y="52" width="22" height="86"/><rect x="278" y="52" width="22" height="86"/>
+    </g>
+    <rect x="-16" y="138" width="332" height="16" fill="url(#gMarble)" stroke="#b7ab8d" stroke-width="2"/>
+    <rect x="-28" y="154" width="356" height="14" fill="#cfc5a9"/>
+  </g>
+  <!-- Oliveira -->
+  <g transform="translate(120,236)">
+    <path d="M0 80 q-6 -44 10 -66 q10 22 4 66 Z" fill="#6d5230"/>
+    <g fill="#5f7d3c">
+      <circle cx="8" cy="4" r="26"/><circle cx="-18" cy="14" r="18"/><circle cx="34" cy="16" r="18"/><circle cx="8" cy="-16" r="16"/>
+    </g>
+  </g>
+  <!-- Barco -->
+  <g transform="translate(806,352)">
+    <path d="M-44 8 Q0 24 44 8 L32 20 H-32 Z" fill="#31261a"/>
+    <path d="M-2 6 L-2 -40 L-36 2 Z" fill="#f4ede0"/>
+    <path d="M2 6 L2 -34 L26 4 Z" fill="#e8dfcc"/>
+  </g>
+  <rect width="960" height="420" fill="none" stroke="#1f4c74" stroke-opacity=".35" stroke-width="10"/>
+</svg>

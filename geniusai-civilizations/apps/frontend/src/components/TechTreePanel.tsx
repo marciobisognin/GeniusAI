@@ -7,11 +7,10 @@ interface Props {
 }
 
 const BRANCH_LABEL: Record<string, string> = {
-  agricultura: "Agricultura",
-  militar: "Militar",
-  cultura: "Cultura",
-  comércio: "Comércio",
   ciência: "Ciência",
+  militar: "Militar",
+  economia: "Economia",
+  cultura: "Cultura",
 };
 
 export function TechTreePanel({ world, selected }: Props) {

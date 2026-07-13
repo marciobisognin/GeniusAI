@@ -17,56 +17,10 @@ export const STRUCTURES: Record<string, { gold: number; yields?: Partial<Resourc
   barracks: { gold: 40 },
 };
 
-/** Efeitos passivos de uma tecnologia, aplicados de verdade pelo motor. */
-export interface TechEffects {
-  /** Rendimento extra POR CIDADE a cada tick. */
-  cityYield?: Partial<Resources>;
-  /** Força extra de exércitos recrutados após esta tecnologia. */
-  armyStrengthBonus?: number;
-  /** Habilita a ação recruit (junto com um quartel na cidade). */
-  unlocksRecruit?: boolean;
-}
-
-export interface TechSpec {
-  cost: number;
-  requires: string[];
-  description: string;
-  effects: TechEffects;
-}
-
-/** Árvore tecnológica mínima — cada tecnologia tem efeito real no motor. */
-export const TECHS: Record<string, TechSpec> = {
-  agriculture: {
-    cost: 20,
-    requires: [],
-    description: "Cultivo organizado: +2 de alimento por cidade a cada tick.",
-    effects: { cityYield: { food: 2 } },
-  },
-  writing: {
-    cost: 30,
-    requires: ["agriculture"],
-    description: "Registros e escribas: +1 de ciência por cidade a cada tick.",
-    effects: { cityYield: { science: 1 } },
-  },
-  bronze_working: {
-    cost: 35,
-    requires: ["agriculture"],
-    description: "Metalurgia do bronze: habilita recrutar exércitos (com quartel) e +1 de força ao recrutar.",
-    effects: { unlocksRecruit: true, armyStrengthBonus: 1 },
-  },
-  currency: {
-    cost: 40,
-    requires: ["writing"],
-    description: "Moeda cunhada: +2 de ouro por cidade a cada tick.",
-    effects: { cityYield: { gold: 2 } },
-  },
-  mathematics: {
-    cost: 60,
-    requires: ["writing"],
-    description: "Geometria e engenharia: +2 de ciência por cidade e +2 de força ao recrutar.",
-    effects: { cityYield: { science: 2 }, armyStrengthBonus: 2 },
-  },
-};
+// A árvore tecnológica (custos, pré-requisitos, efeitos) vive em
+// @geniusai/shared — única fonte de verdade com o frontend (RF-024).
+export { TECHS, type TechEffects, type TechSpec } from "@geniusai/shared";
+import { TECHS } from "@geniusai/shared";
 
 /** Recrutamento (ação recruit): custo e força base. */
 export const RECRUIT_GOLD_COST = 30;

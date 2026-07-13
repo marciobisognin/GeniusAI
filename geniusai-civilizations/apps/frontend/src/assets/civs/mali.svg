@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" role="img" aria-label="Mali — ouro do Sahel e a mesquita de Djenné">
+  <defs>
+    <linearGradient id="mSky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f7d9a0"/><stop offset=".5" stop-color="#dfa05c"/><stop offset="1" stop-color="#8e5a9e"/>
+    </linearGradient>
+    <linearGradient id="mSand" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c98f3f"/><stop offset="1" stop-color="#8a5c22"/>
+    </linearGradient>
+    <linearGradient id="mAdobe" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c2854a"/><stop offset="1" stop-color="#8c5a2c"/>
+    </linearGradient>
+    <radialGradient id="mSun" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#fff1c4"/><stop offset=".6" stop-color="#ffd27e"/><stop offset="1" stop-color="#ffd27e" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="960" height="420" fill="url(#mSky)"/>
+  <circle cx="180" cy="140" r="150" fill="url(#mSun)"/>
+  <circle cx="180" cy="140" r="50" fill="#ffe8ac"/>
+  <path d="M0 312 H960 V420 H0 Z" fill="url(#mSand)"/>
+  <path d="M0 300 Q200 286 420 300 T960 296 L960 312 H0 Z" fill="#7b4e1d" opacity=".6"/>
+  <!-- Grande Mesquita de Djenné -->
+  <g fill="url(#mAdobe)" stroke="#5f3a16" stroke-width="3">
+    <rect x="330" y="222" width="380" height="90" rx="8"/>
+    <path d="M366 222 v-58 q0 -22 20 -22 q20 0 20 22 v58 Z"/>
+    <path d="M500 222 v-84 q0 -26 22 -26 q22 0 22 26 v84 Z"/>
+    <path d="M642 222 v-58 q0 -22 20 -22 q20 0 20 22 v58 Z"/>
+  </g>
+  <g fill="#5f3a16">
+    <ellipse cx="386" cy="140" rx="7" ry="10"/><ellipse cx="522" cy="108" rx="8" ry="11"/><ellipse cx="662" cy="140" rx="7" ry="10"/>
+  </g>
+  <!-- Torons (vigas de madeira) -->
+  <g stroke="#4a2c10" stroke-width="5" stroke-linecap="round">
+    <line x1="356" y1="238" x2="336" y2="238"/><line x1="356" y1="262" x2="336" y2="262"/><line x1="356" y1="286" x2="336" y2="286"/>
+    <line x1="684" y1="238" x2="704" y2="238"/><line x1="684" y1="262" x2="704" y2="262"/><line x1="684" y1="286" x2="704" y2="286"/>
+    <line x1="374" y1="186" x2="358" y2="186"/><line x1="398" y1="186" x2="414" y2="186"/>
+    <line x1="508" y1="150" x2="492" y2="150"/><line x1="536" y1="150" x2="552" y2="150"/>
+    <line x1="650" y1="186" x2="634" y2="186"/><line x1="674" y1="186" x2="690" y2="186"/>
+  </g>
+  <g fill="#4a2c10">
+    <rect x="410" y="250" width="26" height="62" rx="12"/><rect x="508" y="244" width="28" height="68" rx="13"/><rect x="606" y="250" width="26" height="62" rx="12"/>
+  </g>
+  <!-- Caravana -->
+  <g fill="#3f2a12" transform="translate(120,332)">
+    <path d="M0 26 q4 -20 18 -22 q4 -12 14 -10 q10 -12 20 -2 q12 -6 16 8 q12 4 10 18 q-4 8 -12 8 l-6 22 h-8 l2 -22 h-24 l-4 22 h-8 l2 -22 q-16 0 -20 -0 Z"/>
+    <path d="M110 22 q3 -16 15 -18 q3 -10 12 -8 q8 -10 16 -2 q10 -5 13 7 q10 3 8 15 q-3 7 -10 7 l-5 18 h-7 l2 -18 h-20 l-3 18 h-7 l2 -18 q-13 0 -16 -0 Z" opacity=".85"/>
+  </g>
+  <!-- Adorno de ouro -->
+  <g transform="translate(872,110)">
+    <circle cx="0" cy="0" r="34" fill="none" stroke="#f4c14f" stroke-width="8"/>
+    <circle cx="0" cy="0" r="12" fill="#f4c14f"/>
+    <g stroke="#f4c14f" stroke-width="6" stroke-linecap="round">
+      <line x1="0" y1="-48" x2="0" y2="-60"/><line x1="0" y1="48" x2="0" y2="60"/>
+      <line x1="-48" y1="0" x2="-60" y2="0"/><line x1="48" y1="0" x2="60" y2="0"/>
+    </g>
+  </g>
+  <rect width="960" height="420" fill="none" stroke="#4a2c10" stroke-opacity=".35" stroke-width="10"/>
+</svg>
