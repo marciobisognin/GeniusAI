@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 12 concluída (Teatro de Decisões)
+## Estado atual: Fase 13 concluída (Agente Construtor)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -144,6 +144,16 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
   - **Giro automático do holofote** a cada 8s entre as civilizações (pausável; clicar numa civ fixa o holofote).
 - O catálogo de tecnologias migrou para `@geniusai/shared` (custos, pré-requisitos, descrições, efeitos e ramos) — motor e UI consomem a MESMA fonte, e a árvore tecnológica da vista Mundo agora mostra só tecnologias que existem de verdade (RF-024 integral).
 - E2E atualizado (passo do Teatro); screenshots em `docs/screenshots/theatre-*.png`.
+
+**Fase 13 — Agente Construtor (`CivilizationAgentFactory` + `AgentOrchestrator`, PRD §7):**
+- **`CivilizationDefinition`** (`@geniusai/shared`): a "receita" de uma civilização — nome, adjetivo, cor, líder, traços de personalidade, prioridades, tolerância a risco, estilo diplomático, tecnologias/recursos iniciais e **modelo de LLM próprio** (`model?`). `DEFAULT_CIVILIZATIONS` é o catálogo de produção (Roma/Egito/Grécia/Mali) — única fonte de verdade, consumida por `createWorld` (persona/recursos/tecnologias iniciais), pelos agentes e pela UI (nomes, cores e líder do Teatro de Decisões deixaram de estar duplicados em 3 arquivos).
+- **`CivilizationAgentFactory`** (`agent/CivilizationAgentFactory.ts`): valida a definição (zod — id, atributos, limites, e que `startingTechnologies` só referencia tecnologias reais do catálogo) e monta um `CivilizationAgent` com `decide()`, `answerQuestion()` (RF-032) e `summarizeTurn()` (síntese local, sem chamar o runner).
+- **`AgentOrchestrator`** (`orchestrator/AgentOrchestrator.ts`): registra um agente por civilização e expõe `decide`/`answerQuestion` por `CivId`. O `GameLoop` o recria a cada `createGameLoop` (nova partida OU carregada de save) — isso *é* a "restauração do agente ao carregar uma partida" (§7.2): os agentes não têm estado próprio além de runner/definição, a memória de longo prazo já vive em `World.civilizations[*].memory`.
+- **Modelo por civilização**: `CivilizationDefinition.model` sobrepõe o modelo do runner só para aquela civilização — honrado hoje pelo `OllamaRunner` (limitação declarada: CLIs claude/codex/opencode ignoram, cada um seleciona modelo de um jeito diferente, fora do escopo desta fase).
+- **Segurança reforçada (§7.6)**: nova defesa em profundidade — `clampPublicReasoning` trunca a justificativa pública em 480 caracteres (nunca cadeia de pensamento longa na UI/trace); novo teste de regressão prova que `snapshotForCiv` **nunca** vaza a memória de uma civilização para outra. As garantias já existentes (agente não recebe caminhos, não escolhe `gameId`, só emite ações registradas, falha vira fallback seguro) foram revisadas e continuam de pé.
+- `server.ts` simplificado: o comando `ask` agora delega a `GameLoop.ask()` → `AgentOrchestrator` → agente, eliminando a lógica de prompt duplicada que vivia solta no servidor.
+- **+21 testes** (validação da definição, factory, orquestrador, isolamento de memória, `createWorld` com definições customizadas, override de modelo, `GameLoop.ask()`): **118 no total**.
+- Verificado em Chromium: partida nova → 3 ticks → Teatro com nomes/cores/líderes **pixel-idênticos** a antes da refatoração → `ask` respondido via o novo orquestrador → logs estruturados `[agent] {...}` no console do backend, um por decisão.
 
 ## Pré-requisitos
 

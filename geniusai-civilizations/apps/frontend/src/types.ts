@@ -3,14 +3,17 @@
  * `@geniusai/shared` — uma única fonte de verdade com o backend. Aqui ficam
  * apenas re-exports e helpers de apresentação (rótulos, cores, narrativa).
  */
-import type { CivId, DisplayEvent, VictoryKind } from "@geniusai/shared";
+import { CIV_IDS, DEFAULT_CIVILIZATIONS } from "@geniusai/shared";
+import type { CivId, CivilizationDefinition, DisplayEvent, VictoryKind } from "@geniusai/shared";
 
 export {
   CIV_IDS,
+  DEFAULT_CIVILIZATIONS,
   type Action,
   type Army,
   type City,
   type CivId,
+  type CivilizationDefinition,
   type CivLastTurn,
   type Civilization,
   type ClientCommand,
@@ -31,19 +34,22 @@ export {
 /** Na UI, a timeline mistura fatos do motor com narrações — DisplayEvent. */
 export type GameEvent = DisplayEvent;
 
-export const CIV_LABEL: Record<CivId, string> = {
-  rome: "Roma",
-  egypt: "Egito",
-  greece: "Grécia",
-  mali: "Mali",
-};
+/**
+ * Nome e cor de cada civilização vêm do MESMO catálogo que o backend usa
+ * para montar os agentes (Agente Construtor, §7 do PRD) — nenhum dado
+ * duplicado entre motor, prompt e UI.
+ */
+export const CIV_LABEL: Record<CivId, string> = Object.fromEntries(
+  CIV_IDS.map((id) => [id, DEFAULT_CIVILIZATIONS[id].name]),
+) as Record<CivId, string>;
 
-export const CIV_COLOR: Record<CivId, string> = {
-  rome: "#c0392b",
-  egypt: "#d4a72c",
-  greece: "#2980b9",
-  mali: "#8e44ad",
-};
+export const CIV_COLOR: Record<CivId, string> = Object.fromEntries(
+  CIV_IDS.map((id) => [id, DEFAULT_CIVILIZATIONS[id].color]),
+) as Record<CivId, string>;
+
+export const CIV_LEADER: Record<CivId, string> = Object.fromEntries(
+  CIV_IDS.map((id) => [id, DEFAULT_CIVILIZATIONS[id].leaderName]),
+) as Record<CivId, string>;
 
 export const VICTORY_LABEL: Record<VictoryKind, string> = {
   domination: "dominação",

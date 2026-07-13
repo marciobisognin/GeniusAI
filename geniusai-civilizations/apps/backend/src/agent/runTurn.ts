@@ -6,6 +6,8 @@ import { buildSystemPrompt, buildTurnPrompt } from "./prompt";
 export interface RunTurnOptions {
   onToken?: (chunk: string) => void;
   timeoutMs?: number;
+  /** Override de modelo (ver `DecideInput.model` — CivilizationDefinition.model). */
+  model?: string;
 }
 
 export interface TurnResult {
@@ -19,6 +21,20 @@ export interface TurnResult {
   attempts: number;
   /** Erros de validação/execução (feedback p/ o próximo turno). */
   errors: string[];
+}
+
+/**
+ * Teto de caracteres da justificativa PÚBLICA de um turno (PRD §7.6:
+ * "respostas devem incluir justificativa curta, nunca cadeia de pensamento
+ * interna"). Defesa em profundidade — o prompt já pede 1–3 frases — contra
+ * um runner que despeje um raciocínio longo demais na UI/timeline/trace.
+ */
+export const MAX_PUBLIC_REASONING_CHARS = 480;
+
+/** Trunca a justificativa pública, preservando palavras inteiras. */
+export function clampPublicReasoning(text: string): string {
+  if (text.length <= MAX_PUBLIC_REASONING_CHARS) return text;
+  return `${text.slice(0, MAX_PUBLIC_REASONING_CHARS).replace(/\s+\S*$/, "")}…`;
 }
 
 /**
@@ -54,11 +70,12 @@ export async function runCivilizationTurn(
         schema: RESPONSE_JSON_SCHEMA,
         onToken: opts.onToken,
         timeoutMs: opts.timeoutMs,
+        model: opts.model,
       });
       const { valid, errors } = coerceActions(decision.actions);
       return {
         decision: { civ: civId, actions: valid },
-        reasoning: decision.reasoning,
+        reasoning: clampPublicReasoning(decision.reasoning),
         passed: false,
         attempts: attempt,
         errors,

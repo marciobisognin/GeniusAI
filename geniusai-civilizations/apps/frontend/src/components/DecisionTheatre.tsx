@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TECHS } from "@geniusai/shared";
 import type { TechBranch } from "@geniusai/shared";
 import { ERA_STAGES, eventHasCiv, getEraProgress } from "../simulationInsights";
-import { CIV_COLOR, CIV_IDS, CIV_LABEL, describeEvent } from "../types";
+import { CIV_COLOR, CIV_IDS, CIV_LABEL, CIV_LEADER, describeEvent } from "../types";
 import type { CivId, Civilization, GameEvent, World } from "../types";
 import type { CivUiState } from "../useGameSocket";
 import romeArt from "../assets/civs/rome.svg";
@@ -18,12 +18,18 @@ interface Props {
   events: GameEvent[];
 }
 
-const LEADER: Record<CivId, { name: string; title: string; art: string }> = {
-  rome: { name: "César", title: "A Cidade Eterna", art: romeArt },
-  egypt: { name: "Cleópatra", title: "Dádiva do Nilo", art: egyptArt },
-  greece: { name: "Péricles", title: "Berço da Filosofia", art: greeceArt },
-  mali: { name: "Mansa Musa", title: "Senhor do Ouro", art: maliArt },
+// `name` (líder) vem do Agente Construtor (`CIV_LEADER`, @geniusai/shared) —
+// única fonte de verdade com o backend. `title`/`art` são puramente
+// apresentacionais (não fazem parte de `CivilizationDefinition`).
+const LEADER_PRESENTATION: Record<CivId, { title: string; art: string }> = {
+  rome: { title: "A Cidade Eterna", art: romeArt },
+  egypt: { title: "Dádiva do Nilo", art: egyptArt },
+  greece: { title: "Berço da Filosofia", art: greeceArt },
+  mali: { title: "Senhor do Ouro", art: maliArt },
 };
+const LEADER: Record<CivId, { name: string; title: string; art: string }> = Object.fromEntries(
+  CIV_IDS.map((id) => [id, { name: CIV_LEADER[id], ...LEADER_PRESENTATION[id] }]),
+) as Record<CivId, { name: string; title: string; art: string }>;
 
 const TECH_LABEL: Record<string, string> = {
   agriculture: "Agricultura",

@@ -30,6 +30,14 @@ export interface DecideInput {
   onToken?: (chunk: string) => void;
   /** Timeout do turno (ms). */
   timeoutMs?: number;
+  /**
+   * Override de modelo para ESTA chamada (vem de `CivilizationDefinition.model`
+   * — cada civilização pode usar um modelo diferente). Honrado hoje pelo
+   * `OllamaRunner`; runners de CLI (claude/codex/opencode) ignoram este campo
+   * — a seleção de modelo desses CLIs varia por ferramenta e não foi
+   * generalizada nesta fase (limitação declarada).
+   */
+  model?: string;
 }
 
 export interface AgentRunner {

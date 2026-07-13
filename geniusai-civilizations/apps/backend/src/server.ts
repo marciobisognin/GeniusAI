@@ -3,7 +3,6 @@ import type { AddressInfo } from "node:net";
 import { WebSocketServer, type WebSocket } from "ws";
 import { z } from "zod";
 import type { AgentRunner } from "./agent";
-import { RESPONSE_JSON_SCHEMA, snapshotForCiv } from "./agent";
 import { CIV_IDS } from "./engine/types";
 import type { CivId } from "./engine/types";
 import type { Config } from "./config";
@@ -161,40 +160,6 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
     };
   }
 
-  /**
-   * Consulta somente leitura ao agente da civilização (comando `ask`):
-   * mesmo runner e mesmo formato de resposta dos turnos, mas sem aplicar
-   * ações, sem avançar tick e sem tocar na memória estratégica.
-   */
-  async function askCivilization(civId: CivId, question: string): Promise<string> {
-    const civ = loop.world.civilizations[civId];
-    const snapshot = snapshotForCiv(loop.world, civId);
-    const system = [
-      `Você é a voz da civilização "${civId}" em uma simulação observável.`,
-      `Personalidade: ${civ.persona}`,
-      `Um observador humano fará uma pergunta. Responda em primeira pessoa, em português,`,
-      `com 2 a 4 frases, coerente com o estado atual do mundo e com sua memória estratégica.`,
-      `Isto é apenas uma conversa: NÃO escolha ações de jogo.`,
-      `Responda ESTRITAMENTE com um JSON { "reasoning": string, "actions": [] } — a resposta vai em "reasoning".`,
-    ].join("\n");
-    const user = [
-      `Estado atual (tick ${loop.world.tick}):`,
-      JSON.stringify(snapshot),
-      ``,
-      `Pergunta do observador: ${JSON.stringify(question)}`,
-    ].join("\n");
-
-    const decision = await runner.decide({
-      system,
-      user,
-      schema: RESPONSE_JSON_SCHEMA,
-      timeoutMs: Number(process.env.ASK_TIMEOUT_MS ?? 30_000),
-    });
-    const text = decision.reasoning.trim();
-    if (!text) throw new Error("o agente respondeu vazio");
-    return text;
-  }
-
   async function handleCommand(ws: WebSocket, msg: ClientCommand): Promise<void> {
     switch (msg.action) {
       case "play":
@@ -282,7 +247,9 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
 
       case "ask": {
         try {
-          const text = await askCivilization(msg.civ, msg.question);
+          // Consulta somente leitura ao agente da civilização (RF-032): não
+          // avança o tick, não aplica ações, não altera memória estratégica.
+          const text = await loop.ask(msg.civ, msg.question);
           ws.send(
             JSON.stringify({ type: "answer", civ: msg.civ, question: msg.question, text, runner: runner.name }),
           );
