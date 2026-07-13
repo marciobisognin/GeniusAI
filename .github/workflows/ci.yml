@@ -7,7 +7,7 @@ on:
 
 jobs:
   ci:
-    name: typecheck · testes · build · e2e
+    name: lint · typecheck · testes · build · e2e
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,11 +26,14 @@ jobs:
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
 
+      - name: Lint (ESLint — backend + frontend + shared)
+        run: npm run lint
+
       - name: Typecheck (shared + backend + frontend)
         run: npm run typecheck
 
-      - name: Testes do backend (97, sem LLM)
-        run: npm test
+      - name: Testes do backend com cobertura (123, sem LLM)
+        run: npm run test:coverage
 
       - name: Build do frontend
         run: npm run build

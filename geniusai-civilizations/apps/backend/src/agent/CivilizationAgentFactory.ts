@@ -2,6 +2,7 @@ import { z } from "zod";
 import { CIV_IDS, TECHS } from "@geniusai/shared";
 import type { CivilizationDefinition } from "@geniusai/shared";
 import type { CivId, World } from "../engine/types";
+import { logger as backendLogger } from "../logger";
 import type { AgentRunner } from "./AgentRunner";
 import { answerCivilizationQuestion } from "./answerQuestion";
 import { runCivilizationTurn } from "./runTurn";
@@ -68,10 +69,22 @@ export interface AgentLogger {
   log(entry: AgentLogEntry): void;
 }
 
-/** Logger padrão: uma linha JSON estruturada por operação (RNF-003, versão mínima). */
+/**
+ * Logger padrão: delega ao logger estruturado do backend (`../logger`), que
+ * já resolve o formato pretty/json (RNF-003) — uma linha por operação do
+ * agente, correlacionável por `gameId`/`civilizationId`/`tick`.
+ */
 export const consoleAgentLogger: AgentLogger = {
   log(entry) {
-    console.log(`[agent] ${JSON.stringify(entry)}`);
+    const level = entry.errorCode ? "warn" : "info";
+    backendLogger[level](`agente ${entry.civ} · ${entry.operation}`, {
+      gameId: entry.gameId,
+      civilizationId: entry.civ,
+      tick: entry.tick,
+      operation: entry.operation,
+      durationMs: entry.durationMs,
+      errorCode: entry.errorCode,
+    });
   },
 };
 

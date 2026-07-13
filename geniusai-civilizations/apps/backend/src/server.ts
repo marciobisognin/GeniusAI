@@ -6,6 +6,7 @@ import type { AgentRunner } from "./agent";
 import { CIV_IDS } from "./engine/types";
 import type { CivId } from "./engine/types";
 import type { Config } from "./config";
+import { logger, newRequestId } from "./logger";
 import { createGameLoop, type GameLoop } from "./orchestrator/GameLoop";
 import type { LoopEvent } from "./orchestrator/events";
 import {
@@ -64,9 +65,19 @@ function slugifyName(name: string | undefined): string {
   return slug || "game";
 }
 
-/** Erro padronizado enviado ao cliente: sempre com `code` legível por máquina. */
-function sendError(ws: WebSocket, code: string, message: string): void {
+/**
+ * Erro padronizado enviado ao cliente (sempre com `code` legível por
+ * máquina) — e simultaneamente uma linha de log estruturada (RNF-003),
+ * correlacionável pelo `requestId` da conexão que originou o comando.
+ */
+function sendError(
+  ws: WebSocket,
+  code: string,
+  message: string,
+  fields: { requestId?: string; gameId?: string } = {},
+): void {
   ws.send(JSON.stringify({ type: "error", code, message }));
+  logger.warn(message, { ...fields, errorCode: code });
 }
 
 /**
@@ -160,7 +171,9 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
     };
   }
 
-  async function handleCommand(ws: WebSocket, msg: ClientCommand): Promise<void> {
+  async function handleCommand(ws: WebSocket, msg: ClientCommand, requestId: string): Promise<void> {
+    const err = (code: string, message: string) => sendError(ws, code, message, { requestId, gameId: loop.gameId });
+
     switch (msg.action) {
       case "play":
         loop.play();
@@ -174,11 +187,11 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
 
       case "step":
         if (loop.getState() === "running" || loop.isBusy() || swapping) {
-          sendError(ws, "GAME_BUSY", "já existe um tick ou troca de partida em andamento");
+          err("GAME_BUSY", "já existe um tick ou troca de partida em andamento");
           return;
         }
-        void loop.step().catch((err) => {
-          sendError(ws, "STEP_FAILED", err instanceof Error ? err.message : String(err));
+        void loop.step().catch((e) => {
+          err("STEP_FAILED", e instanceof Error ? e.message : String(e));
         });
         return;
 
@@ -192,7 +205,7 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
 
       case "new_game": {
         if (swapping) {
-          sendError(ws, "GAME_BUSY", "troca de partida em andamento");
+          err("GAME_BUSY", "troca de partida em andamento");
           return;
         }
         swapping = true;
@@ -216,14 +229,14 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
 
       case "load_game": {
         if (swapping) {
-          sendError(ws, "GAME_BUSY", "troca de partida em andamento");
+          err("GAME_BUSY", "troca de partida em andamento");
           return;
         }
         swapping = true;
         try {
           const world = await loadWorld(msg.gameId);
           if (!world) {
-            sendError(ws, "GAME_NOT_FOUND", `partida não encontrada: ${msg.gameId}`);
+            err("GAME_NOT_FOUND", `partida não encontrada: ${msg.gameId}`);
             return;
           }
           loop.stop();
@@ -231,13 +244,13 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
           const next = await createGameLoop({ ...loopOptions(), world, gameId: msg.gameId });
           attachLoop(next);
           await sendFullState("broadcast");
-        } catch (err) {
-          if (err instanceof UnsupportedSaveVersionError || err instanceof CorruptedSaveError) {
-            sendError(ws, err.code, err.message);
-          } else if (err instanceof InvalidGameIdError) {
-            sendError(ws, "INVALID_GAME_ID", err.message);
+        } catch (e) {
+          if (e instanceof UnsupportedSaveVersionError || e instanceof CorruptedSaveError) {
+            err(e.code, e.message);
+          } else if (e instanceof InvalidGameIdError) {
+            err("INVALID_GAME_ID", e.message);
           } else {
-            throw err;
+            throw e;
           }
         } finally {
           swapping = false;
@@ -253,12 +266,8 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
           ws.send(
             JSON.stringify({ type: "answer", civ: msg.civ, question: msg.question, text, runner: runner.name }),
           );
-        } catch (err) {
-          sendError(
-            ws,
-            "ASK_FAILED",
-            `a civilização não respondeu: ${err instanceof Error ? err.message : String(err)}`,
-          );
+        } catch (e) {
+          err("ASK_FAILED", `a civilização não respondeu: ${e instanceof Error ? e.message : String(e)}`);
         }
         return;
       }
@@ -269,6 +278,8 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
     res.setHeader("access-control-allow-origin", "*");
 
     if (req.method === "GET" && req.url === "/health") {
+      // Deliberadamente NÃO logado: health checks costumam ser pollados em
+      // intervalo curto e inundariam o log sem agregar valor operacional.
       const healthy = await runner.healthy();
       res.writeHead(healthy ? 200 : 503, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: healthy, runner: runner.name }));
@@ -286,7 +297,11 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
   });
 
   wss.on("connection", async (ws) => {
+    // Um requestId por CONEXÃO (não por comando): correlaciona no log toda a
+    // sequência de comandos de um mesmo cliente, do "hello" ao "close".
+    const requestId = newRequestId();
     clients.add(ws);
+    logger.info("cliente conectado", { requestId, operation: "connect", gameId: loop.gameId });
     ws.send(JSON.stringify({ type: "hello", runner: runner.name }));
 
     try {
@@ -303,7 +318,7 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
       try {
         msg = JSON.parse(raw.toString());
       } catch {
-        sendError(ws, "INVALID_COMMAND", "mensagem não é JSON válido");
+        sendError(ws, "INVALID_COMMAND", "mensagem não é JSON válido", { requestId, gameId: loop.gameId });
         return;
       }
 
@@ -314,24 +329,45 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
           ws,
           "INVALID_COMMAND",
           `comando inválido: ${issue ? `${issue.path.join(".") || "(raiz)"} — ${issue.message}` : "formato desconhecido"}`,
+          { requestId, gameId: loop.gameId },
         );
         return;
       }
 
-      void handleCommand(ws, parsed.data).catch((err) => {
-        sendError(ws, "INTERNAL_ERROR", err instanceof Error ? err.message : String(err));
-      });
+      const start = Date.now();
+      void handleCommand(ws, parsed.data, requestId)
+        .then(() => {
+          logger.info("comando processado", {
+            requestId,
+            gameId: loop.gameId,
+            operation: parsed.data.action,
+            durationMs: Date.now() - start,
+          });
+        })
+        .catch((err) => {
+          sendError(ws, "INTERNAL_ERROR", err instanceof Error ? err.message : String(err), {
+            requestId,
+            gameId: loop.gameId,
+          });
+        });
     });
 
-    ws.on("close", () => clients.delete(ws));
+    ws.on("close", () => {
+      clients.delete(ws);
+      logger.info("cliente desconectado", { requestId, operation: "disconnect", gameId: loop.gameId });
+    });
   });
 
   const port = await new Promise<number>((resolve) => {
     httpServer.listen(cfg.port, cfg.host, () => resolve((httpServer.address() as AddressInfo).port));
   });
-  console.log(
-    `[backend] HTTP+WebSocket em http://${cfg.host}:${port} (runner: ${runner.name}${cfg.narrator ? ", narrador ligado" : ""})`,
-  );
+  logger.info("HTTP+WebSocket no ar", {
+    operation: "boot",
+    host: cfg.host,
+    port,
+    runner: runner.name,
+    narrator: cfg.narrator,
+  });
 
   return {
     httpServer,

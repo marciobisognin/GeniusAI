@@ -4,7 +4,7 @@
  * apenas re-exports e helpers de apresentação (rótulos, cores, narrativa).
  */
 import { CIV_IDS, DEFAULT_CIVILIZATIONS } from "@geniusai/shared";
-import type { CivId, CivilizationDefinition, DisplayEvent, VictoryKind } from "@geniusai/shared";
+import type { CivId, DisplayEvent, VictoryKind } from "@geniusai/shared";
 
 export {
   CIV_IDS,

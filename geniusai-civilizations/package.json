@@ -16,9 +16,16 @@
     "test": "npm run test --workspace apps/backend",
     "e2e": "node e2e/smoke.mjs",
     "build": "npm run build --workspace apps/frontend",
-    "typecheck": "npm run typecheck --workspace packages/shared && npm run typecheck --workspace apps/backend && npm run typecheck --workspace apps/frontend"
+    "typecheck": "npm run typecheck --workspace packages/shared && npm run typecheck --workspace apps/backend && npm run typecheck --workspace apps/frontend",
+    "lint": "eslint .",
+    "test:coverage": "npm run test:coverage --workspace apps/backend"
   },
   "devDependencies": {
-    "playwright": "^1.49.0"
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.7.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
+    "playwright": "^1.49.0",
+    "typescript-eslint": "^8.63.0"
   }
 }

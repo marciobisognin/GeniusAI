@@ -57,7 +57,8 @@ export function App() {
       if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
       if (e.code === "Space") {
         e.preventDefault();
-        loopState === "running" ? pause() : play();
+        if (loopState === "running") pause();
+        else play();
       } else if (e.key === "s" || e.key === "S") {
         if (loopState !== "running") step();
       }
@@ -192,15 +193,16 @@ export function App() {
         />
       </div>
 
-      <NewGameModal
-        open={showNewGame}
-        runner={runner}
-        onClose={() => setShowNewGame(false)}
-        onCreate={(opts) => {
-          newGame(opts);
-          setShowNewGame(false);
-        }}
-      />
+      {showNewGame && (
+        <NewGameModal
+          runner={runner}
+          onClose={() => setShowNewGame(false)}
+          onCreate={(opts) => {
+            newGame(opts);
+            setShowNewGame(false);
+          }}
+        />
+      )}
     </main>
   );
 }
