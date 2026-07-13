@@ -8,7 +8,11 @@
     "apps/frontend",
     "packages/shared"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
+    "doctor": "node scripts/doctor.mjs",
     "dev": "node scripts/dev.mjs",
     "dev:backend": "npm run dev --workspace apps/backend",
     "dev:frontend": "npm run dev --workspace apps/frontend",

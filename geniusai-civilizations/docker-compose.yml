@@ -1,0 +1,48 @@
+# Empacotamento opcional (PRD §14). Uso rápido:
+#   docker compose up --build
+#   → backend em http://localhost:8787, UI em http://localhost:5173
+#
+# RUNNER=mock por padrão (decisões determinísticas, sem LLM — sempre
+# funciona). Para usar Ollama rodando no HOST (fora do container):
+#   RUNNER=ollama OLLAMA_HOST=http://host.docker.internal:11434 docker compose up --build
+#
+# RUNNER=claude|codex|opencode NÃO funciona nesta imagem — os CLIs não estão
+# instalados no container (fora do escopo desta fase). Para esses runners,
+# use `npm run dev` localmente.
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    ports:
+      - "8787:8787"
+    environment:
+      RUNNER: ${RUNNER:-mock}
+      AGENT_CMD: ${AGENT_CMD:-}
+      MODEL: ${MODEL:-qwen2.5:14b}
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      SEED: ${SEED:-42}
+      TICK_SPEED_MS: ${TICK_SPEED_MS:-2000}
+      TURN_TIMEOUT_MS: ${TURN_TIMEOUT_MS:-60000}
+      NARRATOR: ${NARRATOR:-false}
+      LOG_FORMAT: ${LOG_FORMAT:-pretty}
+      # HOST/PORT/DATA_DIR já vêm corretos da imagem (ver Dockerfile) —
+      # HOST=0.0.0.0 é obrigatório em container (127.0.0.1 não seria
+      # alcançável de fora, mesmo com a porta publicada).
+    volumes:
+      - geniusai-data:/app/data
+    extra_hosts:
+      # permite RUNNER=ollama apontar para um Ollama rodando no host.
+      - "host.docker.internal:host-gateway"
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  geniusai-data:

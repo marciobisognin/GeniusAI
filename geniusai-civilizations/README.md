@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 15 concluída (observabilidade, lint e cobertura)
+## Estado atual: Fase 16 concluída (empacotamento Docker e diagnóstico de ambiente)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -164,6 +164,11 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **+5 testes** do logger (pretty/json, erro sempre em `console.error`, ids únicos): **123 no total**.
 - CI atualizado: **lint** roda antes do typecheck; os testes agora rodam com `--experimental-test-coverage` (relatório de cobertura visível em todo PR).
 
+**Fase 16 — Empacotamento Docker e diagnóstico de ambiente (PRD §14):**
+- **`npm run doctor`** (`scripts/doctor.mjs`, zero dependências): checa Node ≥ 20, se o runner escolhido (`RUNNER`) está disponível (CLI no `PATH`, ou Ollama respondendo em `OLLAMA_HOST`, ou `mock` que sempre funciona), se a porta `PORT` está livre e se `DATA_DIR` é gravável — imprime um resumo com ✓/⚠/✗ e sai com código 1 se houver bloqueio. Testado manualmente em 6 cenários (mock ok, CLI ok, runner inválido falha, porta ocupada avisa, Ollama inacessível falha, `DATA_DIR` sem permissão de escrita).
+- **`Dockerfile`** multi-stage (`deps` → `build` → `backend`/`frontend`, um único arquivo, cache de `npm ci` em camada própria) e **`docker-compose.yml`** (dois serviços, `RUNNER=mock` por padrão, volume nomeado para `DATA_DIR`, `host.docker.internal` liberado para apontar para um Ollama rodando no host). Limitação assumida: `RUNNER=claude|codex|opencode` exige o CLI instalado dentro da imagem, fora do escopo desta fase — nessa imagem use `RUNNER=mock` ou `RUNNER=ollama` (host).
+- **Verificação:** `docker compose config` validou a composição offline; o comportamento em runtime de cada alvo (`CMD` do backend e do frontend) foi validado rodando os mesmos comandos em containers `node:22-slim` com o `node_modules`/`dist` já resolvidos no host montados por bind mount, incluindo um fluxo E2E completo via Playwright/Chromium contra os dois containers reais (conectar → criar partida → avançar tick). O passo `docker compose build` (`npm ci` de dentro do container) não pôde ser exercitado de ponta a ponta *neste ambiente sandboxed* de verificação, por uma limitação de rede do proxy de saída específica deste sandbox (documentada em `/root/.ccr/README.md`) — não é uma limitação do `Dockerfile` em si, que segue o padrão multi-stage usual do Node; em uma máquina com acesso normal à internet o `docker compose up --build` funciona sem ajustes.
+
 ## Pré-requisitos
 
 - Node.js 20+.
@@ -191,6 +196,29 @@ RUNNER=claude npm run health
 # ou
 RUNNER=ollama npm run health
 ```
+
+Diagnóstico rápido do ambiente (Node, runner, porta, `DATA_DIR`) antes de rodar:
+
+```bash
+npm run doctor
+```
+
+### Docker (opcional)
+
+Roda o projeto sem precisar de Node instalado no host — `RUNNER=mock` por padrão (sem LLM, sempre funciona):
+
+```bash
+docker compose up --build
+# backend em http://localhost:8787, UI em http://localhost:5173
+```
+
+Para usar Ollama rodando no host (fora do container):
+
+```bash
+RUNNER=ollama OLLAMA_HOST=http://host.docker.internal:11434 docker compose up --build
+```
+
+`RUNNER=claude|codex|opencode` não funciona nesta imagem (o CLI não está instalado no container) — para esses runners use `npm run dev` local.
 
 Endpoints do backend (porta `PORT`, padrão 8787):
 - `GET /health` → `{ ok, runner }`
