@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 13 concluída (Agente Construtor)
+## Estado atual: Fase 15 concluída (observabilidade, lint e cobertura)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -155,6 +155,15 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **+21 testes** (validação da definição, factory, orquestrador, isolamento de memória, `createWorld` com definições customizadas, override de modelo, `GameLoop.ask()`): **118 no total**.
 - Verificado em Chromium: partida nova → 3 ticks → Teatro com nomes/cores/líderes **pixel-idênticos** a antes da refatoração → `ask` respondido via o novo orquestrador → logs estruturados `[agent] {...}` no console do backend, um por decisão.
 
+**Fase 15 — Observabilidade, lint e cobertura de testes (RNF-003):**
+- **Logger estruturado** (`src/logger.ts`): toda linha carrega os campos do RNF-003 — `requestId`, `gameId`, `tick`, `civilizationId`, `operation`, `durationMs`, `errorCode`. Dois formatos, escolhidos por `LOG_FORMAT` (padrão `pretty`): **pretty** — uma linha legível no terminal, preservando o "watchable" do produto (`[info] rome decidindo… (operation=turn_start gameId=game-42 tick=1 civilizationId=rome)`); **json** — uma linha JSON por evento, para pipelines de observabilidade (`LOG_FORMAT=json`).
+- **Cada conexão WebSocket ganha um `requestId`** (gerado na conexão, não por comando) — toda a sequência de comandos de um cliente fica correlacionável no log, do `connect` ao `disconnect`. Todo comando processado gera uma linha (`operation` = a ação, `durationMs`); toda falha (`sendError`) também loga com o `errorCode` correspondente.
+- O `AgentLogger` da Fase 13 (`CivilizationAgentFactory`) passou a delegar ao mesmo logger central — um único formato/pipeline para todo o backend, não dois.
+- **ESLint** (`eslint.config.mjs`, flat config, cobre os 3 workspaces com um único arquivo na raiz): `npm run lint`. Achou 3 problemas reais na primeira execução — todos corrigidos: um ternário usado só pelo efeito colateral (`App.tsx`), um `setState` síncrono dentro de `useEffect` no modal de nova partida (corrigido adotando o padrão idiomático do React: o modal só monta enquanto está aberto, então os campos já nascem em branco sem precisar de um efeito resetando estado) e um import não utilizado.
+- **Cobertura de testes** via `node --experimental-test-coverage` (`npm run test:coverage`): **98,7% de linhas** no backend.
+- **+5 testes** do logger (pretty/json, erro sempre em `console.error`, ids únicos): **123 no total**.
+- CI atualizado: **lint** roda antes do typecheck; os testes agora rodam com `--experimental-test-coverage` (relatório de cobertura visível em todo PR).
+
 ## Pré-requisitos
 
 - Node.js 20+.
@@ -202,6 +211,7 @@ Endpoints do backend (porta `PORT`, padrão 8787):
 | `SEED` | `42` | Seed do mundo (define o `gameId` padrão: `game-<seed>`) |
 | `TICK_SPEED_MS` | `2000` | Atraso entre ticks no modo play |
 | `TURN_TIMEOUT_MS` | `60000` | Timeout por turno de agente |
+| `LOG_FORMAT` | `pretty` | `pretty` (legível no terminal) \| `json` (uma linha JSON por evento, RNF-003) |
 
 ## Estrutura
 

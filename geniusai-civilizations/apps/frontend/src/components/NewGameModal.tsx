@@ -7,7 +7,6 @@ export interface NewGameOptions {
 }
 
 interface Props {
-  open: boolean;
   runner?: string;
   onClose: () => void;
   onCreate: (opts: NewGameOptions) => void;
@@ -24,28 +23,22 @@ const SPEED_OPTIONS = [
  * Tela de criação de partida (RF-010): nome, seed opcional e velocidade
  * inicial. O botão fica desabilitado enquanto os dados forem inválidos;
  * o runner ativo é informado (configurado no backend via RUNNER).
+ *
+ * O chamador só monta este componente enquanto o modal estiver aberto (ver
+ * `{showNewGame && <NewGameModal .../>}` em App.tsx) — cada abertura é uma
+ * montagem nova, então os campos já nascem em branco sem precisar de um
+ * `useEffect` resetando estado a partir de uma prop.
  */
-export function NewGameModal({ open, runner, onClose, onCreate }: Props) {
+export function NewGameModal({ runner, onClose, onCreate }: Props) {
   const [name, setName] = useState("");
   const [seedText, setSeedText] = useState("");
   const [speedMs, setSpeedMs] = useState(2000);
 
   useEffect(() => {
-    if (open) {
-      setName("");
-      setSeedText("");
-      setSpeedMs(2000);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  if (!open) return null;
+  }, [onClose]);
 
   const trimmed = name.trim();
   const seedValid = seedText.trim() === "" || /^\d{1,10}$/.test(seedText.trim());
