@@ -1,3 +1,5 @@
+import { DEFAULT_CIVILIZATIONS, civilizationPersonaText } from "@geniusai/shared";
+import type { CivilizationDefinition } from "@geniusai/shared";
 import { Rng } from "./rng";
 import { neighbors } from "./rules";
 import { CIV_IDS } from "./types";
@@ -13,21 +15,20 @@ const HOMES: Record<CivId, { x: number; y: number }> = {
   mali: { x: 6, y: 6 },
 };
 
-const DEFAULT_PERSONAS: Record<CivId, string> = {
-  rome: "Expansionista e militarista.",
-  egypt: "Defensiva e comercial.",
-  greece: "Científica e cultural.",
-  mali: "Mercantil e diplomática.",
-};
-
 const TERRAINS: Terrain[] = ["plains", "forest", "mountain", "coast", "desert"];
 const RESOURCES: ResourceKind[] = ["food", "gold", "science"];
 
 /**
  * Cria o mundo inicial de forma **determinística** a partir de um seed:
- * mesmo seed → mundo byte-a-byte idêntico (essencial para replay/testes).
+ * mesmo seed (e mesmas `definitions`) → mundo byte-a-byte idêntico (essencial
+ * para replay/testes). `definitions` vem do Agente Construtor (§7 do PRD) —
+ * persona, recursos e tecnologias iniciais de cada civilização nascem dela;
+ * o padrão é o catálogo de produção (`DEFAULT_CIVILIZATIONS`).
  */
-export function createWorld(seed: number): World {
+export function createWorld(
+  seed: number,
+  definitions: Record<CivId, CivilizationDefinition> = DEFAULT_CIVILIZATIONS,
+): World {
   const rng = new Rng(seed);
 
   const map: Tile[][] = [];
@@ -66,11 +67,12 @@ export function createWorld(seed: number): World {
       if (n.owner === null) n.owner = id;
     }
 
+    const def = definitions[id];
     civilizations[id] = {
       id,
-      persona: DEFAULT_PERSONAS[id],
-      resources: { food: 5, gold: 60, science: 0 },
-      tech: [],
+      persona: civilizationPersonaText(def),
+      resources: { ...def.startingResources },
+      tech: [...def.startingTechnologies],
       researching: null,
       cities: [{ id: `${id}-city-1`, x: home.x, y: home.y, population: 2, buildings: [] }],
       armies: [{ id: `${id}-army-1`, x: home.x, y: home.y, strength: 5 }],

@@ -31,7 +31,9 @@ export class OllamaRunner implements AgentRunner {
       headers: { "content-type": "application/json" },
       signal: AbortSignal.timeout(input.timeoutMs ?? 60_000),
       body: JSON.stringify({
-        model: this.model,
+        // `input.model` (CivilizationDefinition.model) sobrepõe o modelo
+        // padrão do runner — permite um modelo diferente por civilização.
+        model: input.model ?? this.model,
         stream: false,
         format: input.schema, // JSON schema → Ollama força JSON válido
         keep_alive: "30m",

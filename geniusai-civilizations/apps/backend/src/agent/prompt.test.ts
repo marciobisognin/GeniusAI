@@ -28,3 +28,15 @@ test("buildTurnPrompt menciona o tick e o formato de resposta", () => {
   assert.ok(p.includes(`tick ${w.tick}`));
   assert.ok(p.includes(`"reasoning"`));
 });
+
+test("segurança (§7.6): snapshotForCiv nunca vaza a memória privada de outra civilização", () => {
+  const w = createWorld(5);
+  w.civilizations.egypt.memory = "SEGREDO-DE-ESTADO-DO-EGITO-42";
+  const snap = snapshotForCiv(w, "rome");
+  const serialized = JSON.stringify(snap);
+  assert.ok(!serialized.includes("SEGREDO-DE-ESTADO-DO-EGITO-42"), "a memória do Egito vazou para Roma");
+  // A civilização ainda deve ver a PRÓPRIA memória normalmente.
+  w.civilizations.rome.memory = "minha estratégia";
+  const ownSnap = snapshotForCiv(w, "rome");
+  assert.equal(ownSnap.you.memory, "minha estratégia");
+});

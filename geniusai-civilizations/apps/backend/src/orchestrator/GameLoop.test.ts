@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import os from "node:os";
 import path from "node:path";
 import { existsSync, mkdtempSync, readFileSync } from "node:fs";
+import { DEFAULT_CIVILIZATIONS, civilizationPersonaText } from "@geniusai/shared";
 import { createGameLoop, GameLoop } from "./GameLoop";
 import { loadWorld, readTrace } from "./trace";
 import type { AgentDecision, AgentRunner } from "../agent/AgentRunner";
@@ -199,4 +200,46 @@ test("createGameLoop: mundo carregado de save mantém a memória do save (sem so
 
   const retomado = await createGameLoop({ runner: passRunner, gameId: "t-mem" });
   assert.equal(retomado.world.civilizations.rome.memory, "memória da partida t-mem");
+});
+
+test("Agente Construtor: definitions customizadas se refletem no mundo novo e no turno do agente", async () => {
+  tempDataDir();
+  const models: (string | undefined)[] = [];
+  const runner: AgentRunner = {
+    name: "fake",
+    healthy: async () => true,
+    decide: async (input) => {
+      models.push(input.model);
+      return { reasoning: "", actions: [] };
+    },
+  };
+  const customEgypt = {
+    ...DEFAULT_CIVILIZATIONS.egypt,
+    personality: ["Isolacionista"],
+    model: "qwen2.5:14b",
+  };
+  const loop = new GameLoop({
+    runner,
+    seed: 5,
+    gameId: "t-def",
+    persist: false,
+    definitions: { egypt: customEgypt },
+  });
+
+  assert.equal(loop.world.civilizations.egypt.persona, civilizationPersonaText(customEgypt));
+  // Demais civilizações continuam com o catálogo padrão.
+  assert.equal(loop.world.civilizations.rome.persona, civilizationPersonaText(DEFAULT_CIVILIZATIONS.rome));
+
+  await loop.step();
+  assert.ok(models.includes("qwen2.5:14b"), "o override de modelo do Egito deveria chegar ao runner");
+});
+
+test("GameLoop.ask(): consulta somente leitura via Agente Construtor, sem avançar o tick", async () => {
+  tempDataDir();
+  const runner = fixedRunner({ reasoning: "Sou Mali, próspero e diplomata.", actions: [] });
+  const loop = new GameLoop({ runner, seed: 5, gameId: "t-ask", persist: false });
+
+  const answer = await loop.ask("mali", "Qual o seu plano?");
+  assert.match(answer, /Mali/);
+  assert.equal(loop.world.tick, 0, "ask não pode avançar a simulação");
 });

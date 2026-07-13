@@ -9,6 +9,19 @@ export * from "./actions";
 export * from "./prompt";
 export * from "./runTurn";
 export * from "./memory";
+export * from "./answerQuestion";
+export {
+  createCivilizationAgent,
+  validateCivilizationDefinition,
+  InvalidCivilizationDefinitionError,
+  consoleAgentLogger,
+} from "./CivilizationAgentFactory";
+export type {
+  CivilizationAgent,
+  CivilizationAgentContext,
+  AgentLogger,
+  AgentLogEntry,
+} from "./CivilizationAgentFactory";
 
 /** Extrai o texto do modelo do envelope JSON do `claude -p --output-format json`. */
 function unwrapClaudeEnvelope(stdout: string): string {

@@ -213,6 +213,124 @@ export const TECHS: Record<string, TechSpec> = {
   },
 };
 
+// ── Definição de civilização (Agente Construtor — PRD §7) ──────────────────
+
+export type CivilizationPriority = "military" | "science" | "economy" | "culture" | "diplomacy";
+export type DiplomacyStyle = "peaceful" | "balanced" | "aggressive";
+
+/**
+ * Configuração declarativa de uma civilização: a "receita" a partir da qual
+ * o `CivilizationAgentFactory` monta o agente (persona, contexto, limites) e
+ * `createWorld` inicializa o estado do jogo. Única fonte de verdade,
+ * consumida por motor, agentes e UI — nenhuma cor/nome/persona duplicada.
+ *
+ * Limitação atual: `id` precisa ser um `CivId` (as 4 civilizações fixas).
+ * Suportar N civilizações livres exigiria generalizar `CivId` de união
+ * literal para um espaço de ids dinâmico em todo o motor/mapa/UI — fora do
+ * escopo desta fase (evolução incremental, PRD §4.8).
+ */
+export interface CivilizationDefinition {
+  id: CivId;
+  name: string;
+  adjective: string;
+  color: string;
+  leaderName: string;
+  /** Traços curtos de personalidade (compõem a persona do prompt). */
+  personality: string[];
+  priorities: CivilizationPriority[];
+  /** 0 (avesso a risco) a 1 (arrojado). */
+  riskTolerance: number;
+  diplomacyStyle: DiplomacyStyle;
+  /** Tecnologias já dominadas ao nascer (raro — normalmente []). */
+  startingTechnologies: string[];
+  startingResources: Resources;
+  /** Override do modelo do runner para ESTA civilização (ex.: Ollama). */
+  model?: string;
+}
+
+const PRIORITY_LABEL: Record<CivilizationPriority, string> = {
+  military: "força militar",
+  science: "avanço científico",
+  economy: "prosperidade econômica",
+  culture: "legado cultural",
+  diplomacy: "laços diplomáticos",
+};
+
+const DIPLOMACY_LABEL: Record<DiplomacyStyle, string> = {
+  peaceful: "busca a paz e evita conflito quando possível",
+  balanced: "pesa guerra e diplomacia caso a caso",
+  aggressive: "não hesita em recorrer à força para avançar seus interesses",
+};
+
+/**
+ * Deriva o texto de persona (usado no prompt de sistema do agente) a partir
+ * de uma definição — função pura, sem I/O, testável isoladamente.
+ */
+export function civilizationPersonaText(def: CivilizationDefinition): string {
+  const traits = def.personality.join(", ");
+  const priorities = def.priorities.map((p) => PRIORITY_LABEL[p]).join(" e ");
+  const risk = def.riskTolerance >= 0.66 ? "arrojada" : def.riskTolerance <= 0.33 ? "cautelosa" : "ponderada";
+  return (
+    `${traits}. Prioriza ${priorities}. Postura ${risk} diante do risco; ${DIPLOMACY_LABEL[def.diplomacyStyle]}.`
+  );
+}
+
+/** Catálogo padrão — as 4 civilizações do MVP, com valores hoje já em produção. */
+export const DEFAULT_CIVILIZATIONS: Record<CivId, CivilizationDefinition> = {
+  rome: {
+    id: "rome",
+    name: "Roma",
+    adjective: "romana",
+    color: "#c0392b",
+    leaderName: "César",
+    personality: ["Expansionista", "militarista", "disciplinada"],
+    priorities: ["military", "economy"],
+    riskTolerance: 0.7,
+    diplomacyStyle: "aggressive",
+    startingTechnologies: [],
+    startingResources: { food: 5, gold: 60, science: 0 },
+  },
+  egypt: {
+    id: "egypt",
+    name: "Egito",
+    adjective: "egípcia",
+    color: "#d4a72c",
+    leaderName: "Cleópatra",
+    personality: ["Defensiva", "comercial", "pragmática"],
+    priorities: ["economy", "diplomacy"],
+    riskTolerance: 0.4,
+    diplomacyStyle: "balanced",
+    startingTechnologies: [],
+    startingResources: { food: 5, gold: 60, science: 0 },
+  },
+  greece: {
+    id: "greece",
+    name: "Grécia",
+    adjective: "grega",
+    color: "#2980b9",
+    leaderName: "Péricles",
+    personality: ["Científica", "cultural", "curiosa"],
+    priorities: ["science", "culture"],
+    riskTolerance: 0.5,
+    diplomacyStyle: "peaceful",
+    startingTechnologies: [],
+    startingResources: { food: 5, gold: 60, science: 0 },
+  },
+  mali: {
+    id: "mali",
+    name: "Mali",
+    adjective: "malinesa",
+    color: "#8e44ad",
+    leaderName: "Mansa Musa",
+    personality: ["Mercantil", "diplomática", "próspera"],
+    priorities: ["diplomacy", "economy"],
+    riskTolerance: 0.35,
+    diplomacyStyle: "peaceful",
+    startingTechnologies: [],
+    startingResources: { food: 5, gold: 60, science: 0 },
+  },
+};
+
 // ── Eventos de exibição e do orquestrador ──────────────────────────────────
 
 export type LoopState = "idle" | "running" | "paused" | "stopped";

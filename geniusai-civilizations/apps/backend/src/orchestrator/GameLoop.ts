@@ -1,11 +1,14 @@
+import { DEFAULT_CIVILIZATIONS } from "@geniusai/shared";
+import type { CivilizationDefinition } from "@geniusai/shared";
 import { tick } from "../engine/engine";
 import { createWorld } from "../engine/world";
 import { CIV_IDS } from "../engine/types";
 import type { CivDecision, CivId, World } from "../engine/types";
 import type { AgentRunner } from "../agent/AgentRunner";
-import { runCivilizationTurn } from "../agent/runTurn";
+import type { AgentLogger } from "../agent/CivilizationAgentFactory";
 import type { TurnResult } from "../agent/runTurn";
 import { hydrateMemory, persistMemory } from "../agent/memory";
+import { AgentOrchestrator } from "./AgentOrchestrator";
 import { appendTrace, loadWorld, saveWorld } from "./trace";
 import { narrate } from "./narrator";
 import type { DisplayEvent, LoopEvent, LoopState } from "./events";
@@ -30,6 +33,15 @@ export interface GameLoopOptions {
    */
   narrator?: AgentRunner;
   narratorTimeoutMs?: number;
+  /**
+   * Sobrescreve civilizações específicas do catálogo padrão (§7 do PRD —
+   * Agente Construtor). Parcial: civilizações omitidas usam
+   * `DEFAULT_CIVILIZATIONS`. Só tem efeito ao CRIAR um mundo novo — um mundo
+   * carregado de save já traz sua persona/recursos gravados.
+   */
+  definitions?: Partial<Record<CivId, CivilizationDefinition>>;
+  /** Logger estruturado dos agentes (padrão: uma linha JSON no console). */
+  agentLogger?: AgentLogger;
 }
 
 /**
@@ -39,13 +51,14 @@ export interface GameLoopOptions {
  *
  * Modelo: em cada tick, todas as civilizações vivas decidem sobre o MESMO
  * snapshot pré-tick (sequencial, adequado à inferência local); depois o motor
- * aplica tudo de uma vez. A robustez do turno (fallback) vem de
- * runCivilizationTurn — uma civilização que falha apenas "passa o turno".
+ * aplica tudo de uma vez. A robustez do turno (fallback) vem do
+ * `CivilizationAgent.decide()` (via `AgentOrchestrator`) — uma civilização
+ * que falha apenas "passa o turno".
  */
 export class GameLoop {
   world: World;
   readonly gameId: string;
-  private readonly runner: AgentRunner;
+  private readonly orchestrator: AgentOrchestrator;
   private readonly listeners = new Set<(e: LoopEvent) => void>();
   private state: LoopState = "idle";
   private speedMs: number;
@@ -55,14 +68,25 @@ export class GameLoop {
   private readonly narratorTimeoutMs: number;
 
   constructor(opts: GameLoopOptions) {
-    this.runner = opts.runner;
-    this.world = opts.world ?? createWorld(opts.seed ?? 42);
+    const definitions = { ...DEFAULT_CIVILIZATIONS, ...opts.definitions };
+    this.world = opts.world ?? createWorld(opts.seed ?? 42, definitions);
     this.speedMs = opts.speedMs ?? 1000;
     this.turnTimeoutMs = opts.turnTimeoutMs ?? 60_000;
     this.gameId = opts.gameId ?? `game-${this.world.seed}`;
     this.persist = opts.persist ?? true;
     this.narrator = opts.narrator;
     this.narratorTimeoutMs = opts.narratorTimeoutMs ?? 30_000;
+    // Registro dos agentes desta partida (§7.4 — "Fluxo de criação"). Recriar
+    // o orquestrador a cada GameLoop (nova partida OU carregada de save) É a
+    // "restauração do agente ao carregar uma partida" exigida pelo PRD — os
+    // agentes não têm estado próprio além do runner/definição; a memória de
+    // longo prazo vive em `World.civilizations[*].memory`.
+    this.orchestrator = new AgentOrchestrator({
+      gameId: this.gameId,
+      runner: opts.runner,
+      definitions,
+      logger: opts.agentLogger,
+    });
   }
 
   on(fn: (e: LoopEvent) => void): () => void {
@@ -108,6 +132,14 @@ export class GameLoop {
     await hydrateMemory(this.gameId, this.world);
   }
 
+  /**
+   * Consulta somente leitura ao agente de uma civilização (RF-032 — "Pergunte
+   * à civilização"): não avança o tick, não aplica ações, não altera memória.
+   */
+  ask(civId: CivId, question: string): Promise<string> {
+    return this.orchestrator.answerQuestion(civId, this.world, question);
+  }
+
   private inFlight: Promise<World> | null = null;
 
   /**
@@ -140,7 +172,7 @@ export class GameLoop {
     for (const id of CIV_IDS) {
       if (!this.world.civilizations[id].alive) continue;
       this.emit({ type: "turn_start", tick: nextTick, civ: id });
-      const res = await runCivilizationTurn(this.world, id, this.runner, {
+      const res = await this.orchestrator.decide(id, this.world, {
         timeoutMs: this.turnTimeoutMs,
         onToken: (chunk) => this.emit({ type: "turn_token", tick: nextTick, civ: id, chunk }),
       });
