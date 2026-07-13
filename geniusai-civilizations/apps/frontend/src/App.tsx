@@ -4,6 +4,7 @@ import { ChroniclePanel } from "./components/ChroniclePanel";
 import { CivilizationRail } from "./components/CivilizationRail";
 import { Controls } from "./components/Controls";
 import { CrisisPanel } from "./components/CrisisPanel";
+import { DecisionTheatre } from "./components/DecisionTheatre";
 import { DiplomacyGraph } from "./components/DiplomacyGraph";
 import { EraInspector } from "./components/EraInspector";
 import { EraTimeline } from "./components/EraTimeline";
@@ -18,13 +19,14 @@ import { WorldMap } from "./components/WorldMap";
 import { useGameSocket } from "./useGameSocket";
 import { CIV_COLOR, CIV_LABEL, VICTORY_LABEL, type CivId } from "./types";
 
-type ViewMode = "evolution" | "world" | "chronicle";
+type ViewMode = "evolution" | "world" | "chronicle" | "theatre";
 type Theme = "light" | "dark";
 
 const VIEWS: Array<{ id: ViewMode; label: string }> = [
   { id: "evolution", label: "Evolução" },
   { id: "world", label: "Mundo & Diplomacia" },
   { id: "chronicle", label: "Crônicas" },
+  { id: "theatre", label: "Teatro" },
 ];
 
 const THEME_KEY = "geniusai-theme";
@@ -146,6 +148,18 @@ export function App() {
             <ProposalsPanel world={world} onSelect={setSelected} />
             <TechTreePanel world={world} selected={selected} />
           </div>
+        </div>
+      )}
+
+      {view === "theatre" && (
+        <div className="view-enter">
+          <DecisionTheatre
+            world={world}
+            civs={civs}
+            selected={selected}
+            onSelect={setSelected}
+            events={state.timeline}
+          />
         </div>
       )}
 

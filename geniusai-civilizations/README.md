@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 11 concluída (dev único, tipos compartilhados e CI)
+## Estado atual: Fase 12 concluída (Teatro de Decisões)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -134,6 +134,16 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **`packages/shared` (`@geniusai/shared`)**: única fonte de verdade para os tipos que cruzam a fronteira backend ⇄ frontend — estado do jogo (World/Civilization/Proposal/Victory/GameEvent/Action), eventos do orquestrador (LoopEvent/DisplayEvent) e o protocolo WebSocket (ServerMessage/ClientCommand). Backend e frontend importam o mesmo contrato; os arquivos antigos viraram re-exports, então um campo novo agora é adicionado em UM lugar. A timeline do frontend passou a usar a união discriminada real do motor (fim do `{type:string} & Record<string,unknown>`).
 - **E2E versionado** (`e2e/smoke.mjs`): sobe backend mock + frontend buildado, abre Chromium e percorre conectar → criar partida pelo modal → 2 ticks → mapa/propostas → pergunta ao agente. Sai com código ≠ 0 em falha.
 - **CI no GitHub Actions** (`.github/workflows/ci.yml`): a cada push/PR roda typecheck (shared+backend+frontend), os 97 testes, o build e o E2E smoke com Chromium real — o PRD §16 ("nenhuma regressão") vira verificação automática.
+
+**Fase 12 — Teatro de Decisões (nova vista, inspirada em "Decision Theatre"):**
+- Quarta aba **"Teatro"**: uma apresentação cênica da simulação, 100% derivada do estado real do motor.
+  - **Trilho de civilizações** com arte própria (SVGs autorais em `src/assets/civs/`), líder, verbo de status ao vivo ("deliberando…", "executou · propose_trade") e turno; seção "Além da névoa" com civilizações futuras claramente marcadas como sem telemetria.
+  - **O mundo conhecido**: árvore de decisões ao vivo — cartão de foco central com checklist real (ex.: pesquisa com progresso `ciência 5/20` riscando etapas), recompensas vindas dos efeitos reais do catálogo, nós concluídos (✓ tecnologias e obras) ligados por linhas, e nós futuros tracejados ("ao alcance" quando os pré-requisitos reais foram atendidos).
+  - **Eventos-mundo** em banner cênico: batalhas/guerras = presságio (vermelho), comércio/alianças = fortuna (verde), tecnologia/vitória = marco (azul) — sempre eventos reais da timeline.
+  - **Cartão-herói** com a arte da civilização, contadores (eventos/obras/eras), tesouraria com barras reais, conselho de guerra (foco atual + raciocínio literal do agente) e anais.
+  - **Giro automático do holofote** a cada 8s entre as civilizações (pausável; clicar numa civ fixa o holofote).
+- O catálogo de tecnologias migrou para `@geniusai/shared` (custos, pré-requisitos, descrições, efeitos e ramos) — motor e UI consomem a MESMA fonte, e a árvore tecnológica da vista Mundo agora mostra só tecnologias que existem de verdade (RF-024 integral).
+- E2E atualizado (passo do Teatro); screenshots em `docs/screenshots/theatre-*.png`.
 
 ## Pré-requisitos
 
