@@ -129,3 +129,57 @@ export function describeEvent(e: GameEvent): string {
       return (e as { type: string }).type;
   }
 }
+
+/**
+ * Categorias de auditoria da timeline (Fase 17, §17 do PRD — RF-11):
+ * classificação puramente de apresentação sobre os `GameEvent.type` que já
+ * existem no motor — nenhuma categoria nova é inventada lá.
+ */
+export type EventCategory = "economia" | "construção" | "ciência" | "diplomacia" | "guerra" | "agentes" | "sistema";
+
+export const EVENT_CATEGORIES: EventCategory[] = [
+  "economia",
+  "construção",
+  "ciência",
+  "diplomacia",
+  "guerra",
+  "agentes",
+  "sistema",
+];
+
+const EVENT_CATEGORY_BY_TYPE: Record<string, EventCategory> = {
+  tick_started: "sistema",
+  structure_built: "construção",
+  tile_claimed: "construção",
+  research_started: "ciência",
+  tech_researched: "ciência",
+  army_moved: "guerra",
+  battle: "guerra",
+  city_captured: "guerra",
+  civ_eliminated: "guerra",
+  army_recruited: "guerra",
+  diplomacy_changed: "diplomacia",
+  trade_executed: "economia",
+  trade_proposed: "economia",
+  alliance_proposed: "diplomacia",
+  proposal_accepted: "diplomacia",
+  proposal_rejected: "diplomacia",
+  proposal_expired: "diplomacia",
+  city_grew: "economia",
+  strategy_updated: "agentes",
+  action_rejected: "agentes",
+  victory: "sistema",
+  narration: "sistema",
+};
+
+/** Categoria de auditoria de um evento (default "sistema" p/ tipos futuros ainda não mapeados). */
+export function categorizeEvent(e: GameEvent): EventCategory {
+  return EVENT_CATEGORY_BY_TYPE[e.type] ?? "sistema";
+}
+
+/** Coordenadas de tile associadas a um evento, quando existirem (RF-13 — "localizar no mapa"). */
+export function eventCoords(e: GameEvent): { x: number; y: number } | null {
+  const ev = e as Record<string, unknown>;
+  if (typeof ev.x === "number" && typeof ev.y === "number") return { x: ev.x, y: ev.y };
+  return null;
+}

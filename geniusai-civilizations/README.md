@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 14 concluída (conselheiros especialistas)
+## Estado atual: Fase 17 concluída (UI de auditoria)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -175,6 +175,12 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - As recomendações da corte entram no prompt do agente principal como uma seção "Conselho da corte" **antes** da decisão (`buildTurnPrompt`) — o agente decide livremente se segue ou não. Falha de um conselheiro (timeout/JSON inválido) nunca derruba o turno; é só descartada.
 - **UI:** as recomendações do turno aparecem tanto no Teatro de Decisões ("Conselho de guerra") quanto na Vista Evolução (EraInspector), com o papel do conselheiro e uma bolinha de confiança — reforça a transparência de raciocínio (RF-4).
 - **+18 testes** cobrindo `advisors.ts` (parsing de confiança, truncamento, recorte por papel, falha isolada não derruba os demais), integração em `runTurn`/`prompt`/`CivilizationAgentFactory` e o fluxo com/sem conselheiros: **141 no total**. Verificado também via Playwright/Chromium contra o app real (Roma mostra o conselho, Egito — sem `advisors` — não mostra nada).
+
+**Fase 17 — UI de auditoria: timeline paginada, painel em abas e "localizar no mapa" (§17 do PRD):**
+- **`EventTimeline` paginada e filtrável** (RF-11): filtros por categoria (economia/construção/ciência/diplomacia/guerra/agentes/sistema — classificação puramente de apresentação sobre os `GameEvent.type` que já existem no motor, nenhuma categoria nova nele) com contagem por categoria, e paginação (20 eventos/página). O buffer de histórico mantido no cliente subiu de 60 para 200 eventos, já que agora dá para navegar por ele em vez de só rolar uma lista.
+- **Painel de civilização em abas** (RF-12, `EraInspector`): Visão geral · Economia · Tecnologia · Diplomacia · Militar · Memória · Conversa. As abas Tecnologia/Diplomacia/Conversa reaproveitam os componentes já existentes (`TechTreePanel`/`DiplomacyGraph`/`AskCivilizationPanel`) em vez de duplicar UI; Economia/Militar/Memória são novas (cidades, exércitos e a memória estratégica bruta da civilização, nunca exibida antes). A aba ativa é lembrada por civilização.
+- **"Localizar no mapa"** (RF-13): eventos com coordenadas (batalha, construção, movimento de exército) e itens do painel (cidades, exércitos) ganharam um link que troca para a Vista Mundo e desenha um anel tracejado no tile — o motor não tem câmera (o mapa inteiro sempre cabe na tela), então "localizar" chama a atenção do observador em vez de rolar/dar zoom.
+- Verificado via Playwright/Chromium: filtros reduzem a lista corretamente, paginação aparece com 8 ticks de jogo, as 7 abas renderizam sem erro e a aba ativa persiste ao trocar de civilização, e "localizar no mapa" troca de vista e destaca o tile certo.
 
 ## Pré-requisitos
 

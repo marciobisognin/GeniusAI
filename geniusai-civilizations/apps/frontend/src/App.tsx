@@ -44,6 +44,21 @@ export function App() {
   const [view, setView] = useState<ViewMode>("evolution");
   const [theme, setTheme] = useState<Theme>(initialTheme);
   const [showNewGame, setShowNewGame] = useState(false);
+  const [highlightTile, setHighlightTile] = useState<{ x: number; y: number } | null>(null);
+
+  // "Localizar no mapa" (Fase 17, §17 do PRD — RF-13): troca para a Vista
+  // Mundo e destaca o tile por alguns segundos — o motor não tem câmera
+  // (o mapa inteiro sempre cabe na tela), então "localizar" é chamar a
+  // atenção do observador, não navegar/rolar até o tile.
+  const locate = (x: number, y: number) => {
+    setView("world");
+    setHighlightTile({ x, y });
+  };
+  useEffect(() => {
+    if (!highlightTile) return;
+    const t = setTimeout(() => setHighlightTile(null), 4000);
+    return () => clearTimeout(t);
+  }, [highlightTile]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
@@ -134,14 +149,23 @@ export function App() {
         <div className="factor-layout view-enter">
           <CivilizationRail world={world} civs={civs} selected={selected} onSelect={setSelected} />
           <EvolutionBoard world={world} civs={civs} selected={selected} events={state.timeline} onSelect={setSelected} />
-          <EraInspector world={world} selected={selected} ui={civs[selected]} events={state.timeline} />
+          <EraInspector
+            world={world}
+            selected={selected}
+            ui={civs[selected]}
+            events={state.timeline}
+            onSelect={setSelected}
+            onLocate={locate}
+            answer={state.answers[selected]}
+            onAsk={ask}
+          />
         </div>
       )}
 
       {view === "world" && (
         <div className="world-layout view-enter">
           <div className="world-column">
-            <WorldMap world={world} selected={selected} theme={theme} />
+            <WorldMap world={world} selected={selected} theme={theme} highlight={highlightTile} />
             <CrisisPanel world={world} events={state.timeline} onSelect={setSelected} />
           </div>
           <div className="world-column">
@@ -182,7 +206,7 @@ export function App() {
       )}
 
       <div className="lower-dock">
-        <EventTimeline events={state.timeline} />
+        <EventTimeline events={state.timeline} onLocate={locate} />
         <SavesPanel
           saves={state.saves}
           currentGameId={state.gameId}

@@ -5,6 +5,8 @@ interface Props {
   world: World | null;
   selected: CivId;
   theme: "light" | "dark";
+  /** Tile a destacar (Fase 17, §17 — "localizar no mapa"). */
+  highlight?: { x: number; y: number } | null;
 }
 
 type TerrainPalette = Record<string, string>;
@@ -39,6 +41,7 @@ function drawWorld(
   selected: CivId,
   theme: "light" | "dark",
   cssWidth: number,
+  highlight?: { x: number; y: number } | null,
 ): void {
   const ctx = canvas.getContext("2d");
   if (!ctx || cssWidth <= 0) return;
@@ -141,9 +144,22 @@ function drawWorld(
       ctx.stroke();
     }
   }
+
+  if (highlight) {
+    const hx = highlight.x * tile + tile / 2;
+    const hy = highlight.y * tile + tile / 2;
+    const r = tile * 0.62;
+    ctx.strokeStyle = theme === "dark" ? "#ffe28a" : "#c9820a";
+    ctx.lineWidth = Math.max(2, tile * 0.09);
+    ctx.setLineDash([tile * 0.14, tile * 0.1]);
+    ctx.beginPath();
+    ctx.arc(hx, hy, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
 }
 
-export function WorldMap({ world, selected, theme }: Props) {
+export function WorldMap({ world, selected, theme, highlight }: Props) {
   const frameRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [width, setWidth] = useState(0);
@@ -160,8 +176,8 @@ export function WorldMap({ world, selected, theme }: Props) {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (canvas && world) drawWorld(canvas, world, selected, theme, width);
-  }, [world, selected, theme, width]);
+    if (canvas && world) drawWorld(canvas, world, selected, theme, width, highlight);
+  }, [world, selected, theme, width, highlight]);
 
   return (
     <section className="card map-card" aria-label="Mapa do mundo">

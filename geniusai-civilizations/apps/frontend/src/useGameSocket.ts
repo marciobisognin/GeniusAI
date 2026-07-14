@@ -54,7 +54,9 @@ export interface GameSocketState {
 }
 
 const BACKEND_WS = import.meta.env.VITE_BACKEND_WS ?? "ws://localhost:8787";
-const TIMELINE_LIMIT = 60;
+// Fase 17 (§17 do PRD): a timeline agora pagina (EventTimeline), então vale a
+// pena reter mais histórico do que cabia numa lista simples sem paginação.
+const TIMELINE_LIMIT = 200;
 const RECONNECT_MAX_MS = 15_000;
 
 const initialCivs = (): Record<CivId, CivUiState> => ({
