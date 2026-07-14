@@ -368,4 +368,140 @@ Você pode construir o projeto com o Claude Code/Codex **ou** com um agente de c
 
 ---
 
+## 16. PRD — Fase 14: Conselheiros Especialistas (opcional, ativável)
+
+### 16.1 Contexto
+A Fase 13 introduziu o `CivilizationAgentFactory`: cada civilização já nasce de uma `CivilizationDefinition` explícita (personalidade, prioridades, tolerância a risco, estilo diplomático, modelo próprio) e um `AgentOrchestrator` que a registra. Hoje, porém, a decisão do turno é **monolítica**: um único agente lê o snapshot do mundo e decide todas as ações. Esta fase adiciona uma camada opcional de **conselheiros especialistas** que recomendam antes do agente principal decidir — sem tornar o fluxo obrigatório nem quebrar o caminho hoje testado (RUNNER=mock, CLIs, Ollama).
+
+### 16.2 Objetivo
+Dar à civilização uma "corte" de conselheiros (econômico, diplomático, militar, científico, historiador) cujas recomendações — curtas, com um "porquê" — entram no prompt do agente principal antes da decisão final, aumentando a qualidade e a explicabilidade das escolhas sem multiplicar o custo de inferência de forma descontrolada.
+
+### 16.3 Requisitos Funcionais
+
+**RF-9 — Conselheiros especialistas**
+- Cada `CivilizationDefinition` ganha um campo opcional `advisors?: AdvisorRole[]` (`"economic" | "diplomatic" | "military" | "scientific" | "historian"`). Ausente ou vazio = comportamento atual (sem conselheiros), preservando compatibilidade com toda partida já jogável.
+- Cada conselheiro ativo roda **1 chamada curta ao mesmo runner da civilização** (mesmo `AgentRunner`, mesmo modelo — não é um segundo provedor), recebendo um recorte do snapshot do mundo relevante à sua especialidade (ex.: o conselheiro militar não recebe detalhes de pesquisa) e devolvendo uma recomendação estruturada: `{ role, recommendation: string (≤280 chars), confidence: "low"|"medium"|"high" }`, validada por `zod` com o mesmo padrão de fallback do RF-3 (se o conselheiro falhar/retornar JSON inválido, sua recomendação é descartada — **nunca bloqueia o turno**).
+- As recomendações coletadas (0..N) são anexadas ao `buildTurnPrompt` do agente principal como uma seção "Conselho da corte", antes da decisão. O agente principal permanece livre para segui-las ou não — a decisão final é sempre dele.
+- A UI (Teatro de Decisões e painel de civilização) exibe as recomendações do turno, com o conselheiro autor de cada uma — reforçando a "transparência de raciocínio" do RF-4.
+- Fallback obrigatório: se **todos** os conselheiros de uma civilização falharem, o turno prossegue exatamente como hoje (sem seção de conselho no prompt) — este recurso é estritamente aditivo.
+
+**RF-10 — Ativação por civilização (não é global)**
+- A flag é por `CivilizationDefinition`, não um env var único — permite comparar, na mesma partida, uma civilização "com corte" e outra sem, o que é também uma forma natural de validar o recurso.
+
+### 16.4 Requisitos Não-Funcionais
+- **Custo de inferência controlado:** N conselheiros ativos = até N chamadas extras de LLM por turno daquela civilização. Deve ser possível, olhando os logs estruturados (RNF-003), medir o `durationMs` agregado de conselheiros vs. decisão principal, para o usuário avaliar se vale o custo no seu hardware.
+- **Timeout independente:** cada conselheiro tem seu próprio timeout (reaproveitando `TURN_TIMEOUT_MS` ou uma fração dele) — um conselheiro lento não deve estourar o orçamento de tempo do turno inteiro.
+- **Robustez:** nenhuma falha de conselheiro deve ser visível como erro fatal ao usuário; degrada silenciosamente (loga `warn`, segue sem a recomendação).
+
+### 16.5 Modelo de dados (extensão)
+```ts
+type AdvisorRole = "economic" | "diplomatic" | "military" | "scientific" | "historian";
+
+type AdvisorRecommendation = {
+  role: AdvisorRole;
+  recommendation: string;     // ≤280 chars
+  confidence: "low" | "medium" | "high";
+};
+
+// CivilizationDefinition (Fase 13) ganha:
+//   advisors?: AdvisorRole[];
+
+// AgentDecision (§9) ganha, opcionalmente:
+//   advisorRecommendations?: AdvisorRecommendation[];
+```
+
+### 16.6 Critérios de aceite
+- Uma civilização sem `advisors` definido decide exatamente como hoje (nenhuma regressão em partidas existentes / testes atuais).
+- Uma civilização com `advisors: ["military"]` gera, a cada turno, no máximo 1 recomendação militar visível na UI antes da decisão, e a decisão final ainda passa por toda a validação de ações existente (RF-3).
+- Com `RUNNER=mock`, os conselheiros também respondem de forma determinística (mock precisa cobrir o novo tipo de chamada), para manter os testes E2E sem dependência de LLM real.
+- Falha simulada de um conselheiro (ex.: JSON inválido) não derruba o turno nem aparece como `error` para o usuário — aparece no log como `warn`.
+
+### 16.7 Fora de escopo
+- Conselheiros não têm memória própria nem histórico entre turnos (ficam de fora até uma fase futura, se houver demanda).
+- Não há UI dedicada para configurar conselheiros dinamicamente durante a partida — a definição é fixada na criação da partida (tela de criação, RF-010).
+
+---
+
+## 17. PRD — Fase 17: UI de Auditoria (timeline paginada, filtros e painel em abas)
+
+### 17.1 Contexto
+A `EventTimeline` hoje mostra uma lista simples com os últimos eventos do `state.timeline`, sem paginação nem filtro por tipo. O painel de civilização (`EraInspector`/`CrisisPanel`/`ChroniclePanel` etc., em `App.tsx`) mistura visão geral, economia, tecnologia, diplomacia, militar e memória numa única superfície. Em partidas curtas com `RUNNER=mock` isso não incomoda, mas em partidas longas com LLM real — o cenário que este produto foi desenhado para "assistir" — auditar por que uma civilização tomou uma decisão específica há dezenas de ticks fica difícil.
+
+### 17.2 Objetivo
+Tornar a simulação **auditável** sem sair da UI: encontrar rapidamente um evento antigo por tipo/categoria, e navegar o estado de uma civilização por assunto (não uma parede única de informação).
+
+### 17.3 Requisitos Funcionais
+
+**RF-11 — Timeline paginada e filtrável**
+- A `EventTimeline` passa a paginar (ex.: 20–30 eventos por página, navegação anterior/próxima), em vez de depender apenas do corte implícito de `state.timeline`.
+- Filtro por categoria: `economia | construção | ciência | diplomacia | guerra | agentes | sistema` (mapeadas a partir dos `GameEvent.type` já existentes no motor — nenhuma categoria nova é inventada no motor, é uma classificação puramente de apresentação). Filtros combináveis (múltipla seleção), com contagem de eventos por categoria visível.
+- O estado do filtro/página é local à sessão da UI (não precisa persistir entre partidas).
+
+**RF-12 — Painel de civilização em abas**
+- O painel de civilização selecionada ganha navegação em abas: **Visão geral · Economia · Tecnologia · Diplomacia · Militar · Memória · Conversa**. Cada aba reaproveita dados já existentes no `world`/`state` (nenhum novo endpoint de backend é necessário só para isto) — é uma reorganização de apresentação, não uma nova fonte de dados.
+- A aba ativa é lembrada por civilização enquanto a partida está aberta (trocar de civilização selecionada não reseta a aba escolhida).
+
+**RF-13 — "Localizar no mapa"**
+- Eventos e itens do painel (cidade, exército, tile em disputa) ganham um botão/link "localizar no mapa" que centraliza e destaca o tile correspondente no `WorldMap` (canvas). Não requer mudança no motor — só leitura de coordenadas já presentes no evento/estado.
+
+### 17.4 Requisitos Não-Funcionais
+- **Sem regressão de performance:** paginação e filtros são client-side sobre dados já entregues por WebSocket; não devem introduzir novas rodadas de rede por interação de filtro/página.
+- **Compatível com o tema duplo** (claro/escuro) e o design system existente (`styles.css`) — nenhuma nova paleta de cores paralela.
+- **Continua "watchable":** abrir uma aba ou paginar a timeline não deve pausar nem atrasar o loop de simulação em andamento.
+
+### 17.5 Critérios de aceite
+- Com uma partida de 60+ eventos, o filtro por categoria "guerra" mostra somente eventos de batalha/movimentação militar, e a paginação permite alcançar o evento mais antigo sem scroll infinito.
+- Selecionar uma civilização e navegar para a aba "Militar" mostra exércitos/tiles daquela civilização; trocar para outra civilização e voltar preserva a aba "Militar" selecionada.
+- Clicar em "localizar no mapa" a partir de um evento de batalha centraliza o `WorldMap` no tile correto (verificável via E2E/Playwright, análogo ao smoke test existente).
+
+### 17.6 Fora de escopo
+- Busca textual livre na timeline (fica para uma iteração futura, se necessário).
+- Exportação filtrada de trace (o RF-8 de export completo já existe e não muda nesta fase).
+
+---
+
+## 18. PRD — Fase 18: Guerra/Ocupação Ricas, Balanceamento e Acessibilidade
+
+### 18.1 Contexto
+O combate hoje (`engine.ts`, ações `move_army`/`attack`) resolve um ataque como um único evento `battle` com rolagem de dados e vencedor — sem diferenciar deslocamento pacífico, entrada em território hostil, ocupação após vitória ou retirada, e sem custo de manutenção para exércitos parados. Em paralelo, o produto nunca recebeu uma auditoria de acessibilidade (RNF novo, não coberto pela seção 6 original do PRD).
+
+### 18.2 Objetivo
+Dar profundidade estratégica ao componente militar (decisões de guerra deixam de ser binárias "atacar/não atacar") e garantir que a UI seja utilizável por teclado e por usuários com necessidades de acessibilidade — sem quebrar o determinismo do motor (RNF já existente).
+
+### 18.3 Requisitos Funcionais
+
+**RF-14 — Ações militares diferenciadas**
+- `move_army` para tile neutro/próprio permanece deslocamento simples (comportamento atual).
+- `move_army` para tile de território hostil sem defensor passa a gerar um evento distinto de **entrada em território hostil** (ainda sem combate), preparando o terreno para ocupação.
+- `attack` continua resolvendo combate determinístico (RNG seedado, sem mudança de comportamento estatístico), mas o evento resultante passa a carregar também a consequência territorial: vitória do atacante sobre um tile com cidade pode iniciar **ocupação** (tile passa a produzir para o ocupante, com possível resistência/eventos de revolta em iterações futuras — fora de escopo aqui além do registro do estado de ocupação).
+- Nova ação de motor `retreat_army(armyId)`: retira um exército de território hostil/ocupado sem combate, encerrando a ocupação daquele exército quando aplicável. Segue o mesmo padrão de validação de ações do RF-3 (ação inválida → `action_rejected`, nunca exceção).
+
+**RF-15 — Manutenção de exércitos**
+- Cada exército ativo passa a consumir uma manutenção periódica (ouro e/ou comida, valor a calibrar no balanceamento) por tick. Civilização sem recursos para sustentar seus exércitos sofre penalidade determinística (ex.: redução de força), nunca um crash ou estado inconsistente.
+
+**RF-16 — Passada de balanceamento**
+- Revisão dos parâmetros de economia/combate/pesquisa (§8 do PRD) para que partidas de referência (mock e LLM real) não convirjam trivialmente para um único vencedor previsível — critério de aceite é qualitativo (via partidas de teste), documentado nos resultados desta fase.
+
+**RF-17 — Acessibilidade (RNF-004)**
+- Navegação por teclado completa: toda ação hoje só alcançável por clique (play/pause/step, seleção de civilização, abas do RF-12, filtros do RF-11) precisa ter equivalente de teclado com foco visível.
+- Contraste de cores auditado contra **WCAG AA** nos dois temas (claro/escuro) já existentes — sem introduzir uma terceira paleta.
+- `aria-live` nas regiões de eventos ao vivo (timeline, feed de raciocínio em streaming) para leitores de tela acompanharem a simulação "assistível" sem depender só de visão.
+- Foco visível (outline) consistente em todos os elementos interativos, incluindo o `WorldMap` (canvas) quando navegável por teclado.
+
+### 18.4 Requisitos Não-Funcionais
+- **RNF-004 — Acessibilidade:** critérios acima (teclado, WCAG AA, `aria-live`, foco visível) tratados como requisito de aceite desta fase, não "nice to have".
+- **Determinismo preservado:** as novas ações (`retreat_army`, ocupação, manutenção) continuam puras/determinísticas dado `(world, ações, seed)` — sem introduzir nenhuma fonte de aleatoriedade fora do `Rng` já existente.
+- **Sem quebra de saves antigos:** partidas salvas antes desta fase devem carregar (mesmo que exércitos "ganhem" manutenção só a partir do primeiro tick pós-upgrade — migração aditiva, não destrutiva).
+
+### 18.5 Critérios de aceite
+- Testes de motor cobrindo: deslocamento simples, entrada em território hostil, ataque com ocupação resultante, `retreat_army`, e exército sem recursos sofrendo a penalidade de manutenção — todos determinísticos (mesma seed + mesmas ações → mesmo resultado).
+- Auditoria manual (ou automatizada, ex. `axe-core` num teste E2E) de contraste AA nos dois temas, sem violações críticas.
+- Fluxo completo de uma partida jogável **somente por teclado** (sem mouse), verificado via Playwright com navegação por `Tab`/`Enter`/setas.
+
+### 18.6 Fora de escopo
+- Sistema de revolta/insatisfação em território ocupado (fica para além desta fase — hoje só registra o estado de ocupação).
+- Diplomacia de guerra mais rica (pedidos de paz condicionais, reparações) — fora do escopo aqui, é extensão do RF-3 existente.
+
+---
+
 *Fim do PRD v2.0 (local-first).*
