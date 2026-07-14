@@ -45,6 +45,7 @@ function actionName(tool: string): string {
     research: "Pesquisa",
     move_army: "Movimento",
     attack: "Ataque",
+    retreat_army: "Recuo",
     recruit: "Recrutamento",
     set_diplomacy: "Diplomacia",
     propose_trade: "Propor comércio",
@@ -140,13 +141,15 @@ export function EraInspector({ world, selected, ui, events, onSelect, onLocate, 
 
           <section className="inspector-card decision-card">
             <h3>Decisão da IA</h3>
-            {ui.status === "thinking" ? (
-              <p className="live-text">O agente está deliberando… {ui.chunksReceived} fragmento(s)</p>
-            ) : ui.reasoning ? (
-              <p className="quote">“{ui.reasoning}”</p>
-            ) : (
-              <p className="muted">Nenhuma decisão registrada ainda.</p>
-            )}
+            <div aria-live="polite">
+              {ui.status === "thinking" ? (
+                <p className="live-text">O agente está deliberando… {ui.chunksReceived} fragmento(s)</p>
+              ) : ui.reasoning ? (
+                <p className="quote">“{ui.reasoning}”</p>
+              ) : (
+                <p className="muted">Nenhuma decisão registrada ainda.</p>
+              )}
+            </div>
             <div className="action-pills">
               {ui.actions.length === 0 ? <span className="empty-pill">sem ações</span> : ui.actions.map((a, i) => <span key={i}>{actionName(a.tool)}</span>)}
             </div>

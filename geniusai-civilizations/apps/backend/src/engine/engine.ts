@@ -1,5 +1,6 @@
 import { Rng } from "./rng";
 import {
+  ARMY_UPKEEP_GOLD,
   CITY_BASE_YIELD,
   PROPOSAL_TTL_TICKS,
   PROSPERITY_THRESHOLD,
@@ -205,9 +206,16 @@ function applyAction(
       if (!inBounds(w, x, y)) return reject("fora do mapa");
       if (!isAdjacent(army.x, army.y, x, y)) return reject("destino não adjacente");
       if (w.map[y][x].terrain === "mountain") return reject("montanha intransponível");
+      const destOwner = w.map[y][x].owner;
       army.x = x;
       army.y = y;
       events.push({ type: "army_moved", civ: civ.id, armyId, x, y });
+      // Entrada em território hostil (Fase 18, §18 — RF-14): deslocamento
+      // continua sem combate (ataque é uma ação à parte), mas o evento
+      // distinto sinaliza a incursão para quem observa/audita a partida.
+      if (destOwner && destOwner !== civ.id && getStance(w, civ.id, destOwner) === "war") {
+        events.push({ type: "hostile_territory_entered", civ: civ.id, armyId, x, y, owner: destOwner });
+      }
       return;
     }
 
@@ -239,6 +247,11 @@ function applyAction(
         if (defCity) {
           defender.cities = defender.cities.filter((c) => c.id !== defCity.id);
           defCity.population = Math.max(1, Math.floor(defCity.population / 2));
+          // Ocupação (Fase 18, §18 — RF-14): a cidade passa a produzir para
+          // o ocupante imediatamente; `occupied` só registra que ela foi
+          // conquistada em batalha, não fundada (resistência/revolta ficam
+          // fora do escopo desta fase).
+          defCity.occupied = true;
           civ.cities.push(defCity);
           w.map[y][x].owner = civ.id;
           events.push({ type: "city_captured", from: defender.id, to: civ.id, cityId: defCity.id });
@@ -250,6 +263,32 @@ function applyAction(
         army.strength -= 2;
         if (army.strength <= 0) civ.armies = civ.armies.filter((a) => a.id !== army.id);
       }
+      return;
+    }
+
+    case "retreat_army": {
+      const { armyId } = action.args;
+      const army = civ.armies.find((a) => a.id === armyId);
+      if (!army) return reject("exército não encontrado");
+      if (civ.cities.length === 0) return reject("sem cidades próprias para recuar");
+
+      // Recuo estratégico instantâneo (Fase 18, §18 — RF-14): sem combate,
+      // sem exigência de adjacência — encerra qualquer incursão em
+      // território hostil daquele exército. Cidade própria mais próxima,
+      // por distância euclidiana ao quadrado (empate resolvido pela ordem
+      // de `civ.cities`, que é estável) — determinístico.
+      let nearest = civ.cities[0];
+      let bestDist = (nearest.x - army.x) ** 2 + (nearest.y - army.y) ** 2;
+      for (const city of civ.cities.slice(1)) {
+        const dist = (city.x - army.x) ** 2 + (city.y - army.y) ** 2;
+        if (dist < bestDist) {
+          nearest = city;
+          bestDist = dist;
+        }
+      }
+      army.x = nearest.x;
+      army.y = nearest.y;
+      events.push({ type: "army_retreated", civ: civ.id, armyId, x: nearest.x, y: nearest.y });
       return;
     }
 
@@ -485,6 +524,24 @@ function economyStep(w: World, civ: Civilization, events: GameEvent[]): void {
       civ.tech.push(civ.researching);
       events.push({ type: "tech_researched", civ: civ.id, technology: civ.researching });
       civ.researching = null;
+    }
+  }
+
+  // Manutenção de exércitos (Fase 18, §18 — RF-15/RF-16): sem ouro
+  // suficiente, TODOS os exércitos perdem força em vez de travar a
+  // economia; um exército que chega a força 0 é desfeito.
+  if (civ.armies.length > 0) {
+    const upkeep = civ.armies.length * ARMY_UPKEEP_GOLD;
+    if (civ.resources.gold >= upkeep) {
+      civ.resources.gold -= upkeep;
+    } else {
+      civ.resources.gold = 0;
+      events.push({ type: "army_upkeep_shortfall", civ: civ.id, armiesAffected: civ.armies.length });
+      for (const army of civ.armies) army.strength -= 1;
+      for (const army of civ.armies) {
+        if (army.strength <= 0) events.push({ type: "army_disbanded", civ: civ.id, armyId: army.id, reason: "upkeep" });
+      }
+      civ.armies = civ.armies.filter((a) => a.strength > 0);
     }
   }
 }

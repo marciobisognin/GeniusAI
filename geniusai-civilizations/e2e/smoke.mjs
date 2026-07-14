@@ -110,6 +110,23 @@ try {
   if (!/mock/.test(source ?? "")) throw new Error(`resposta sem atribuição do runner: ${source}`);
   console.log("✓ pergunta respondida pelo agente (runner mock)");
 
+  // Acessibilidade (Fase 18, §18 — RNF-004): atalho de teclado avança um
+  // tick sem mouse, o elemento focado por Tab tem foco visível, e as
+  // regiões `aria-live` (RF-17) existem para leitores de tela.
+  await page.keyboard.press("s");
+  await page.waitForSelector("text=Tick: 3");
+  await page.keyboard.press("Tab");
+  /* eslint-disable no-undef -- roda no contexto do navegador (page.evaluate), não no Node. */
+  const outlineWidth = await page.evaluate(() => {
+    const el = document.activeElement;
+    return el ? parseFloat(getComputedStyle(el).outlineWidth || "0") : 0;
+  });
+  /* eslint-enable no-undef */
+  if (!(outlineWidth > 0)) throw new Error("elemento focado por Tab não tem foco visível (outline-width 0)");
+  const liveRegions = await page.locator('[aria-live="polite"]').count();
+  if (liveRegions === 0) throw new Error("nenhuma região aria-live encontrada");
+  console.log(`✓ acessibilidade: atalho de teclado, foco visível (outline ${outlineWidth}px) e ${liveRegions} região(ões) aria-live`);
+
   await browser.close();
   console.log("\nE2E smoke: OK");
 } catch (err) {

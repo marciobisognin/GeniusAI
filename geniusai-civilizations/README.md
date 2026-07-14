@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 17 concluída (UI de auditoria)
+## Estado atual: Fase 18 concluída (guerra/ocupação, balanceamento e acessibilidade)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -181,6 +181,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **Painel de civilização em abas** (RF-12, `EraInspector`): Visão geral · Economia · Tecnologia · Diplomacia · Militar · Memória · Conversa. As abas Tecnologia/Diplomacia/Conversa reaproveitam os componentes já existentes (`TechTreePanel`/`DiplomacyGraph`/`AskCivilizationPanel`) em vez de duplicar UI; Economia/Militar/Memória são novas (cidades, exércitos e a memória estratégica bruta da civilização, nunca exibida antes). A aba ativa é lembrada por civilização.
 - **"Localizar no mapa"** (RF-13): eventos com coordenadas (batalha, construção, movimento de exército) e itens do painel (cidades, exércitos) ganharam um link que troca para a Vista Mundo e desenha um anel tracejado no tile — o motor não tem câmera (o mapa inteiro sempre cabe na tela), então "localizar" chama a atenção do observador em vez de rolar/dar zoom.
 - Verificado via Playwright/Chromium: filtros reduzem a lista corretamente, paginação aparece com 8 ticks de jogo, as 7 abas renderizam sem erro e a aba ativa persiste ao trocar de civilização, e "localizar no mapa" troca de vista e destaca o tile certo.
+
+**Fase 18 — Guerra/ocupação ricas, balanceamento e acessibilidade (§18 do PRD):**
+- **Ações militares diferenciadas** (RF-14): `move_army` para um tile de um inimigo em guerra (sem combate — ataque continua sendo uma ação à parte) emite `hostile_territory_entered`, distinto do `army_moved` simples; uma cidade capturada em batalha ganha `occupied: true` (produz para o ocupante desde já — resistência/revolta ficam fora do escopo desta fase); nova ação **`retreat_army`** recua um exército instantaneamente para a cidade própria mais próxima, sem combate.
+- **Manutenção de exércitos** (RF-15): cada exército ativo custa 1 de ouro/tick (`ARMY_UPKEEP_GOLD`). Sem ouro suficiente, TODOS os exércitos da civilização perdem 1 de força naquele tick (evento `army_upkeep_shortfall`) em vez de travar a economia; um exército que chega a força 0 é desfeito (`army_disbanded`).
+- **Balanceamento** (RF-16): a manutenção de exércitos É a passada de balanceamento desta fase — desestimula empilhar exércitos ociosos (que antes não tinham custo nenhum) sem precisar retunar toda a economia.
+- **Acessibilidade** (RF-17/RNF-004): foco visível consistente nos dois temas (`:focus-visible` global, 3px, cor de destaque — a navegação por teclado já funcionava via `<button>` semânticos em todo o app, faltava só o indicador visual); `aria-live="polite"` na timeline (anuncia só o evento mais recente, não a lista inteira) e nos painéis de decisão/raciocínio; auditoria programática de contraste (WCAG AA, ≥4.5:1) contra `--panel-strong` nos dois temas — `--muted`/`--eyebrow`/`--faint` (claro) e `--faint` (escuro) estavam abaixo do limiar e foram ajustados, mantendo a paleta original.
+- **+11 testes** de motor (entrada em território hostil, ocupação, `retreat_army`, manutenção com/sem ouro suficiente, desfazimento por falta de manutenção) e **+2** de validação de `retreat_army`: **153 no total**. `e2e/smoke.mjs` ganhou uma checagem permanente de acessibilidade (atalho de teclado sem mouse, foco visível, região `aria-live`). Verificado também via Playwright um fluxo completo de criação de partida **somente por teclado** (Tab/Enter, sem mouse).
 
 ## Pré-requisitos
 

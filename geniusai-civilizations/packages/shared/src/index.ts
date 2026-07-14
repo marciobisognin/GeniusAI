@@ -37,6 +37,8 @@ export interface City {
   y: number;
   population: number;
   buildings: string[];
+  /** true se a cidade foi conquistada em batalha, não fundada (Fase 18, §18 — RF-14). */
+  occupied?: boolean;
 }
 
 export interface Army {
@@ -94,6 +96,10 @@ export type GameEvent =
   | { type: "research_started"; civ: CivId; technology: string }
   | { type: "tech_researched"; civ: CivId; technology: string }
   | { type: "army_moved"; civ: CivId; armyId: string; x: number; y: number }
+  | { type: "hostile_territory_entered"; civ: CivId; armyId: string; x: number; y: number; owner: CivId }
+  | { type: "army_retreated"; civ: CivId; armyId: string; x: number; y: number }
+  | { type: "army_upkeep_shortfall"; civ: CivId; armiesAffected: number }
+  | { type: "army_disbanded"; civ: CivId; armyId: string; reason: "upkeep" }
   | { type: "battle"; attacker: CivId; defender: CivId; x: number; y: number; winner: CivId }
   | { type: "city_captured"; from: CivId; to: CivId; cityId: string }
   | { type: "diplomacy_changed"; a: CivId; b: CivId; stance: Stance }
@@ -135,6 +141,7 @@ export type Action =
   | { tool: "research"; args: { technology: string } }
   | { tool: "move_army"; args: { armyId: string; x: number; y: number } }
   | { tool: "attack"; args: { armyId: string; x: number; y: number } }
+  | { tool: "retreat_army"; args: { armyId: string } }
   | { tool: "recruit"; args: { cityId: string } }
   | { tool: "set_diplomacy"; args: { civ: CivId; stance: Stance } }
   | { tool: "propose_trade"; args: { civ: CivId; offer: Partial<Resources>; request: Partial<Resources> } }

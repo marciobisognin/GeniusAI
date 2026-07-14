@@ -63,6 +63,13 @@ export function EventTimeline({ events, onLocate }: Props) {
         </div>
       </div>
 
+      {/* RNF-004: anuncia só o evento mais recente a leitores de tela — a
+          lista inteira não é `aria-live` para não gerar leitura em massa a
+          cada tick. */}
+      <div className="sr-only" aria-live="polite" role="status">
+        {events.length > 0 ? describeEvent(events[0]) : ""}
+      </div>
+
       <ul className="timeline">
         {pageItems.length === 0 ? (
           <li className="muted">

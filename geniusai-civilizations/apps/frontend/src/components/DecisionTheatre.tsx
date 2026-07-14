@@ -400,11 +400,13 @@ export function DecisionTheatre({ world, civs, selected, onSelect, events }: Pro
           <section className="hero-panel">
             <h4>Conselho de guerra</h4>
             <div className="hero-focus-chip">foco atual · <b>{focus.title}</b></div>
-            {ui.reasoning ? (
-              <blockquote className="hero-quote">“{ui.reasoning}”</blockquote>
-            ) : (
-              <p className="muted hero-empty">{ui.status === "thinking" ? "O agente delibera…" : "Nenhuma decisão registrada ainda."}</p>
-            )}
+            <div aria-live="polite">
+              {ui.reasoning ? (
+                <blockquote className="hero-quote">“{ui.reasoning}”</blockquote>
+              ) : (
+                <p className="muted hero-empty">{ui.status === "thinking" ? "O agente delibera…" : "Nenhuma decisão registrada ainda."}</p>
+              )}
+            </div>
             {ui.advisorRecommendations.length > 0 && (
               <ul className="advisor-list">
                 {ui.advisorRecommendations.map((r, i) => (
