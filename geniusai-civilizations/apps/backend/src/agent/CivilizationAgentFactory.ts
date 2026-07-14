@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CIV_IDS, TECHS } from "@geniusai/shared";
+import { ADVISOR_ROLES, CIV_IDS, TECHS } from "@geniusai/shared";
 import type { CivilizationDefinition } from "@geniusai/shared";
 import type { CivId, World } from "../engine/types";
 import { logger as backendLogger } from "../logger";
@@ -29,6 +29,8 @@ const CivilizationDefinitionSchema = z.object({
     science: z.number().finite().nonnegative(),
   }),
   model: z.string().trim().min(1).max(200).optional(),
+  /** Conselheiros ativos (Fase 14, §16 — opcional, por civilização). */
+  advisors: z.array(z.enum(ADVISOR_ROLES)).max(ADVISOR_ROLES.length).optional(),
 });
 
 export class InvalidCivilizationDefinitionError extends Error {}
@@ -151,6 +153,7 @@ export function createCivilizationAgent(ctx: CivilizationAgentContext): Civiliza
       const result = await runCivilizationTurn(world, definition.id, ctx.runner, {
         ...opts,
         model: opts.model ?? definition.model,
+        advisors: opts.advisors ?? definition.advisors,
       });
       logger.log({
         gameId: ctx.gameId,

@@ -213,6 +213,24 @@ export const TECHS: Record<string, TechSpec> = {
   },
 };
 
+// ── Conselheiros especialistas (PRD §16, Fase 14) ───────────────────────────
+
+/** Especialidades de conselheiro disponíveis (PRD §16 — RF-9). */
+export const ADVISOR_ROLES = ["economic", "diplomatic", "military", "scientific", "historian"] as const;
+export type AdvisorRole = (typeof ADVISOR_ROLES)[number];
+
+/**
+ * Recomendação de UM conselheiro para o turno corrente. Aditiva ao prompt do
+ * agente principal — nunca decide por ele (RF-9: "o agente principal
+ * permanece livre para segui-las ou não").
+ */
+export interface AdvisorRecommendation {
+  role: AdvisorRole;
+  /** Texto da recomendação (≤280 chars, já validado/truncado). */
+  recommendation: string;
+  confidence: "low" | "medium" | "high";
+}
+
 // ── Definição de civilização (Agente Construtor — PRD §7) ──────────────────
 
 export type CivilizationPriority = "military" | "science" | "economy" | "culture" | "diplomacy";
@@ -246,6 +264,14 @@ export interface CivilizationDefinition {
   startingResources: Resources;
   /** Override do modelo do runner para ESTA civilização (ex.: Ollama). */
   model?: string;
+  /**
+   * Conselheiros especialistas ativos para esta civilização (PRD §16 —
+   * Fase 14, opcional). Ausente/vazio = comportamento padrão (sem corte),
+   * preservando toda partida já jogável hoje. Por civilização, não global
+   * (RF-10) — permite comparar, na mesma partida, uma civilização "com
+   * corte" e outra sem.
+   */
+  advisors?: AdvisorRole[];
 }
 
 const PRIORITY_LABEL: Record<CivilizationPriority, string> = {
@@ -289,6 +315,10 @@ export const DEFAULT_CIVILIZATIONS: Record<CivId, CivilizationDefinition> = {
     diplomacyStyle: "aggressive",
     startingTechnologies: [],
     startingResources: { food: 5, gold: 60, science: 0 },
+    // Prova de conceito da Fase 14 (§16 do PRD): só Roma tem corte por
+    // padrão — permite comparar, na mesma partida, uma civilização "com
+    // conselheiros" e as demais sem, como pede a RF-10.
+    advisors: ["military", "economic"],
   },
   egypt: {
     id: "egypt",
@@ -355,6 +385,8 @@ export type LoopEvent =
       actions: Action[];
       passed: boolean;
       errors: string[];
+      /** Recomendações da corte de conselheiros usadas nesta decisão (Fase 14, §16). */
+      advisorRecommendations: AdvisorRecommendation[];
     }
   | { type: "tick_end"; tick: number; events: DisplayEvent[]; world: World };
 
@@ -365,6 +397,7 @@ export interface CivLastTurn {
   actions: Action[];
   passed: boolean;
   errors: string[];
+  advisorRecommendations: AdvisorRecommendation[];
 }
 
 export interface SaveInfo {

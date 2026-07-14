@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Action, CivId, GameEvent, LoopState, SaveInfo, ServerMessage, World } from "./types";
+import type { Action, AdvisorRecommendation, CivId, GameEvent, LoopState, SaveInfo, ServerMessage, World } from "./types";
 import { CIV_IDS } from "./types";
 
 export type CivStatus = "idle" | "thinking" | "done";
@@ -12,6 +12,8 @@ export interface CivUiState {
   actions: Action[];
   passed: boolean;
   errors: string[];
+  /** Recomendações da corte de conselheiros usadas nesta decisão (Fase 14). */
+  advisorRecommendations: AdvisorRecommendation[];
 }
 
 const emptyCivState = (): CivUiState => ({
@@ -21,6 +23,7 @@ const emptyCivState = (): CivUiState => ({
   actions: [],
   passed: false,
   errors: [],
+  advisorRecommendations: [],
 });
 
 /** Estado de uma consulta "pergunte à civilização" (comando ask). */
@@ -95,6 +98,7 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
             actions: last.actions,
             passed: last.passed,
             errors: last.errors,
+            advisorRecommendations: last.advisorRecommendations ?? [],
           };
         }
       }
@@ -122,6 +126,7 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
           actions: msg.actions,
           passed: msg.passed,
           errors: msg.errors,
+          advisorRecommendations: msg.advisorRecommendations,
         },
       };
       return { ...s, civs };

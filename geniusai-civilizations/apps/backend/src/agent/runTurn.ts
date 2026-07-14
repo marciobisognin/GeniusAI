@@ -1,6 +1,8 @@
+import type { AdvisorRecommendation, AdvisorRole } from "@geniusai/shared";
 import type { AgentRunner } from "./AgentRunner";
 import type { CivDecision, CivId, World } from "../engine/types";
 import { RESPONSE_JSON_SCHEMA, coerceActions } from "./actions";
+import { consultAdvisors, DEFAULT_ADVISOR_TIMEOUT_MS } from "./advisors";
 import { buildSystemPrompt, buildTurnPrompt } from "./prompt";
 
 export interface RunTurnOptions {
@@ -8,6 +10,8 @@ export interface RunTurnOptions {
   timeoutMs?: number;
   /** Override de modelo (ver `DecideInput.model` — CivilizationDefinition.model). */
   model?: string;
+  /** Conselheiros ativos desta civilização (Fase 14, §16 — RF-9/RF-10). */
+  advisors?: AdvisorRole[];
 }
 
 export interface TurnResult {
@@ -21,6 +25,8 @@ export interface TurnResult {
   attempts: number;
   /** Erros de validação/execução (feedback p/ o próximo turno). */
   errors: string[];
+  /** Recomendações da corte usadas nesta decisão ([] se sem conselheiros). */
+  advisorRecommendations: AdvisorRecommendation[];
 }
 
 /**
@@ -54,7 +60,17 @@ export async function runCivilizationTurn(
 ): Promise<TurnResult> {
   const civ = world.civilizations[civId];
   const system = buildSystemPrompt(civ.persona, civId);
-  const baseUser = buildTurnPrompt(world, civId);
+
+  // Corte de conselheiros (Fase 14, §16): roda ANTES do agente principal
+  // decidir, com seu próprio orçamento de tempo (fração do timeout do
+  // turno) — nunca deixa o conselho estourar o tempo da decisão em si.
+  const advisorRecommendations = opts.advisors?.length
+    ? await consultAdvisors(world, civId, opts.advisors, runner, {
+        timeoutMs: opts.timeoutMs ? Math.min(opts.timeoutMs, DEFAULT_ADVISOR_TIMEOUT_MS) : DEFAULT_ADVISOR_TIMEOUT_MS,
+        model: opts.model,
+      })
+    : [];
+  const baseUser = buildTurnPrompt(world, civId, advisorRecommendations);
 
   let lastError = "";
   for (let attempt = 1; attempt <= 2; attempt++) {
@@ -79,6 +95,7 @@ export async function runCivilizationTurn(
         passed: false,
         attempts: attempt,
         errors,
+        advisorRecommendations,
       };
     } catch (err) {
       lastError = err instanceof Error ? err.message : String(err);
@@ -91,5 +108,6 @@ export async function runCivilizationTurn(
     passed: true,
     attempts: 2,
     errors: [lastError],
+    advisorRecommendations,
   };
 }

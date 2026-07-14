@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 16 concluída (empacotamento Docker e diagnóstico de ambiente)
+## Estado atual: Fase 14 concluída (conselheiros especialistas)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -168,6 +168,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **`npm run doctor`** (`scripts/doctor.mjs`, zero dependências): checa Node ≥ 20, se o runner escolhido (`RUNNER`) está disponível (CLI no `PATH`, ou Ollama respondendo em `OLLAMA_HOST`, ou `mock` que sempre funciona), se a porta `PORT` está livre e se `DATA_DIR` é gravável — imprime um resumo com ✓/⚠/✗ e sai com código 1 se houver bloqueio. Testado manualmente em 6 cenários (mock ok, CLI ok, runner inválido falha, porta ocupada avisa, Ollama inacessível falha, `DATA_DIR` sem permissão de escrita).
 - **`Dockerfile`** multi-stage (`deps` → `build` → `backend`/`frontend`, um único arquivo, cache de `npm ci` em camada própria) e **`docker-compose.yml`** (dois serviços, `RUNNER=mock` por padrão, volume nomeado para `DATA_DIR`, `host.docker.internal` liberado para apontar para um Ollama rodando no host). Limitação assumida: `RUNNER=claude|codex|opencode` exige o CLI instalado dentro da imagem, fora do escopo desta fase — nessa imagem use `RUNNER=mock` ou `RUNNER=ollama` (host).
 - **Verificação:** `docker compose config` validou a composição offline; o comportamento em runtime de cada alvo (`CMD` do backend e do frontend) foi validado rodando os mesmos comandos em containers `node:22-slim` com o `node_modules`/`dist` já resolvidos no host montados por bind mount, incluindo um fluxo E2E completo via Playwright/Chromium contra os dois containers reais (conectar → criar partida → avançar tick). O passo `docker compose build` (`npm ci` de dentro do container) não pôde ser exercitado de ponta a ponta *neste ambiente sandboxed* de verificação, por uma limitação de rede do proxy de saída específica deste sandbox (documentada em `/root/.ccr/README.md`) — não é uma limitação do `Dockerfile` em si, que segue o padrão multi-stage usual do Node; em uma máquina com acesso normal à internet o `docker compose up --build` funciona sem ajustes.
+
+**Fase 14 — Conselheiros especialistas, opcional e ativável por civilização (§16 do PRD):**
+- Cada `CivilizationDefinition` pode declarar `advisors: AdvisorRole[]` (`economic` | `diplomatic` | `military` | `scientific` | `historian`). Ausente/vazio = comportamento idêntico ao de antes desta fase — estritamente aditivo. **Prova de conceito:** só **Roma** vem com `["military", "economic"]` no catálogo padrão (`DEFAULT_CIVILIZATIONS`) — permite comparar, na mesma partida, uma civilização "com corte" e as demais sem (RF-10).
+- Cada conselheiro ativo roda **1 chamada curta ao MESMO runner/modelo da civilização** (`apps/backend/src/agent/advisors.ts`), recebendo apenas o recorte do snapshot relevante à sua especialidade (ex.: o conselheiro militar não recebe o catálogo de tecnologias; o científico não recebe posições de exército). A confiança (`low`/`medium`/`high`) vem de um prefixo convencionado na resposta (`"[high]: recrute mais um exército…"`); se o runner não seguir o formato, cai para `medium` em vez de falhar — mesmo espírito de robustez do RF-3 (o `AgentRunner` continua com o mesmo contrato `{reasoning, actions}` de sempre, nenhuma mudança de interface).
+- As recomendações da corte entram no prompt do agente principal como uma seção "Conselho da corte" **antes** da decisão (`buildTurnPrompt`) — o agente decide livremente se segue ou não. Falha de um conselheiro (timeout/JSON inválido) nunca derruba o turno; é só descartada.
+- **UI:** as recomendações do turno aparecem tanto no Teatro de Decisões ("Conselho de guerra") quanto na Vista Evolução (EraInspector), com o papel do conselheiro e uma bolinha de confiança — reforça a transparência de raciocínio (RF-4).
+- **+18 testes** cobrindo `advisors.ts` (parsing de confiança, truncamento, recorte por papel, falha isolada não derruba os demais), integração em `runTurn`/`prompt`/`CivilizationAgentFactory` e o fluxo com/sem conselheiros: **141 no total**. Verificado também via Playwright/Chromium contra o app real (Roma mostra o conselho, Egito — sem `advisors` — não mostra nada).
 
 ## Pré-requisitos
 

@@ -1,6 +1,7 @@
 import { appendFile, mkdir, readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
+import type { AdvisorRecommendation } from "@geniusai/shared";
 import { dataDir } from "../paths";
 import { CIV_IDS } from "../engine/types";
 import type { Action, CivId, GameEvent, World } from "../engine/types";
@@ -56,6 +57,8 @@ export interface TraceRecord {
     actions: Action[];
     passed: boolean;
     errors: string[];
+    /** Recomendações da corte usadas nesta decisão (Fase 14, §16). Ausente em traces antigos. */
+    advisorRecommendations?: AdvisorRecommendation[];
   }[];
   events: GameEvent[];
   /** Manchete opcional do narrador (ver orchestrator/narrator.ts). */
@@ -246,6 +249,7 @@ export interface CivLastTurn {
   actions: Action[];
   passed: boolean;
   errors: string[];
+  advisorRecommendations: AdvisorRecommendation[];
 }
 
 export interface TraceSummary {
@@ -269,7 +273,13 @@ export function summarizeTrace(records: TraceRecord[]): TraceSummary {
     timeline.push(...record.events);
     if (record.narration) timeline.push({ type: "narration", text: record.narration });
     for (const d of record.decisions) {
-      civs[d.civ] = { reasoning: d.reasoning, actions: d.actions, passed: d.passed, errors: d.errors };
+      civs[d.civ] = {
+        reasoning: d.reasoning,
+        actions: d.actions,
+        passed: d.passed,
+        errors: d.errors,
+        advisorRecommendations: d.advisorRecommendations ?? [],
+      };
     }
   }
 

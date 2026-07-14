@@ -1,5 +1,14 @@
 import { eventHasCiv } from "../simulationInsights";
-import { CIV_COLOR, CIV_LABEL, describeEvent, type CivId, type GameEvent, type World } from "../types";
+import {
+  ADVISOR_CONFIDENCE_LABEL,
+  ADVISOR_LABEL,
+  CIV_COLOR,
+  CIV_LABEL,
+  describeEvent,
+  type CivId,
+  type GameEvent,
+  type World,
+} from "../types";
 import type { CivUiState } from "../useGameSocket";
 
 interface Props {
@@ -90,6 +99,23 @@ export function EraInspector({ world, selected, ui, events }: Props) {
           {ui.actions.length === 0 ? <span className="empty-pill">sem ações</span> : ui.actions.map((a, i) => <span key={i}>{actionName(a.tool)}</span>)}
         </div>
       </section>
+
+      {ui.advisorRecommendations.length > 0 && (
+        <section className="inspector-card advisors-card">
+          <h3>Conselho da corte</h3>
+          <ul className="advisor-list">
+            {ui.advisorRecommendations.map((r, i) => (
+              <li key={i}>
+                <span className={`advisor-confidence advisor-confidence-${r.confidence}`} title={ADVISOR_CONFIDENCE_LABEL[r.confidence]} />
+                <div>
+                  <b>{ADVISOR_LABEL[r.role]}</b>
+                  <p>{r.recommendation}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="inspector-card mini-events-card">
         <h3>Eventos conectados</h3>

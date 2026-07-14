@@ -1,6 +1,7 @@
 import { STRUCTURES, TECHS, getStance } from "../engine/rules";
 import { CIV_IDS } from "../engine/types";
 import type { CivId, GameEvent, ResourceKind, Terrain, World } from "../engine/types";
+import type { AdvisorRecommendation } from "@geniusai/shared";
 
 interface TileView {
   x: number;
@@ -105,10 +106,27 @@ function eventConcernsCiv(event: GameEvent, civId: CivId): boolean {
   );
 }
 
-/** Prompt do turno (volátil): snapshot + resultados do último turno. */
-export function buildTurnPrompt(world: World, civId: CivId): string {
+/**
+ * Prompt do turno (volátil): snapshot + resultados do último turno +
+ * recomendações dos conselheiros (Fase 14, §16 — quando ativos). O agente
+ * principal continua livre para seguir ou ignorar o conselho.
+ */
+export function buildTurnPrompt(
+  world: World,
+  civId: CivId,
+  advisorRecommendations: AdvisorRecommendation[] = [],
+): string {
   const snapshot = snapshotForCiv(world, civId);
   const lastResults = world.events.filter((e) => eventConcernsCiv(e, civId));
+
+  const advisorBlock =
+    advisorRecommendations.length === 0
+      ? []
+      : [
+          `Conselho da corte (você decide se segue ou não cada recomendação):`,
+          JSON.stringify(advisorRecommendations),
+          ``,
+        ];
 
   return [
     `Estado do mundo (tick ${world.tick}):`,
@@ -117,6 +135,7 @@ export function buildTurnPrompt(world: World, civId: CivId): string {
     `Resultados do seu último turno:`,
     JSON.stringify(lastResults),
     ``,
+    ...advisorBlock,
     `Escolha suas ações agora. Responda apenas com o JSON { "reasoning", "actions" }.`,
   ].join("\n");
 }

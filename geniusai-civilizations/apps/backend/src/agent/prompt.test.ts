@@ -29,6 +29,22 @@ test("buildTurnPrompt menciona o tick e o formato de resposta", () => {
   assert.ok(p.includes(`"reasoning"`));
 });
 
+test("buildTurnPrompt: sem conselheiros, não menciona o conselho da corte", () => {
+  const w = createWorld(5);
+  const p = buildTurnPrompt(w, "rome");
+  assert.ok(!p.includes("Conselho da corte"));
+});
+
+test("buildTurnPrompt: com recomendações, inclui a seção 'Conselho da corte' (Fase 14)", () => {
+  const w = createWorld(5);
+  const p = buildTurnPrompt(w, "rome", [
+    { role: "military", recommendation: "recrute mais um exército", confidence: "high" },
+  ]);
+  assert.ok(p.includes("Conselho da corte"));
+  assert.ok(p.includes("recrute mais um exército"));
+  assert.ok(p.includes("military"));
+});
+
 test("segurança (§7.6): snapshotForCiv nunca vaza a memória privada de outra civilização", () => {
   const w = createWorld(5);
   w.civilizations.egypt.memory = "SEGREDO-DE-ESTADO-DO-EGITO-42";
