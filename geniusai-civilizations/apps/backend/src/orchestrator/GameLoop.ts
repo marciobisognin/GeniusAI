@@ -186,6 +186,7 @@ export class GameLoop {
         actions: res.decision.actions,
         passed: res.passed,
         errors: res.errors,
+        advisorRecommendations: res.advisorRecommendations,
       });
     }
 
@@ -205,6 +206,7 @@ export class GameLoop {
           actions: r.decision.actions,
           passed: r.passed,
           errors: r.errors,
+          advisorRecommendations: r.advisorRecommendations,
         })),
         events: this.world.events,
         narration: narrationText ?? undefined,

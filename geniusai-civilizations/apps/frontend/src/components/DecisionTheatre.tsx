@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { TECHS } from "@geniusai/shared";
 import type { TechBranch } from "@geniusai/shared";
 import { ERA_STAGES, eventHasCiv, getEraProgress } from "../simulationInsights";
-import { CIV_COLOR, CIV_IDS, CIV_LABEL, CIV_LEADER, describeEvent } from "../types";
+import { ADVISOR_CONFIDENCE_LABEL, ADVISOR_LABEL, CIV_COLOR, CIV_IDS, CIV_LABEL, CIV_LEADER, describeEvent } from "../types";
 import type { CivId, Civilization, GameEvent, World } from "../types";
 import type { CivUiState } from "../useGameSocket";
 import romeArt from "../assets/civs/rome.svg";
@@ -404,6 +404,22 @@ export function DecisionTheatre({ world, civs, selected, onSelect, events }: Pro
               <blockquote className="hero-quote">“{ui.reasoning}”</blockquote>
             ) : (
               <p className="muted hero-empty">{ui.status === "thinking" ? "O agente delibera…" : "Nenhuma decisão registrada ainda."}</p>
+            )}
+            {ui.advisorRecommendations.length > 0 && (
+              <ul className="advisor-list">
+                {ui.advisorRecommendations.map((r, i) => (
+                  <li key={i}>
+                    <span
+                      className={`advisor-confidence advisor-confidence-${r.confidence}`}
+                      title={ADVISOR_CONFIDENCE_LABEL[r.confidence]}
+                    />
+                    <div>
+                      <b>{ADVISOR_LABEL[r.role]}</b>
+                      <p>{r.recommendation}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             )}
           </section>
 

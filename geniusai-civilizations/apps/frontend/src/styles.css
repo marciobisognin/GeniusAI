@@ -395,6 +395,16 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .mini-events { list-style: none; padding: 0; margin: 0; display: grid; gap: 7px; max-height: 126px; overflow: auto; }
 .mini-events li { padding-left: 10px; border-left: 3px solid var(--civ); font-size: 0.72rem; color: var(--muted); line-height: 1.32; }
 
+/* ---------- Conselho da corte (Fase 14, conselheiros especialistas) ---------- */
+.advisor-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.advisor-list li { display: flex; gap: 8px; align-items: flex-start; }
+.advisor-list b { display: block; font-size: 0.68rem; letter-spacing: 0.02em; color: var(--heading-soft); }
+.advisor-list p { margin: 2px 0 0; font-size: 0.72rem; line-height: 1.4; color: var(--muted); }
+.advisor-confidence { flex: none; width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; background: var(--muted); }
+.advisor-confidence-low { background: color-mix(in srgb, var(--muted) 60%, transparent); }
+.advisor-confidence-medium { background: var(--warn); }
+.advisor-confidence-high { background: var(--civ); }
+
 /* ---------- Vista Mundo & Diplomacia ---------- */
 .world-layout {
   display: grid;

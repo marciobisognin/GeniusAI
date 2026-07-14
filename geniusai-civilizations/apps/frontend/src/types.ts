@@ -4,12 +4,15 @@
  * apenas re-exports e helpers de apresentação (rótulos, cores, narrativa).
  */
 import { CIV_IDS, DEFAULT_CIVILIZATIONS } from "@geniusai/shared";
-import type { CivId, DisplayEvent, VictoryKind } from "@geniusai/shared";
+import type { AdvisorRole, CivId, DisplayEvent, VictoryKind } from "@geniusai/shared";
 
 export {
+  ADVISOR_ROLES,
   CIV_IDS,
   DEFAULT_CIVILIZATIONS,
   type Action,
+  type AdvisorRecommendation,
+  type AdvisorRole,
   type Army,
   type City,
   type CivId,
@@ -50,6 +53,21 @@ export const CIV_COLOR: Record<CivId, string> = Object.fromEntries(
 export const CIV_LEADER: Record<CivId, string> = Object.fromEntries(
   CIV_IDS.map((id) => [id, DEFAULT_CIVILIZATIONS[id].leaderName]),
 ) as Record<CivId, string>;
+
+/** Rótulos em português dos conselheiros especialistas (Fase 14, §16 do PRD). */
+export const ADVISOR_LABEL: Record<AdvisorRole, string> = {
+  economic: "Econômico",
+  diplomatic: "Diplomático",
+  military: "Militar",
+  scientific: "Científico",
+  historian: "Historiador",
+};
+
+export const ADVISOR_CONFIDENCE_LABEL: Record<"low" | "medium" | "high", string> = {
+  low: "baixa confiança",
+  medium: "confiança média",
+  high: "alta confiança",
+};
 
 export const VICTORY_LABEL: Record<VictoryKind, string> = {
   domination: "dominação",

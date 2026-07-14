@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createWorld } from "../engine/world";
 import { tick } from "../engine/engine";
 import { runCivilizationTurn } from "./runTurn";
-import type { AgentDecision, AgentRunner } from "./AgentRunner";
+import type { AgentDecision, AgentRunner, DecideInput } from "./AgentRunner";
 
 function fixedRunner(decision: AgentDecision): AgentRunner {
   return { name: "fake", healthy: async () => true, decide: async () => decision };
@@ -79,6 +79,52 @@ test("runCivilizationTurn: ações inválidas são descartadas sem derrubar o tu
   assert.equal(res.passed, false);
   assert.equal(res.decision.actions.length, 1);
   assert.equal(res.errors.length, 1);
+});
+
+test("runCivilizationTurn: sem `advisors`, não consulta conselheiros (advisorRecommendations vazio)", async () => {
+  const w = createWorld(5);
+  const res = await runCivilizationTurn(w, "rome", fixedRunner({ reasoning: "ok", actions: [] }));
+  assert.deepEqual(res.advisorRecommendations, []);
+});
+
+test("runCivilizationTurn: com `advisors`, consulta a corte ANTES da decisão e injeta no prompt (Fase 14)", async () => {
+  const w = createWorld(5);
+  const inputs: DecideInput[] = [];
+  let call = 0;
+  const runner: AgentRunner = {
+    name: "court",
+    healthy: async () => true,
+    decide: async (input) => {
+      inputs.push(input);
+      call += 1;
+      // 1ª chamada: conselheiro militar. 2ª: decisão principal.
+      if (call === 1) return { reasoning: "[high]: recrute mais um exército", actions: [] };
+      return { reasoning: "seguindo o conselho", actions: [] };
+    },
+  };
+  const res = await runCivilizationTurn(w, "rome", runner, { advisors: ["military"] });
+  assert.equal(res.advisorRecommendations.length, 1);
+  assert.equal(res.advisorRecommendations[0].role, "military");
+  assert.equal(res.advisorRecommendations[0].confidence, "high");
+  // O prompt da decisão principal (2ª chamada) precisa carregar a recomendação.
+  assert.ok(inputs[1].user.includes("Conselho da corte"));
+  assert.ok(inputs[1].user.includes("recrute mais um exército"));
+});
+
+test("runCivilizationTurn: conselheiro falhando não impede a decisão principal", async () => {
+  const w = createWorld(5);
+  const runner: AgentRunner = {
+    name: "advisor-down",
+    healthy: async () => true,
+    decide: async () => {
+      throw new Error("indisponível");
+    },
+  };
+  // Como TODAS as chamadas falham (conselheiro e decisão), o turno acaba
+  // passado — mas o conselheiro falhar não deve gerar exceção não tratada.
+  const res = await runCivilizationTurn(w, "rome", runner, { advisors: ["economic"] });
+  assert.equal(res.passed, true);
+  assert.deepEqual(res.advisorRecommendations, []);
 });
 
 test("integração: decisão do agente aplicada pelo motor muda o mundo", async () => {
