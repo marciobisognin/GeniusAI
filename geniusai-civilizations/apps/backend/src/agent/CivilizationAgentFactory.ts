@@ -117,6 +117,7 @@ const ACTION_LABEL: Record<string, string> = {
   research: "iniciou pesquisa",
   move_army: "moveu um exército",
   attack: "atacou",
+  retreat_army: "recuou um exército",
   recruit: "recrutou um exército",
   set_diplomacy: "mudou a diplomacia",
   propose_trade: "propôs comércio",

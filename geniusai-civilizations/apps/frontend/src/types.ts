@@ -93,6 +93,14 @@ export function describeEvent(e: GameEvent): string {
       return `${civLabel(e.civ)} concluiu a tecnologia ${e.technology}`;
     case "army_moved":
       return `${civLabel(e.civ)} moveu um exército para (${e.x},${e.y})`;
+    case "hostile_territory_entered":
+      return `${civLabel(e.civ)} entrou em território hostil de ${civLabel(e.owner)} em (${e.x},${e.y})`;
+    case "army_retreated":
+      return `${civLabel(e.civ)} recuou um exército para (${e.x},${e.y})`;
+    case "army_upkeep_shortfall":
+      return `${civLabel(e.civ)} não pagou a manutenção de ${e.armiesAffected} exército(s) — força reduzida`;
+    case "army_disbanded":
+      return `${civLabel(e.civ)} perdeu um exército por falta de manutenção`;
     case "battle":
       return `Batalha: ${civLabel(e.attacker)} atacou ${civLabel(e.defender)} — vencedor: ${civLabel(e.winner)}`;
     case "city_captured":
@@ -154,6 +162,10 @@ const EVENT_CATEGORY_BY_TYPE: Record<string, EventCategory> = {
   research_started: "ciência",
   tech_researched: "ciência",
   army_moved: "guerra",
+  hostile_territory_entered: "guerra",
+  army_retreated: "guerra",
+  army_upkeep_shortfall: "guerra",
+  army_disbanded: "guerra",
   battle: "guerra",
   city_captured: "guerra",
   civ_eliminated: "guerra",

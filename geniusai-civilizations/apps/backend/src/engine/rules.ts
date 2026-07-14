@@ -26,6 +26,15 @@ import { TECHS } from "@geniusai/shared";
 export const RECRUIT_GOLD_COST = 30;
 export const RECRUIT_BASE_STRENGTH = 5;
 
+/**
+ * Manutenção de exércitos (Fase 18, §18 do PRD — RF-15): cada exército ativo
+ * custa isto em ouro por tick. Sem ouro suficiente, TODOS os exércitos da
+ * civilização perdem força (desgaste/deserção) em vez de um crash — e um
+ * exército que chega a força 0 é desfeito. É também a "passada de
+ * balanceamento" (RF-16): desestimula empilhar exércitos ociosos.
+ */
+export const ARMY_UPKEEP_GOLD = 1;
+
 /** Força de um exército recém-recrutado, somando bônus das tecnologias. */
 export function recruitStrength(techs: string[]): number {
   return techs.reduce(

@@ -9,6 +9,19 @@ test("coerceActions: ação válida passa", () => {
   assert.equal(valid[0].tool, "build");
 });
 
+test("coerceActions: retreat_army válido passa (Fase 18)", () => {
+  const { valid, errors } = coerceActions([{ tool: "retreat_army", args: { armyId: "rome-army-1" } }]);
+  assert.equal(valid.length, 1);
+  assert.equal(errors.length, 0);
+  assert.equal(valid[0].tool, "retreat_army");
+});
+
+test("coerceActions: retreat_army sem armyId é rejeitado", () => {
+  const { valid, errors } = coerceActions([{ tool: "retreat_army", args: {} }]);
+  assert.equal(valid.length, 0);
+  assert.equal(errors.length, 1);
+});
+
 test("coerceActions: ferramenta desconhecida vira erro (não derruba)", () => {
   const { valid, errors } = coerceActions([{ tool: "nuke", args: {} }]);
   assert.equal(valid.length, 0);
