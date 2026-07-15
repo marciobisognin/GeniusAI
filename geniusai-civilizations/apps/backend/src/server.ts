@@ -36,6 +36,7 @@ const ClientCommandSchema = z.discriminatedUnion("action", [
     seed: z.number().int().min(0).max(2_147_483_647).optional(),
     name: z.string().trim().min(1).max(40).optional(),
     speedMs: z.number().finite().min(0).max(600_000).optional(),
+    fogOfWar: z.boolean().optional(),
   }),
   z.object({ type: z.literal("command"), action: z.literal("load_game"), gameId: GameIdSchema }),
   z.object({
@@ -114,6 +115,7 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
     speedMs: Number(process.env.TICK_SPEED_MS ?? 2000),
     turnTimeoutMs: Number(process.env.TURN_TIMEOUT_MS ?? 60_000),
     narrator: cfg.narrator ? runner : undefined,
+    fogOfWar: cfg.fogOfWarDefault,
   });
 
   const clients = new Set<WebSocket>();
@@ -168,6 +170,7 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
       speedMs: Number(process.env.TICK_SPEED_MS ?? 2000),
       turnTimeoutMs: Number(process.env.TURN_TIMEOUT_MS ?? 60_000),
       narrator: cfg.narrator ? runner : undefined,
+      fogOfWar: cfg.fogOfWarDefault,
     };
   }
 
@@ -218,6 +221,7 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
             speedMs: msg.speedMs ?? opts.speedMs,
             seed: msg.seed ?? Math.floor(Math.random() * 1_000_000),
             gameId: `${slugifyName(msg.name)}-${Date.now()}`,
+            fogOfWar: msg.fogOfWar ?? opts.fogOfWar,
           });
           attachLoop(next);
           await sendFullState("broadcast");

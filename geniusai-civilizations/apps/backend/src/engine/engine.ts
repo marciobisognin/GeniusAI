@@ -2,6 +2,7 @@ import { Rng } from "./rng";
 import {
   ARMY_UPKEEP_GOLD,
   CITY_BASE_YIELD,
+  DISCOVERY_RADIUS,
   PROPOSAL_TTL_TICKS,
   PROSPERITY_THRESHOLD,
   RECRUIT_GOLD_COST,
@@ -20,6 +21,7 @@ import {
   isAdjacent,
   neighbors,
   recruitStrength,
+  revealAround,
   setStance,
   subInto,
 } from "./rules";
@@ -67,6 +69,18 @@ export function tick(world: World, decisions: CivDecision[]): World {
     if (!civ || !civ.alive) continue;
     for (const action of decision.actions) {
       applyAction(w, civ, action, rng, events);
+    }
+  }
+
+  // Descoberta de território (Fase 20, §20 — RF-21): só quando a partida
+  // ativou fogOfWar — cidades/exércitos revelam o raio ao seu redor a cada
+  // tick, depois das ações deste turno já terem movido tudo.
+  if (w.fogOfWar) {
+    for (const id of CIV_IDS) {
+      const civ = w.civilizations[id];
+      if (!civ.alive) continue;
+      for (const city of civ.cities) revealAround(w, civ.discovered, city.x, city.y, DISCOVERY_RADIUS);
+      for (const army of civ.armies) revealAround(w, civ.discovered, army.x, army.y, DISCOVERY_RADIUS);
     }
   }
 

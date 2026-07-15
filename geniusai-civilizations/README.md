@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 19 concluída (validação com LLM real e streaming de raciocínio)
+## Estado atual: Fase 20 concluída (névoa de guerra)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -196,6 +196,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **Validação real**: partida completa rodada com `RUNNER=claude` de verdade (não mock) — as 4 civilizações decidiram com sucesso (ações coerentes com a persona, memória estratégica gravada corretamente), incluindo Roma consultando os conselheiros da Fase 14 através do runner real. Streaming ao vivo confirmado via Playwright contra o app rodando de verdade.
 - **+5 testes** de `CliAgentRunner` (system prompt como argumento separado vs. concatenado no stdin, parsing de deltas NDJSON, tolerância a linha malformada, health check) rodando um "CLI" real via `spawn` (não um mock de `child_process`): **158 no total**.
 
+**Fase 20 — Névoa de guerra (§20 do PRD, RF-6):**
+- **Descoberta de território** (RF-21): cada `Civilization` ganha `discovered: Record<string, boolean>` (chave `"x,y"`) — cidades e exércitos revelam um raio de 2 tiles ao seu redor a cada tick (`DISCOVERY_RADIUS`, em `rules.ts`). Um tile descoberto nunca "esquece" (sem névoa dinâmica nesta fase, por simplicidade deliberada).
+- **`snapshotForCiv` filtra os outros** quando a névoa está ativa: `others[].cities`/`others[].armies` só aparecem se a posição já foi descoberta. Identidade, postura diplomática e contagem de tecnologias continuam visíveis — não é reconhecimento militar, é diplomacia que a civilização já tem por conta própria.
+- **Opt-in por partida** (RF-22): `World.fogOfWar` (padrão `false`, preserva visão global de todas as fases anteriores). Um padrão de servidor via `FOG_OF_WAR` no `.env`, e um checkbox "Névoa de guerra" na tela de criação de partida que sobrescreve esse padrão por partida.
+- **UI "assistir como"** (RF-23): com a névoa ativa, a Vista Mundo escurece e hachura os tiles que a civilização selecionada ainda não descobriu — inclusive cidades/exércitos de outras civilizações ali, exatamente a informação que aquela IA tem. Um chip mostra "🌫 névoa de guerra · vendo como {civilização}".
+- **+8 testes** (revelação em `createWorld`, expansão por tick com/sem a flag, persistência do território descoberto, filtro em `snapshotForCiv`, integração `new_game`↔`fogOfWar`): **168 no total**. Saves anteriores a esta fase migram automaticamente (`discovered: {}`, `fogOfWar: false` — mesmo comportamento que já tinham). Verificado visualmente via Playwright, inclusive lendo os pixels do canvas para confirmar que o tile certo fica escuro/claro ao trocar de civilização observada.
+
 ## Pré-requisitos
 
 - Node.js 20+.
@@ -251,7 +258,7 @@ Endpoints do backend (porta `PORT`, padrão 8787):
 - `GET /health` → `{ ok, runner }`
 - WebSocket `ws://localhost:8787`:
   - servidor → cliente: `hello`, `health`, `world_init` (`{world, loopState, gameId}`), `history` (`{timeline, civs}`), `loop_state`, `turn_start`, `turn_token`, `turn_end`, `tick_end`, `saves`, `error`.
-  - cliente → servidor: `{type:"command", action:"play"|"pause"|"stop"|"step"}`, `{action:"set_speed", speedMs}`, `{action:"list_saves"}`, `{action:"new_game", seed?}`, `{action:"load_game", gameId}`.
+  - cliente → servidor: `{type:"command", action:"play"|"pause"|"stop"|"step"}`, `{action:"set_speed", speedMs}`, `{action:"list_saves"}`, `{action:"new_game", seed?, name?, speedMs?, fogOfWar?}`, `{action:"load_game", gameId}`.
 
 ## Configuração (env)
 
@@ -263,6 +270,7 @@ Endpoints do backend (porta `PORT`, padrão 8787):
 | `OLLAMA_HOST` | `http://localhost:11434` | Endpoint do Ollama |
 | `PORT` | `8787` | Porta do backend |
 | `NARRATOR` | `false` | `true` liga o narrador de eventos (1 chamada extra de LLM por tick) |
+| `FOG_OF_WAR` | `false` | `true` liga a névoa de guerra por padrão (visão limitada ao descoberto); sobrescrevível por partida na tela de criação |
 | `SEED` | `42` | Seed do mundo (define o `gameId` padrão: `game-<seed>`) |
 | `TICK_SPEED_MS` | `2000` | Atraso entre ticks no modo play |
 | `TURN_TIMEOUT_MS` | `60000` | Timeout por turno de agente |

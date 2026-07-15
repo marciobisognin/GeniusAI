@@ -58,6 +58,13 @@ export interface Civilization {
   armies: Army[];
   memory: string;
   alive: boolean;
+  /**
+   * Tiles já descobertos por esta civilização (Fase 20, §20 — RF-21),
+   * chave `"x,y"`. Só é aplicado (filtra `snapshotForCiv`/UI) quando
+   * `World.fogOfWar` está ativo — do contrário fica presente mas sem
+   * efeito, preservando o comportamento de visão global.
+   */
+  discovered: Record<string, boolean>;
 }
 
 /**
@@ -133,6 +140,12 @@ export interface World {
   victory: Victory | null;
   /** Eventos emitidos no último tick. */
   events: GameEvent[];
+  /**
+   * Visão limitada por civilização em vez de visão global (Fase 20, §20 —
+   * RF-6/RF-22). Padrão `false` preserva o comportamento de todas as fases
+   * anteriores — opt-in por partida, fixado na criação.
+   */
+  fogOfWar: boolean;
 }
 
 /** Ações que um agente pode escolher (validadas pelo motor). */
@@ -429,6 +442,6 @@ export type ServerMessage =
 export type ClientCommand =
   | { type: "command"; action: "play" | "pause" | "stop" | "step" | "list_saves" }
   | { type: "command"; action: "set_speed"; speedMs: number }
-  | { type: "command"; action: "new_game"; seed?: number; name?: string; speedMs?: number }
+  | { type: "command"; action: "new_game"; seed?: number; name?: string; speedMs?: number; fogOfWar?: boolean }
   | { type: "command"; action: "load_game"; gameId: string }
   | { type: "command"; action: "ask"; civ: CivId; question: string };

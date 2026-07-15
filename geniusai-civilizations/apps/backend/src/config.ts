@@ -18,6 +18,12 @@ export interface Config {
   /** Liga o narrador de eventos (manchete por tick) — decorativo, off por padrão. */
   narrator: boolean;
   /**
+   * Padrão do servidor para névoa de guerra (Fase 20, §20 — RF-22) — cada
+   * `new_game` pode sobrescrever explicitamente; sem override, usa este
+   * valor. Off por padrão (preserva o comportamento de visão global).
+   */
+  fogOfWarDefault: boolean;
+  /**
    * Origins de browser adicionais aceitas no WebSocket (além de localhost).
    * Ex.: ALLOWED_ORIGINS=http://192.168.0.10:5173,http://meu-host:5173
    */
@@ -72,6 +78,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): Config {
     host: env.HOST ?? "127.0.0.1",
     port,
     narrator: env.NARRATOR === "true",
+    fogOfWarDefault: env.FOG_OF_WAR === "true",
     allowedOrigins,
   };
 }

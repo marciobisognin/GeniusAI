@@ -1,7 +1,7 @@
 import { DEFAULT_CIVILIZATIONS, civilizationPersonaText } from "@geniusai/shared";
 import type { CivilizationDefinition } from "@geniusai/shared";
 import { Rng } from "./rng";
-import { neighbors } from "./rules";
+import { DISCOVERY_RADIUS, neighbors, revealAround } from "./rules";
 import { CIV_IDS } from "./types";
 import type { CivId, Civilization, ResourceKind, Terrain, Tile, World } from "./types";
 
@@ -28,6 +28,7 @@ const RESOURCES: ResourceKind[] = ["food", "gold", "science"];
 export function createWorld(
   seed: number,
   definitions: Record<CivId, CivilizationDefinition> = DEFAULT_CIVILIZATIONS,
+  fogOfWar = false,
 ): World {
   const rng = new Rng(seed);
 
@@ -55,6 +56,7 @@ export function createWorld(
     pendingProposals: [],
     victory: null,
     events: [],
+    fogOfWar,
   };
 
   for (const id of CIV_IDS) {
@@ -68,6 +70,8 @@ export function createWorld(
     }
 
     const def = definitions[id];
+    const discovered: Record<string, boolean> = {};
+    revealAround(world, discovered, home.x, home.y, DISCOVERY_RADIUS);
     civilizations[id] = {
       id,
       persona: civilizationPersonaText(def),
@@ -78,6 +82,7 @@ export function createWorld(
       armies: [{ id: `${id}-army-1`, x: home.x, y: home.y, strength: 5 }],
       memory: "",
       alive: true,
+      discovered,
     };
   }
 
