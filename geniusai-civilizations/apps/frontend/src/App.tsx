@@ -13,6 +13,7 @@ import { EvolutionBoard } from "./components/EvolutionBoard";
 import { MuseumMode } from "./components/MuseumMode";
 import { NewGameModal } from "./components/NewGameModal";
 import { ProposalsPanel } from "./components/ProposalsPanel";
+import { ReplayView } from "./components/ReplayView";
 import { SavesPanel } from "./components/SavesPanel";
 import { TechTreePanel } from "./components/TechTreePanel";
 import { WorldMap } from "./components/WorldMap";
@@ -38,7 +39,8 @@ function initialTheme(): Theme {
 }
 
 export function App() {
-  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask } = useGameSocket();
+  const { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask, replay, exitReplay } =
+    useGameSocket();
   const { world, loopState, civs, connected, reconnecting, runner, healthy } = state;
   const [selected, setSelected] = useState<CivId>("rome");
   const [view, setView] = useState<ViewMode>("evolution");
@@ -118,104 +120,118 @@ export function App() {
         </div>
       </header>
 
-      <Controls
-        loopState={loopState}
-        tick={world?.tick ?? 0}
-        onPlay={play}
-        onPause={pause}
-        onStop={stop}
-        onStep={step}
-        onSpeedChange={setSpeed}
-      />
-
-      {world?.victory && (
-        <div
-          className="victory-banner view-enter"
-          style={{ "--civ": CIV_COLOR[world.victory.civ] } as React.CSSProperties}
-          role="status"
-        >
-          <span className="victory-trophy">🏆</span>
-          <div>
-            <strong>{CIV_LABEL[world.victory.civ]} venceu a partida!</strong>
-            <p>
-              Vitória por {VICTORY_LABEL[world.victory.kind]} no tick {world.victory.tick}. A simulação foi
-              encerrada — inicie uma nova partida ou explore a crônica final.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {view === "evolution" && (
-        <div className="factor-layout view-enter">
-          <CivilizationRail world={world} civs={civs} selected={selected} onSelect={setSelected} />
-          <EvolutionBoard world={world} civs={civs} selected={selected} events={state.timeline} onSelect={setSelected} />
-          <EraInspector
-            world={world}
-            selected={selected}
-            ui={civs[selected]}
-            events={state.timeline}
-            onSelect={setSelected}
-            onLocate={locate}
-            answer={state.answers[selected]}
-            onAsk={ask}
+      {state.replayTicks ? (
+        <ReplayView
+          gameId={state.replayGameId ?? "?"}
+          ticks={state.replayTicks}
+          theme={theme}
+          selected={selected}
+          onSelect={setSelected}
+          onExit={exitReplay}
+        />
+      ) : (
+        <>
+          <Controls
+            loopState={loopState}
+            tick={world?.tick ?? 0}
+            onPlay={play}
+            onPause={pause}
+            onStop={stop}
+            onStep={step}
+            onSpeedChange={setSpeed}
           />
-        </div>
-      )}
 
-      {view === "world" && (
-        <div className="world-layout view-enter">
-          <div className="world-column">
-            <WorldMap world={world} selected={selected} theme={theme} highlight={highlightTile} />
-            <CrisisPanel world={world} events={state.timeline} onSelect={setSelected} />
-          </div>
-          <div className="world-column">
-            <DiplomacyGraph world={world} selected={selected} onSelect={setSelected} />
-            <ProposalsPanel world={world} onSelect={setSelected} />
-            <TechTreePanel world={world} selected={selected} />
-          </div>
-        </div>
-      )}
+          {world?.victory && (
+            <div
+              className="victory-banner view-enter"
+              style={{ "--civ": CIV_COLOR[world.victory.civ] } as React.CSSProperties}
+              role="status"
+            >
+              <span className="victory-trophy">🏆</span>
+              <div>
+                <strong>{CIV_LABEL[world.victory.civ]} venceu a partida!</strong>
+                <p>
+                  Vitória por {VICTORY_LABEL[world.victory.kind]} no tick {world.victory.tick}. A simulação foi
+                  encerrada — inicie uma nova partida ou explore a crônica final.
+                </p>
+              </div>
+            </div>
+          )}
 
-      {view === "theatre" && (
-        <div className="view-enter">
-          <DecisionTheatre
-            world={world}
-            civs={civs}
-            selected={selected}
-            onSelect={setSelected}
-            events={state.timeline}
-          />
-        </div>
-      )}
+          {view === "evolution" && (
+            <div className="factor-layout view-enter">
+              <CivilizationRail world={world} civs={civs} selected={selected} onSelect={setSelected} />
+              <EvolutionBoard world={world} civs={civs} selected={selected} events={state.timeline} onSelect={setSelected} />
+              <EraInspector
+                world={world}
+                selected={selected}
+                ui={civs[selected]}
+                events={state.timeline}
+                onSelect={setSelected}
+                onLocate={locate}
+                answer={state.answers[selected]}
+                onAsk={ask}
+              />
+            </div>
+          )}
 
-      {view === "chronicle" && (
-        <div className="chronicle-layout view-enter">
-          <EraTimeline world={world} />
-          <div className="split">
-            <ChroniclePanel events={state.timeline} />
-            <AskCivilizationPanel
-              world={world}
-              selected={selected}
-              events={state.timeline}
-              answer={state.answers[selected]}
-              onAsk={ask}
+          {view === "world" && (
+            <div className="world-layout view-enter">
+              <div className="world-column">
+                <WorldMap world={world} selected={selected} theme={theme} highlight={highlightTile} />
+                <CrisisPanel world={world} events={state.timeline} onSelect={setSelected} />
+              </div>
+              <div className="world-column">
+                <DiplomacyGraph world={world} selected={selected} onSelect={setSelected} />
+                <ProposalsPanel world={world} onSelect={setSelected} />
+                <TechTreePanel world={world} selected={selected} />
+              </div>
+            </div>
+          )}
+
+          {view === "theatre" && (
+            <div className="view-enter">
+              <DecisionTheatre
+                world={world}
+                civs={civs}
+                selected={selected}
+                onSelect={setSelected}
+                events={state.timeline}
+              />
+            </div>
+          )}
+
+          {view === "chronicle" && (
+            <div className="chronicle-layout view-enter">
+              <EraTimeline world={world} />
+              <div className="split">
+                <ChroniclePanel events={state.timeline} />
+                <AskCivilizationPanel
+                  world={world}
+                  selected={selected}
+                  events={state.timeline}
+                  answer={state.answers[selected]}
+                  onAsk={ask}
+                />
+              </div>
+              <MuseumMode world={world} events={state.timeline} selected={selected} />
+            </div>
+          )}
+
+          <div className="lower-dock">
+            <EventTimeline events={state.timeline} onLocate={locate} />
+            <SavesPanel
+              saves={state.saves}
+              currentGameId={state.gameId}
+              lastError={state.lastError}
+              onListSaves={listSaves}
+              onNewGame={() => setShowNewGame(true)}
+              onLoadGame={loadGame}
+              onReplay={replay}
             />
           </div>
-          <MuseumMode world={world} events={state.timeline} selected={selected} />
-        </div>
+        </>
       )}
-
-      <div className="lower-dock">
-        <EventTimeline events={state.timeline} onLocate={locate} />
-        <SavesPanel
-          saves={state.saves}
-          currentGameId={state.gameId}
-          lastError={state.lastError}
-          onListSaves={listSaves}
-          onNewGame={() => setShowNewGame(true)}
-          onLoadGame={loadGame}
-        />
-      </div>
 
       {showNewGame && (
         <NewGameModal

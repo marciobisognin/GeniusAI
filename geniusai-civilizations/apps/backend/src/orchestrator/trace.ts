@@ -296,3 +296,13 @@ export function summarizeTrace(records: TraceRecord[]): TraceSummary {
 export async function readTraceSummary(gameId: string): Promise<TraceSummary> {
   return summarizeTrace(await readTrace(gameId));
 }
+
+/**
+ * Caminho seguro do trace bruto (.jsonl) de uma partida — usado pela
+ * exportação (Fase 21, §21 — RF-26). Mesma validação/defesa contra path
+ * traversal de `safeGameFile`; lança `InvalidGameIdError` para gameId fora
+ * da allowlist.
+ */
+export function traceFilePath(gameId: string): string {
+  return safeGameFile(tracesDir(), gameId, ".jsonl");
+}

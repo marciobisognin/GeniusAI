@@ -716,8 +716,33 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .saves-list li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-bottom: 1px dashed var(--line); }
 .saves-list li.current { color: var(--ok); }
 .save-id { font-family: var(--font-mono); }
-.btn-small { padding: 4px 10px; margin-left: auto; }
+.btn-small { padding: 4px 10px; }
+a.btn-small { display: inline-block; text-decoration: none; }
+.save-row-actions { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .saves-error { color: var(--bad); font-size: 0.76rem; }
+
+/* ---------- Replay (Fase 21, §21 — RF-25) ---------- */
+.replay-view { display: grid; gap: 12px; }
+.replay-banner {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); box-shadow: var(--shadow-soft);
+}
+.replay-banner-badge {
+  font-weight: 900; font-size: 0.72rem; letter-spacing: 0.06em;
+  color: var(--accent-ink); background: var(--accent-soft);
+  padding: 4px 10px; border-radius: 999px;
+}
+.replay-exit { margin-left: auto; }
+.replay-scrubber {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--panel); box-shadow: var(--shadow-soft);
+}
+.replay-range { flex: 1; }
+.replay-tick-label { font-family: var(--font-mono); font-size: 0.76rem; white-space: nowrap; }
 
 /* ---------- Teatro de Decisões ---------- */
 .theatre { display: grid; gap: 12px; }

@@ -13,10 +13,15 @@ import {
   CorruptedSaveError,
   InvalidGameIdError,
   UnsupportedSaveVersionError,
+  isValidGameId,
   listSaves,
   loadWorld,
+  readTrace,
   readTraceSummary,
+  traceFilePath,
 } from "./orchestrator/trace";
+import { replayFromTrace } from "./orchestrator/replay";
+import { readFile } from "node:fs/promises";
 
 // ── Comandos do cliente: validados com zod (união discriminada) ────────────
 
@@ -39,6 +44,7 @@ const ClientCommandSchema = z.discriminatedUnion("action", [
     fogOfWar: z.boolean().optional(),
   }),
   z.object({ type: z.literal("command"), action: z.literal("load_game"), gameId: GameIdSchema }),
+  z.object({ type: z.literal("command"), action: z.literal("replay"), gameId: GameIdSchema }),
   z.object({
     type: z.literal("command"),
     action: z.literal("ask"),
@@ -262,6 +268,29 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
         return;
       }
 
+      case "replay": {
+        // Somente leitura: reconstrói o histórico via replayFromTrace() e
+        // envia direto ao solicitante (não é broadcast — não mexe no `loop`
+        // nem precisa da guarda `swapping`).
+        try {
+          const world = await loadWorld(msg.gameId);
+          if (!world) {
+            err("GAME_NOT_FOUND", `partida não encontrada: ${msg.gameId}`);
+            return;
+          }
+          const records = await readTrace(msg.gameId);
+          const ticks = replayFromTrace(world.seed, world.fogOfWar, records);
+          ws.send(JSON.stringify({ type: "replay_ready", gameId: msg.gameId, ticks }));
+        } catch (e) {
+          if (e instanceof InvalidGameIdError) {
+            err("INVALID_GAME_ID", e.message);
+          } else {
+            throw e;
+          }
+        }
+        return;
+      }
+
       case "ask": {
         try {
           // Consulta somente leitura ao agente da civilização (RF-032): não
@@ -287,6 +316,32 @@ export async function createServer(cfg: Config, runner: AgentRunner) {
       const healthy = await runner.healthy();
       res.writeHead(healthy ? 200 : 503, { "content-type": "application/json" });
       res.end(JSON.stringify({ ok: healthy, runner: runner.name }));
+      return;
+    }
+
+    const exportMatch = req.method === "GET" && req.url ? /^\/export\/([^/]+)$/.exec(req.url) : null;
+    if (exportMatch) {
+      const gameId = decodeURIComponent(exportMatch[1]);
+      if (!isValidGameId(gameId)) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "invalid_game_id" }));
+        return;
+      }
+      try {
+        const raw = await readFile(traceFilePath(gameId));
+        res.writeHead(200, {
+          "content-type": "application/x-ndjson",
+          "content-disposition": `attachment; filename="${gameId}.jsonl"`,
+        });
+        res.end(raw);
+      } catch (e) {
+        if ((e as NodeJS.ErrnoException).code === "ENOENT") {
+          res.writeHead(404, { "content-type": "application/json" });
+          res.end(JSON.stringify({ error: "not_found" }));
+        } else {
+          throw e;
+        }
+      }
       return;
     }
 
