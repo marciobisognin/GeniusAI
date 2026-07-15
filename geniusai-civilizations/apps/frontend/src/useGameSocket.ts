@@ -8,6 +8,13 @@ export interface CivUiState {
   status: CivStatus;
   /** Nº de fragmentos de saída recebidos neste turno (indicador de atividade). */
   chunksReceived: number;
+  /**
+   * Texto bruto acumulado dos fragmentos recebidos neste turno (Fase 19,
+   * §19 — RF-20). Com um runner real em streaming, é a saída JSON do
+   * modelo se formando token a token — `extractLiveReasoning` (abaixo)
+   * tenta mostrar só o valor de "reasoning" enquanto ele chega.
+   */
+  rawStream: string;
   reasoning: string;
   actions: Action[];
   passed: boolean;
@@ -19,12 +26,25 @@ export interface CivUiState {
 const emptyCivState = (): CivUiState => ({
   status: "idle",
   chunksReceived: 0,
+  rawStream: "",
   reasoning: "",
   actions: [],
   passed: false,
   errors: [],
   advisorRecommendations: [],
 });
+
+/**
+ * Extrai, de forma tolerante, o valor (ainda incompleto) do campo
+ * "reasoning" de um JSON parcial em streaming — não é um parser de JSON,
+ * só um recorte best-effort para exibir o raciocínio "ao vivo" (RF-20)
+ * antes do turno terminar. Sem match ainda (ex.: só chegou "{") devolve "".
+ */
+export function extractLiveReasoning(raw: string): string {
+  const match = /"reasoning"\s*:\s*"((?:[^"\\]|\\.)*)/.exec(raw);
+  if (!match) return "";
+  return match[1].replace(/\\n/g, " ").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+}
 
 /** Estado de uma consulta "pergunte à civilização" (comando ask). */
 export interface AskState {
@@ -96,6 +116,7 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
           civs[civId] = {
             status: "done",
             chunksReceived: 0,
+            rawStream: "",
             reasoning: last.reasoning,
             actions: last.actions,
             passed: last.passed,
@@ -115,7 +136,13 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
 
     case "turn_token": {
       const prev = s.civs[msg.civ];
-      return { ...s, civs: { ...s.civs, [msg.civ]: { ...prev, chunksReceived: prev.chunksReceived + 1 } } };
+      return {
+        ...s,
+        civs: {
+          ...s.civs,
+          [msg.civ]: { ...prev, chunksReceived: prev.chunksReceived + 1, rawStream: prev.rawStream + msg.chunk },
+        },
+      };
     }
 
     case "turn_end": {
@@ -124,6 +151,7 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
         [msg.civ]: {
           status: "done",
           chunksReceived: s.civs[msg.civ]?.chunksReceived ?? 0,
+          rawStream: "",
           reasoning: msg.reasoning,
           actions: msg.actions,
           passed: msg.passed,

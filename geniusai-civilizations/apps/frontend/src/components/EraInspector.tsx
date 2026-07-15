@@ -11,7 +11,7 @@ import {
   type GameEvent,
   type World,
 } from "../types";
-import type { AskState, CivUiState } from "../useGameSocket";
+import { extractLiveReasoning, type AskState, type CivUiState } from "../useGameSocket";
 import { AskCivilizationPanel } from "./AskCivilizationPanel";
 import { DiplomacyGraph } from "./DiplomacyGraph";
 import { TechTreePanel } from "./TechTreePanel";
@@ -143,7 +143,11 @@ export function EraInspector({ world, selected, ui, events, onSelect, onLocate, 
             <h3>Decisão da IA</h3>
             <div aria-live="polite">
               {ui.status === "thinking" ? (
-                <p className="live-text">O agente está deliberando… {ui.chunksReceived} fragmento(s)</p>
+                extractLiveReasoning(ui.rawStream) ? (
+                  <p className="live-text live-stream">“{extractLiveReasoning(ui.rawStream)}”</p>
+                ) : (
+                  <p className="live-text">O agente está deliberando… {ui.chunksReceived} fragmento(s)</p>
+                )
               ) : ui.reasoning ? (
                 <p className="quote">“{ui.reasoning}”</p>
               ) : (

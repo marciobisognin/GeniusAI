@@ -23,17 +23,6 @@ export type {
   AgentLogEntry,
 } from "./CivilizationAgentFactory";
 
-/** Extrai o texto do modelo do envelope JSON do `claude -p --output-format json`. */
-function unwrapClaudeEnvelope(stdout: string): string {
-  try {
-    const env = JSON.parse(stdout) as { result?: unknown };
-    if (typeof env.result === "string") return env.result;
-  } catch {
-    // não era um envelope JSON — usa a saída como veio
-  }
-  return stdout;
-}
-
 /** Cria o runner conforme a configuração (env RUNNER + AGENT_CMD). */
 export function createRunner(cfg: Config): AgentRunner {
   const cmd = cfg.agentCmd;
@@ -63,12 +52,18 @@ export function createRunner(cfg: Config): AgentRunner {
 
     case "claude":
     default:
+      // Fase 19 (§19 — RF-18/RF-19): --system-prompt substitui o prompt
+      // padrão do Claude Code pela persona da civilização (em vez de
+      // concatená-la no stdin e pagar o system prompt de agente de
+      // codificação inteiro); stream-json + include-partial-messages dá
+      // onToken de verdade (deltas reais do modelo), não um blob só no fim.
       return new CliAgentRunner({
         name: "claude",
         cmd: cmd ?? "claude",
-        decideArgs: ["-p", "--output-format", "json"],
+        decideArgs: ["-p", "--output-format", "stream-json", "--include-partial-messages", "--verbose"],
         healthArgs: ["--version"],
-        unwrap: unwrapClaudeEnvelope,
+        systemPromptFlag: "--system-prompt",
+        streamJsonLines: true,
       });
   }
 }

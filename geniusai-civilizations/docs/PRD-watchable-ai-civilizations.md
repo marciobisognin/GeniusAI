@@ -504,4 +504,113 @@ Dar profundidade estratégica ao componente militar (decisões de guerra deixam 
 
 ---
 
+## 19. PRD — Fase 19: Validação com LLM real e streaming de raciocínio visível
+
+### 19.1 Contexto
+Da Fase 0 até a Fase 18, toda verificação de ponta a ponta usou `RUNNER=mock` (decisões determinísticas, sem LLM). É a escolha certa para testes/CI, mas nunca prova que o produto funciona com um runner real — e o `RUNNER=claude` (`claude -p`) tem dois problemas arquiteturais nunca exercitados: (1) o "system prompt" da civilização é apenas concatenado dentro do texto enviado por stdin, então cada turno paga o **system prompt padrão inteiro do Claude Code** (identidade de agente de codificação, lista de ferramentas, ~33k tokens em cache) em vez de só a persona da civilização — caro e semanticamente errado; (2) `--output-format json` só entrega o resultado completo no final — o `onToken` do `AgentRunner` nunca recebe fragmentos reais, então o "streaming de raciocínio" do RF-4 nunca existiu de verdade para este runner, só para o mock (que também manda tudo de uma vez).
+
+### 19.2 Objetivo
+Provar que o produto funciona com um LLM real, corrigir o que quebrar, e entregar de verdade o RF-4 ("Transparência de Raciocínio"): o observador vê o texto do raciocínio da civilização aparecendo token a token, não um contador de fragmentos.
+
+### 19.3 Requisitos Funcionais
+
+**RF-18 — `--system-prompt` nativo em vez de concatenado no stdin**
+- `CliAgentRunner` ganha uma opção `systemPromptFlag` (ex.: `"--system-prompt"`). Quando definida, `input.system` vai como argumento de CLI dedicado — o texto enviado por stdin carrega só `user` + instruções de schema, nunca a persona. `RUNNER=claude` passa a usar `--system-prompt` (substitui o prompt padrão do Claude Code por inteiro, não `--append-system-prompt`).
+- Runners sem essa opção (`codex`, `opencode`) mantêm o comportamento atual (system concatenado no prompt) — mudança aditiva, não quebra os outros runners.
+
+**RF-19 — Streaming real via `stream-json`**
+- `RUNNER=claude` passa a usar `--output-format stream-json --include-partial-messages` em vez de `--output-format json`. A saída é NDJSON (uma linha por evento); o runner interpreta linha a linha e chama `onToken` só para eventos `{"type":"stream_event","event":{"type":"content_block_delta","delta":{"type":"text_delta","text":...}}}`, repassando o texto incremental real do modelo.
+- O resultado final continua vindo da linha `{"type":"result",...,"result":"<texto completo>"}` — o parsing final (`parseDecision`) não muda, só a origem do texto/tokens intermediários.
+- Falha ao interpretar uma linha do stream não derruba o turno (mesmo espírito do RF-3): a linha é ignorada e o runner segue esperando a linha `result`.
+
+**RF-20 — UI mostra o texto do raciocínio ao vivo**
+- Hoje a UI só mostra "O agente está deliberando… N fragmento(s)" enquanto pensa. Passa a acumular e exibir o texto recebido via `turn_token` em tempo real (mesmo painel onde a decisão final aparece), substituído pelo `reasoning` definitivo só quando o turno termina.
+
+### 19.4 Requisitos Não-Funcionais
+- **Custo/latência:** eliminar o system prompt padrão do Claude Code do caminho de decisão reduz tokens de entrada por turno de forma substancial — medido e registrado no resultado da verificação desta fase (não é só uma alegação).
+- **Robustez preservada:** o fallback do RF-3 (re-perguntar 1×, depois passar o turno) continua funcionando idêntico com o novo formato de saída — timeout/JSON inválido/processo morto ainda caem no mesmo caminho.
+- **Sem novo runner:** nenhuma dependência nova; só como o `RUNNER=claude` já existente invoca o CLI.
+
+### 19.5 Critérios de aceite
+- Uma partida real (`RUNNER=claude`, poucos ticks) roda sem exceção não tratada, com pelo menos um turno de cada civilização decidindo com sucesso.
+- Comparação antes/depois: tokens de entrada por chamada com o system prompt antigo (concatenado) vs. o novo (`--system-prompt`) — queda documentada.
+- `onToken` recebe mais de um fragmento por turno numa chamada real (prova de streaming de verdade, não só o texto inteiro de uma vez).
+- Testes automatizados (com um runner fake que simula a saída NDJSON de `stream-json`) cobrindo: parsing de deltas, ignorar linhas malformadas, `--system-prompt` sendo passado como argumento separado.
+
+### 19.6 Fora de escopo
+- Streaming real para `codex`/`opencode` (mantém o comportamento atual — nenhum dos dois CLIs foi confirmado como suportando um formato equivalente nesta fase).
+- Uso de `--json-schema` nativo do Claude Code (o schema já embutido no prompt continua sendo a fonte de verdade; usar o parâmetro nativo fica para uma fase futura, se necessário).
+
+---
+
+## 20. PRD — Fase 20: Fog of War (RF-6)
+
+### 20.1 Contexto
+O RF-6 do PRD original já previa dois modos: visão global (MVP, o que existe hoje) e visão limitada ao descoberto (fase 2, nunca implementada). Hoje `snapshotForCiv` entrega a TODOS os agentes o estado completo de todas as civilizações — cada IA sabe onde estão os exércitos e cidades de todo mundo, mesmo sem nunca ter "visto" aquele território. Isso simplifica o motor mas elimina qualquer incerteza estratégica real.
+
+### 20.2 Objetivo
+Cada civilização só conhece o que já foi revelado (seu próprio território + raio de visão de cidades/exércitos): decisões passam a lidar com informação incompleta, e a UI ganha um modo "assistir como" que mostra a névoa de guerra de uma civilização específica.
+
+### 20.3 Requisitos Funcionais
+
+**RF-21 — Descoberta de tiles**
+- `Civilization` ganha `discovered: Set<string>` (chaves `"x,y"`) — persistido no `World` (serializável). Cidades e exércitos revelam tiles num raio fixo ao redor de sua posição a cada tick (raio configurável, ex. 2). Uma vez descoberto, um tile nunca "esquece" (sem névoa dinâmica que se refecha — simplicidade deliberada nesta fase).
+- `snapshotForCiv` (prompt do agente) passa a filtrar: `others[].cities`/`others[].armies` só aparecem se a posição estiver em `discovered`; tiles do mapa fora de `discovered` não aparecem em `you.tiles` de outras civilizações.
+
+**RF-22 — Config: visão global vs. limitada**
+- Flag por partida (`GameLoopOptions.fogOfWar?: boolean`, padrão `false` = comportamento atual preservado) — parte do mesmo mecanismo de opt-in já usado por `advisors` (Fase 14), sem quebrar nenhuma partida/teste existente.
+
+**RF-23 — UI: "assistir como" com névoa**
+- Na Vista Mundo, ao selecionar uma civilização com `fogOfWar` ativo, tiles fora de `discovered` daquela civilização aparecem escurecidos/hachurados no `WorldMap` — o observador vê exatamente a informação que a IA daquela civilização tem, reforçando o "watchable".
+
+### 20.4 Requisitos Não-Funcionais
+- **Determinismo preservado:** descoberta é função pura de posições de cidades/exércitos a cada tick — mesma seed + mesmas ações → mesmo conjunto `discovered`.
+- **Compatibilidade:** partidas salvas antes desta fase carregam com `discovered` vazio + hidratação retroativa (recalculado a partir de cidades/exércitos atuais no primeiro tick pós-upgrade) — sem quebrar saves antigos.
+
+### 20.5 Critérios de aceite
+- Teste de motor: uma civilização nunca viu o território de outra → `snapshotForCiv` para ela não contém as cidades/exércitos daquela civilização; após um exército passar perto, o tile passa a aparecer.
+- Partida com `fogOfWar: true` jogável de ponta a ponta com `RUNNER=mock` sem exceções.
+- Verificação visual (Playwright) do mapa com névoa aplicada ao trocar de civilização selecionada.
+
+### 20.6 Fora de escopo
+- Névoa dinâmica (tiles "esquecidos" quando não há mais unidade por perto).
+- Espionagem ativa ou ações dedicadas a revelar território à força.
+
+---
+
+## 21. PRD — Fase 21: Replay e exportação de partidas
+
+### 21.1 Contexto
+Desde a Fase 5, cada tick é gravado em `./data/traces/<gameId>.jsonl` (decisões + eventos + narração). O motor é determinístico por construção (§6 do PRD) exatamente para viabilizar replay — mas isso nunca virou uma feature: hoje o trace só é lido para reconstruir o estado de reconexão (`summarizeTrace`), nunca para reassistir uma partida.
+
+### 21.2 Objetivo
+Transformar uma partida encerrada (ou em andamento) em um artefato reassistível: um modo replay que reconstrói o mundo tick a tick a partir do trace gravado, com controles de reprodução — sem LLM, sem custo, sem esperar inferência.
+
+### 21.3 Requisitos Funcionais
+
+**RF-24 — Backend: reconstrução de replay a partir do trace**
+- Novo comando `{ type: "command", action: "replay", gameId }`: carrega o trace completo (`readTrace`) e devolve ao cliente a sequência de `world` reconstruído tick a tick, aplicando `tick(world, decisions)` do motor (o MESMO código de produção — reafirma o determinismo, não uma segunda implementação paralela) a partir do save inicial (seed).
+- Novo tipo de mensagem `ServerMessage` (`{ type: "replay_ready", ticks: World[] }` ou streaming tick a tick, a decidir na implementação) — reaproveita `DisplayEvent`/`GameEvent` já existentes.
+
+**RF-25 — UI: modo replay com scrubber**
+- Nova vista (ou modo dentro de uma vista existente) com: barra de progresso/scrubber por tick, play/pause sobre o histórico (velocidade ajustável, reaproveitando os controles existentes), navegação livre (ir direto a um tick). Deixa claro visualmente que é um replay, não a partida ao vivo (banner/indicador).
+
+**RF-26 — Exportação**
+- Botão "exportar partida": baixa o trace (`.jsonl`) já gravado — RF-8 do PRD original ("export de trace da partida para clipes/análise") finalmente exposto na UI, sem reinventar o formato.
+
+### 21.4 Requisitos Não-Funcionais
+- **Sem custo de inferência:** replay nunca invoca `AgentRunner` — é reconstrução pura a partir de decisões já gravadas.
+- **Fiel ao motor real:** a reconstrução usa exatamente `tick()` do motor de produção; qualquer divergência entre replay e o que de fato aconteceu é, por definição, um bug a corrigir, não uma segunda verdade.
+
+### 21.5 Critérios de aceite
+- Reconstruir uma partida gravada produz, tick a tick, o MESMO `World` que está persistido em `saves/<gameId>.json` no tick final (prova de fidelidade determinística).
+- Replay de uma partida de referência funciona de ponta a ponta na UI (scrubber, play/pause, navegação livre), verificado via Playwright.
+- Exportação baixa um arquivo `.jsonl` válido e não vazio para uma partida com histórico.
+
+### 21.6 Fora de escopo
+- Replay ao vivo de uma partida em andamento (só partidas com trace já gravado, mesmo que parcial).
+- Edição/anotação do replay (marcadores, cortes) — é visualização, não um editor.
+
+---
+
 *Fim do PRD v2.0 (local-first).*

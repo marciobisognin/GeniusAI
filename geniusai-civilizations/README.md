@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 18 concluída (guerra/ocupação, balanceamento e acessibilidade)
+## Estado atual: Fase 19 concluída (validação com LLM real e streaming de raciocínio)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -188,6 +188,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **Balanceamento** (RF-16): a manutenção de exércitos É a passada de balanceamento desta fase — desestimula empilhar exércitos ociosos (que antes não tinham custo nenhum) sem precisar retunar toda a economia.
 - **Acessibilidade** (RF-17/RNF-004): foco visível consistente nos dois temas (`:focus-visible` global, 3px, cor de destaque — a navegação por teclado já funcionava via `<button>` semânticos em todo o app, faltava só o indicador visual); `aria-live="polite"` na timeline (anuncia só o evento mais recente, não a lista inteira) e nos painéis de decisão/raciocínio; auditoria programática de contraste (WCAG AA, ≥4.5:1) contra `--panel-strong` nos dois temas — `--muted`/`--eyebrow`/`--faint` (claro) e `--faint` (escuro) estavam abaixo do limiar e foram ajustados, mantendo a paleta original.
 - **+11 testes** de motor (entrada em território hostil, ocupação, `retreat_army`, manutenção com/sem ouro suficiente, desfazimento por falta de manutenção) e **+2** de validação de `retreat_army`: **153 no total**. `e2e/smoke.mjs` ganhou uma checagem permanente de acessibilidade (atalho de teclado sem mouse, foco visível, região `aria-live`). Verificado também via Playwright um fluxo completo de criação de partida **somente por teclado** (Tab/Enter, sem mouse).
+
+**Fase 19 — Validação com LLM real e streaming de raciocínio (§19 do PRD):**
+- **`--system-prompt` nativo** (RF-18): até esta fase, `RUNNER=claude` concatenava a persona da civilização dentro do texto de stdin — cada turno pagava o system prompt padrão inteiro do Claude Code (identidade de agente de codificação, ferramentas, etc.) além da persona do jogo. Agora `input.system` vai direto no argumento `--system-prompt` do CLI (substitui o prompt padrão por completo). **Medido**: uma chamada trivial caiu de US$0,20 (33.197 tokens de `cache_creation`) para US$0,03 (3.730 tokens) — a mesma mudança vale para cada turno de cada civilização.
+- **Streaming real via `stream-json`** (RF-19): `RUNNER=claude` passa a usar `--output-format stream-json --include-partial-messages` em vez de `--output-format json`. `CliAgentRunner` interpreta o NDJSON linha a linha — deltas de texto (`content_block_delta`) viram `onToken` de verdade; a linha `result` final continua alimentando o parser de decisão de sempre. Linha malformada nunca derruba o turno (mesmo espírito do RF-3).
+- **UI mostra o raciocínio chegando ao vivo** (RF-20): o painel de decisão (Vista Evolução e Teatro de Decisões) acumula o texto em streaming e extrai o valor (ainda incompleto) do campo `"reasoning"` enquanto ele chega, com um cursor piscando — antes só havia um contador de fragmentos.
+- **Validação real**: partida completa rodada com `RUNNER=claude` de verdade (não mock) — as 4 civilizações decidiram com sucesso (ações coerentes com a persona, memória estratégica gravada corretamente), incluindo Roma consultando os conselheiros da Fase 14 através do runner real. Streaming ao vivo confirmado via Playwright contra o app rodando de verdade.
+- **+5 testes** de `CliAgentRunner` (system prompt como argumento separado vs. concatenado no stdin, parsing de deltas NDJSON, tolerância a linha malformada, health check) rodando um "CLI" real via `spawn` (não um mock de `child_process`): **158 no total**.
 
 ## Pré-requisitos
 

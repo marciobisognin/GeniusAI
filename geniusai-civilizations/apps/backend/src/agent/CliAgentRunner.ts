@@ -16,8 +16,26 @@ export interface CliAgentOptions {
    * Pré-processa a saída do CLI antes de extrair o JSON de ações.
    * Ex.: `claude -p --output-format json` devolve um envelope
    * { result: "<texto do modelo>" } — o unwrap retorna o campo `result`.
+   * Ignorado quando `streamJsonLines` está ativo (o "result" já vem
+   * extraído do NDJSON — ver RF-18/19, Fase 19).
    */
   unwrap?: (stdout: string) => string;
+  /**
+   * Nome do argumento de CLI que recebe o "system" SEPARADAMENTE do prompt
+   * do turno (Fase 19, §19 — RF-18). Ex.: "--system-prompt". Quando
+   * definido, `input.system` nunca é concatenado no texto de stdin — evita
+   * pagar (em tokens e semântica) o system prompt padrão do CLI.
+   */
+  systemPromptFlag?: string;
+  /**
+   * A saída é NDJSON — uma linha JSON por evento (Fase 19, §19 — RF-19,
+   * `--output-format stream-json --include-partial-messages`). Deltas de
+   * texto (`stream_event` → `content_block_delta` → `text_delta`) viram
+   * `onToken` de verdade; a linha `{"type":"result", "result": "..."}` é o
+   * texto final. Linha malformada/incompleta nunca derruba o turno — é só
+   * ignorada (mesmo espírito de robustez do RF-3).
+   */
+  streamJsonLines?: boolean;
 }
 
 interface RunResult {
@@ -66,16 +84,76 @@ function run(
   });
 }
 
-function buildPrompt(input: DecideInput): string {
-  return [
-    input.system,
-    "",
+/** Monta o texto enviado por stdin. `includeSystem=false` quando o system vai por `systemPromptFlag` (RF-18). */
+function buildPrompt(input: DecideInput, includeSystem: boolean): string {
+  const parts = includeSystem ? [input.system, ""] : [];
+  parts.push(
     input.user,
     "",
     "Responda ESTRITAMENTE com um único objeto JSON aderente a este JSON Schema.",
     "Não inclua texto fora do JSON, nem cercas de código (```).",
     JSON.stringify(input.schema),
-  ].join("\n");
+  );
+  return parts.join("\n");
+}
+
+/**
+ * Extrai eventos de um NDJSON possivelmente fragmentado através de chamadas
+ * sucessivas (stdout chega em pedaços de tamanho arbitrário — uma linha do
+ * NDJSON pode atravessar duas chamadas de `data`). Devolve as linhas
+ * completas encontradas e o restante ainda incompleto (para a próxima vez).
+ */
+function splitCompleteLines(buffer: string): { lines: string[]; rest: string } {
+  const lines: string[] = [];
+  let rest = buffer;
+  let idx: number;
+  while ((idx = rest.indexOf("\n")) !== -1) {
+    lines.push(rest.slice(0, idx));
+    rest = rest.slice(idx + 1);
+  }
+  return { lines, rest };
+}
+
+interface StreamJsonEvent {
+  type?: string;
+  event?: { type?: string; delta?: { type?: string; text?: string } };
+  result?: unknown;
+}
+
+/**
+ * Cria um adaptador `onToken` que interpreta NDJSON linha a linha: repassa
+ * deltas de texto reais ao `onToken` do chamador e captura a linha `result`
+ * final num objeto mutável (RF-19). Nunca lança — linha malformada é
+ * ignorada, exatamente como o resto do pipeline de robustez do projeto.
+ */
+function createStreamJsonAdapter(forwardToken?: (chunk: string) => void): {
+  onChunk: (chunk: string) => void;
+  getResult: () => string | null;
+} {
+  let buffer = "";
+  let result: string | null = null;
+  return {
+    onChunk(chunk) {
+      buffer += chunk;
+      const { lines, rest } = splitCompleteLines(buffer);
+      buffer = rest;
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const obj = JSON.parse(line) as StreamJsonEvent;
+          if (obj.type === "stream_event" && obj.event?.type === "content_block_delta" && obj.event.delta?.type === "text_delta") {
+            const text = obj.event.delta.text;
+            if (typeof text === "string" && text) forwardToken?.(text);
+          } else if (obj.type === "result" && typeof obj.result === "string") {
+            result = obj.result;
+          }
+        } catch {
+          // linha incompleta/ruído — ignora (nunca derruba o turno).
+        }
+      }
+    },
+    getResult: () => result,
+  };
 }
 
 /**
@@ -100,23 +178,30 @@ export class CliAgentRunner implements AgentRunner {
   }
 
   async decide(input: DecideInput): Promise<AgentDecision> {
-    const prompt = buildPrompt(input);
+    const cliArgs = [...this.opts.decideArgs];
+    if (this.opts.systemPromptFlag) {
+      cliArgs.push(this.opts.systemPromptFlag, input.system);
+    }
+    const prompt = buildPrompt(input, !this.opts.systemPromptFlag);
     const useStdin = this.opts.promptOnStdin ?? true;
-    const args = useStdin
-      ? this.opts.decideArgs
-      : [...this.opts.decideArgs, prompt];
+    const args = useStdin ? cliArgs : [...cliArgs, prompt];
+
+    const streamAdapter = this.opts.streamJsonLines ? createStreamJsonAdapter(input.onToken) : null;
+    const onData = streamAdapter ? streamAdapter.onChunk : input.onToken;
 
     const { stdout, code, stderr } = await run(
       this.opts.cmd,
       args,
       useStdin ? prompt : undefined,
       input.timeoutMs ?? 60_000,
-      input.onToken,
+      onData,
     );
-    if (code !== 0 && stdout.trim() === "") {
+
+    const streamedResult = streamAdapter?.getResult() ?? null;
+    if (code !== 0 && stdout.trim() === "" && !streamedResult) {
       throw new Error(`${this.opts.cmd} saiu com código ${code}: ${stderr.slice(0, 300)}`);
     }
-    const text = this.opts.unwrap ? this.opts.unwrap(stdout) : stdout;
+    const text = streamedResult ?? (this.opts.unwrap ? this.opts.unwrap(stdout) : stdout);
     return parseDecision(text);
   }
 }
