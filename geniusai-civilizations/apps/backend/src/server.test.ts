@@ -155,6 +155,109 @@ test("new_game → load_game: troca de partida e repõe o histórico salvo", asy
   httpServer.close();
 });
 
+test("replay: reconstrói o histórico completo (World[]) a partir do trace salvo", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+  const gameId = getLoop().gameId;
+
+  client.send({ type: "command", action: "step" });
+  await client.waitFor((m) => m.type === "tick_end", 10_000);
+  client.send({ type: "command", action: "step" });
+  await client.waitFor((m) => m.type === "tick_end" && (m as { tick: number }).tick === 2, 10_000);
+
+  client.send({ type: "command", action: "replay", gameId });
+  const replay = await client.waitFor((m) => m.type === "replay_ready");
+  const ticks = replay.ticks as { tick: number }[];
+  assert.equal(replay.gameId, gameId);
+  assert.equal(ticks.length, 3, "tick 0 (inicial) + 2 ticks decididos");
+  assert.equal(ticks[0].tick, 0);
+  assert.equal(ticks[1].tick, 1);
+  assert.equal(ticks[2].tick, 2);
+  assert.deepEqual(ticks[2], getLoop().world, "replay deve reconstruir exatamente o mundo atual");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("replay: partida inexistente devolve GAME_NOT_FOUND", async () => {
+  tempDataDir();
+  const { httpServer, port } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "replay", gameId: "nao-existe" });
+  const error = await client.waitFor((m) => m.type === "error");
+  assert.equal(error.code, "GAME_NOT_FOUND");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("segurança: replay com path traversal é rejeitado pelo schema", async () => {
+  tempDataDir();
+  const { httpServer, port } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "replay", gameId: "../../etc/passwd" });
+  const error = await client.waitFor((m) => m.type === "error");
+  assert.equal(error.code, "INVALID_COMMAND");
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("GET /export/:gameId: devolve o trace bruto (.jsonl) para download", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+  const gameId = getLoop().gameId;
+
+  client.send({ type: "command", action: "step" });
+  await client.waitFor((m) => m.type === "tick_end", 10_000);
+
+  const res = await fetch(`http://127.0.0.1:${port}/export/${gameId}`);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get("content-type"), "application/x-ndjson");
+  assert.match(res.headers.get("content-disposition") ?? "", /attachment; filename="/);
+  const body = await res.text();
+  const lines = body.split("\n").filter((l) => l.trim() !== "");
+  assert.equal(lines.length, 1);
+  assert.equal((JSON.parse(lines[0]) as { tick: number }).tick, 1);
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("GET /export/:gameId: partida inexistente devolve 404", async () => {
+  tempDataDir();
+  const { httpServer, port } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  const res = await fetch(`http://127.0.0.1:${port}/export/nao-existe`);
+  assert.equal(res.status, 404);
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("GET /export/:gameId: gameId com path traversal devolve 400", async () => {
+  tempDataDir();
+  const { httpServer, port } = await createServer(baseConfig(), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  const res = await fetch(`http://127.0.0.1:${port}/export/${encodeURIComponent("../../etc/passwd")}`);
+  assert.equal(res.status, 400);
+
+  client.ws.close();
+  httpServer.close();
+});
+
 test("reconexão: novo cliente recebe a timeline e o raciocínio já registrados", async () => {
   tempDataDir();
   const { httpServer, port } = await createServer(baseConfig(), passRunner);

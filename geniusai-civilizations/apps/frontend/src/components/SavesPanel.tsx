@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { BACKEND_HTTP } from "../useGameSocket";
 import type { SaveInfo } from "../types";
 
 interface Props {
@@ -8,6 +9,7 @@ interface Props {
   onListSaves: () => void;
   onNewGame: () => void;
   onLoadGame: (gameId: string) => void;
+  onReplay: (gameId: string) => void;
 }
 
 function formatTime(iso: string): string {
@@ -18,7 +20,7 @@ function formatTime(iso: string): string {
   }
 }
 
-export function SavesPanel({ saves, currentGameId, lastError, onListSaves, onNewGame, onLoadGame }: Props) {
+export function SavesPanel({ saves, currentGameId, lastError, onListSaves, onNewGame, onLoadGame, onReplay }: Props) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -50,13 +52,26 @@ export function SavesPanel({ saves, currentGameId, lastError, onListSaves, onNew
               <li key={s.gameId} className={s.gameId === currentGameId ? "current" : undefined}>
                 <span className="save-id">{s.gameId}</span>
                 <span className="muted">tick {s.tick} · seed {s.seed} · {formatTime(s.updatedAt)}</span>
-                {s.gameId === currentGameId ? (
-                  <span className="ok">em andamento</span>
-                ) : (
-                  <button className="btn btn-small" onClick={() => onLoadGame(s.gameId)}>
-                    carregar
+                <span className="save-row-actions">
+                  {s.gameId === currentGameId ? (
+                    <span className="ok">em andamento</span>
+                  ) : (
+                    <button className="btn btn-small" onClick={() => onLoadGame(s.gameId)}>
+                      carregar
+                    </button>
+                  )}
+                  <button className="btn btn-small" onClick={() => onReplay(s.gameId)} title="Rever a partida tick a tick">
+                    ▶ replay
                   </button>
-                )}
+                  <a
+                    className="btn btn-small"
+                    href={`${BACKEND_HTTP}/export/${encodeURIComponent(s.gameId)}`}
+                    download={`${s.gameId}.jsonl`}
+                    title="Baixar o trace bruto (.jsonl) da partida"
+                  >
+                    ⇩ exportar
+                  </a>
+                </span>
               </li>
             ))
           )}

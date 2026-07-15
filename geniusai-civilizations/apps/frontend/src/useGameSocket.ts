@@ -71,9 +71,16 @@ export interface GameSocketState {
   /** Última consulta ask por civilização. */
   answers: Partial<Record<CivId, AskState>>;
   lastError?: string;
+  /** Histórico reconstruído por `replay` (Fase 21, §21 — RF-24/25). `null` fora do modo replay. */
+  replayTicks: World[] | null;
+  replayGameId?: string;
 }
 
 const BACKEND_WS = import.meta.env.VITE_BACKEND_WS ?? "ws://localhost:8787";
+// Base HTTP derivada do endpoint WS (mesmo host/porta) — usada só pelo link
+// de exportação (Fase 21, §21 — RF-26), que é um download simples via <a>,
+// não uma mensagem do protocolo WS.
+export const BACKEND_HTTP = BACKEND_WS.replace(/^ws/, "http");
 // Fase 17 (§17 do PRD): a timeline agora pagina (EventTimeline), então vale a
 // pena reter mais histórico do que cabia numa lista simples sem paginação.
 const TIMELINE_LIMIT = 200;
@@ -170,6 +177,9 @@ function reduceMessage(s: GameSocketState, msg: ServerMessage): GameSocketState 
     case "saves":
       return { ...s, saves: msg.saves };
 
+    case "replay_ready":
+      return { ...s, replayTicks: msg.ticks, replayGameId: msg.gameId };
+
     case "answer": {
       const answers = {
         ...s.answers,
@@ -206,6 +216,7 @@ export function useGameSocket() {
     timeline: [],
     saves: [],
     answers: {},
+    replayTicks: null,
   });
   const wsRef = useRef<WebSocket | null>(null);
 
@@ -277,6 +288,14 @@ export function useGameSocket() {
     (gameId: string) => send({ type: "command", action: "load_game", gameId }),
     [send],
   );
+  const replay = useCallback(
+    (gameId: string) => send({ type: "command", action: "replay", gameId }),
+    [send],
+  );
+  /** Sai do modo replay (só limpa estado local — não é um comando do protocolo). */
+  const exitReplay = useCallback(() => {
+    setState((s) => ({ ...s, replayTicks: null, replayGameId: undefined }));
+  }, []);
   const ask = useCallback(
     (civ: CivId, question: string) => {
       setState((s) => ({ ...s, answers: { ...s.answers, [civ]: { status: "loading", question } } }));
@@ -285,5 +304,19 @@ export function useGameSocket() {
     [send],
   );
 
-  return { state, play, pause, stop, step, setSpeed, listSaves, newGame, loadGame, ask, civIds: CIV_IDS };
+  return {
+    state,
+    play,
+    pause,
+    stop,
+    step,
+    setSpeed,
+    listSaves,
+    newGame,
+    loadGame,
+    ask,
+    replay,
+    exitReplay,
+    civIds: CIV_IDS,
+  };
 }

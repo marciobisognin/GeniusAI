@@ -436,6 +436,12 @@ export type ServerMessage =
   | { type: "saves"; saves: SaveInfo[] }
   | { type: "answer"; civ: CivId; question: string; text: string; runner: string }
   | { type: "error"; code?: string; message: string }
+  /**
+   * Replay reconstruído a partir do trace gravado (Fase 21, §21 — RF-24):
+   * `ticks[0]` é o mundo inicial, `ticks[i]` o resultado do i-ésimo tick.
+   * Sem custo de inferência — reconstrução pura via o motor determinístico.
+   */
+  | { type: "replay_ready"; gameId: string; ticks: World[] }
   | LoopEvent;
 
 /** Comandos do cliente para o servidor (validados com zod no backend). */
@@ -444,4 +450,5 @@ export type ClientCommand =
   | { type: "command"; action: "set_speed"; speedMs: number }
   | { type: "command"; action: "new_game"; seed?: number; name?: string; speedMs?: number; fogOfWar?: boolean }
   | { type: "command"; action: "load_game"; gameId: string }
-  | { type: "command"; action: "ask"; civ: CivId; question: string };
+  | { type: "command"; action: "ask"; civ: CivId; question: string }
+  | { type: "command"; action: "replay"; gameId: string };

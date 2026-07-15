@@ -4,7 +4,7 @@ Simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por
 
 > Especificação completa: [`docs/PRD-watchable-ai-civilizations.md`](docs/PRD-watchable-ai-civilizations.md).
 
-## Estado atual: Fase 20 concluída (névoa de guerra)
+## Estado atual: Fase 21 concluída (replay e exportação de partidas)
 
 **Fase 0 — scaffold e execução por runner:**
 - Monorepo TypeScript (npm workspaces): `apps/backend` (Node + WebSocket) e `apps/frontend` (React/Vite).
@@ -203,6 +203,13 @@ Rodar sem nenhum LLM: `RUNNER=mock npm run dev:backend` + `npm run dev:frontend`
 - **UI "assistir como"** (RF-23): com a névoa ativa, a Vista Mundo escurece e hachura os tiles que a civilização selecionada ainda não descobriu — inclusive cidades/exércitos de outras civilizações ali, exatamente a informação que aquela IA tem. Um chip mostra "🌫 névoa de guerra · vendo como {civilização}".
 - **+8 testes** (revelação em `createWorld`, expansão por tick com/sem a flag, persistência do território descoberto, filtro em `snapshotForCiv`, integração `new_game`↔`fogOfWar`): **168 no total**. Saves anteriores a esta fase migram automaticamente (`discovered: {}`, `fogOfWar: false` — mesmo comportamento que já tinham). Verificado visualmente via Playwright, inclusive lendo os pixels do canvas para confirmar que o tile certo fica escuro/claro ao trocar de civilização observada.
 
+**Fase 21 — Replay e exportação de partidas (§21 do PRD, RF-24/25/26):**
+- **Reconstrução fiel do histórico** (RF-24): `replayFromTrace(seed, fogOfWar, records)` (`apps/backend/src/orchestrator/replay.ts`) recria a sequência completa de `World` de uma partida a partir do trace gravado (`data/traces/<gameId>.jsonl`) usando o MESMO `tick()` do motor de produção — nunca uma segunda implementação paralela. Determinístico: mesma seed + mesmo trace → mesma sequência, sempre.
+- **Comando `replay`** (WebSocket): somente leitura — carrega o save (`loadWorld`) para saber seed/fogOfWar, lê o trace inteiro e devolve `{type:"replay_ready", gameId, ticks}` direto para quem pediu (não é broadcast; não mexe no `GameLoop` ativo, então não precisa da guarda de troca de partida).
+- **Exportação** (RF-26): `GET /export/:gameId` devolve o `.jsonl` bruto do trace como download (`content-disposition: attachment`) — o mesmo formato que os testes de `replay.ts` usam como fonte de verdade, então o arquivo exportado é auditável linha a linha.
+- **UI de replay** (RF-25): cada partida salva no painel "Partidas salvas" ganha botões **▶ replay** e **⇩ exportar**. O modo replay (`ReplayView`) mostra um scrubber sobre os ticks reconstruídos, play/pause automático (700ms/tick) e reaproveita o mesmo `WorldMap`/`CivilizationRail` da partida ao vivo — um banner "MODO REPLAY" deixa claro que os controles normais (play/pause/step do jogo real) estão fora de cena enquanto o replay estiver aberto.
+- **+4 testes** de `replay.ts` (mundo inicial sem registros, fidelidade byte-a-byte contra `tick()` chamado direto, determinismo, propagação de `fogOfWar`) e **+6** de `server.ts` (comando `replay` com sucesso/partida inexistente/path traversal, rota `/export/:gameId` com sucesso/404/400): **178 no total**. Verificado também via Playwright contra o app rodando de verdade: partida criada e avançada 3 ticks, export baixado e seu conteúdo (3 registros, tick 1..3) conferido byte a byte, replay aberto com o scrubber movido do tick 3 ao tick 0, play automático avançando o índice, e saída do replay restaurando os controles normais.
+
 ## Pré-requisitos
 
 - Node.js 20+.
@@ -256,9 +263,10 @@ RUNNER=ollama OLLAMA_HOST=http://host.docker.internal:11434 docker compose up --
 
 Endpoints do backend (porta `PORT`, padrão 8787):
 - `GET /health` → `{ ok, runner }`
+- `GET /export/:gameId` → download do trace bruto (`.jsonl`) da partida (404 se não existir, 400 se `gameId` for inválido).
 - WebSocket `ws://localhost:8787`:
-  - servidor → cliente: `hello`, `health`, `world_init` (`{world, loopState, gameId}`), `history` (`{timeline, civs}`), `loop_state`, `turn_start`, `turn_token`, `turn_end`, `tick_end`, `saves`, `error`.
-  - cliente → servidor: `{type:"command", action:"play"|"pause"|"stop"|"step"}`, `{action:"set_speed", speedMs}`, `{action:"list_saves"}`, `{action:"new_game", seed?, name?, speedMs?, fogOfWar?}`, `{action:"load_game", gameId}`.
+  - servidor → cliente: `hello`, `health`, `world_init` (`{world, loopState, gameId}`), `history` (`{timeline, civs}`), `loop_state`, `turn_start`, `turn_token`, `turn_end`, `tick_end`, `saves`, `replay_ready` (`{gameId, ticks}`), `error`.
+  - cliente → servidor: `{type:"command", action:"play"|"pause"|"stop"|"step"}`, `{action:"set_speed", speedMs}`, `{action:"list_saves"}`, `{action:"new_game", seed?, name?, speedMs?, fogOfWar?}`, `{action:"load_game", gameId}`, `{action:"replay", gameId}`.
 
 ## Configuração (env)
 
