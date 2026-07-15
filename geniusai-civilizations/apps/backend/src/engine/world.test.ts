@@ -36,3 +36,20 @@ test("createWorld: determinístico também com definitions customizadas (mesma s
   };
   assert.deepStrictEqual(createWorld(9, definitions), createWorld(9, definitions));
 });
+
+// ── Névoa de guerra (Fase 20, §20 — RF-21/RF-22) ────────────────────────────
+
+test("createWorld: fogOfWar=false (padrão) — discovered existe mas fica sem efeito", () => {
+  const w = createWorld(5);
+  assert.equal(w.fogOfWar, false);
+  // A capital revela ao redor mesmo sem fogOfWar ativo (dado consistente,
+  // só não é aplicado em nenhum filtro enquanto a flag estiver desligada).
+  assert.ok(w.civilizations.rome.discovered["1,1"]);
+});
+
+test("createWorld: fogOfWar=true — cada civilização começa revelando só ao redor da própria capital", () => {
+  const w = createWorld(5, undefined, true);
+  assert.equal(w.fogOfWar, true);
+  assert.ok(w.civilizations.rome.discovered["1,1"]); // capital de Roma
+  assert.ok(!w.civilizations.rome.discovered["6,1"]); // capital do Egito, longe demais
+});

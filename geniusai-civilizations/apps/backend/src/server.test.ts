@@ -27,6 +27,7 @@ function baseConfig(overrides: Partial<Config> = {}): Config {
     host: "127.0.0.1",
     port: 0, // porta livre escolhida pelo SO — testes não colidem entre si
     narrator: false,
+    fogOfWarDefault: false,
     allowedOrigins: [],
     ...overrides,
   };
@@ -296,6 +297,37 @@ test("new_game: nome vira slug seguro no gameId e a seed é respeitada", async (
   assert.match(getLoop().gameId, /^[a-zA-Z0-9_-]{1,64}$/, "gameId sempre dentro da allowlist");
   assert.equal(getLoop().world.seed, 777);
   assert.equal(getLoop().world.tick, 0);
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("new_game: fogOfWar explícito no comando ativa a névoa nesta partida (Fase 20, RF-22)", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig({ fogOfWarDefault: false }), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "new_game", name: "Névoa de guerra", fogOfWar: true });
+  await client.waitFor((m) => m.type === "world_init" && (m.gameId as string).startsWith("nevoa-de-guerra"));
+
+  assert.equal(getLoop().world.fogOfWar, true);
+  assert.ok(Object.keys(getLoop().world.civilizations.rome.discovered).length > 0);
+
+  client.ws.close();
+  httpServer.close();
+});
+
+test("new_game: sem fogOfWar no comando, usa o padrão do servidor (config)", async () => {
+  tempDataDir();
+  const { httpServer, port, getLoop } = await createServer(baseConfig({ fogOfWarDefault: false }), passRunner);
+  const client = await connectClient(port);
+  await client.waitFor((m) => m.type === "world_init");
+
+  client.send({ type: "command", action: "new_game", name: "Visão global" });
+  await client.waitFor((m) => m.type === "world_init" && (m.gameId as string).startsWith("visao-global"));
+
+  assert.equal(getLoop().world.fogOfWar, false);
 
   client.ws.close();
   httpServer.close();

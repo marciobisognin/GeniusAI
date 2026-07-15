@@ -145,6 +145,43 @@ function drawWorld(
     }
   }
 
+  // Névoa de guerra (Fase 20, §20 — RF-23): tiles ainda não descobertos pela
+  // civilização selecionada ficam escurecidos e hachurados — o observador vê
+  // exatamente a informação que a IA daquela civilização tem, por cima de
+  // tudo (mesmo cidades/exércitos de outras civs que ela não descobriu).
+  // Opacidade alta de propósito: precisa ser inconfundível à distância, não
+  // uma sutileza de tom sobre o já colorido território de outra civ.
+  if (world.fogOfWar) {
+    const discovered = world.civilizations[selected].discovered;
+    const fogFill = theme === "dark" ? "rgba(5,6,10,0.86)" : "rgba(28,23,14,0.82)";
+    const hatch = theme === "dark" ? "rgba(255,255,255,0.10)" : "rgba(255,255,255,0.14)";
+    ctx.save();
+    for (const row of world.map) {
+      for (const t of row) {
+        if (discovered[`${t.x},${t.y}`]) continue;
+        const px = t.x * tile;
+        const py = t.y * tile;
+        ctx.fillStyle = fogFill;
+        ctx.fillRect(px, py, tile + 0.5, tile + 0.5);
+        // Hachura diagonal — leitura inequívoca de "não descoberto" mesmo em capturas pequenas.
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(px, py, tile + 0.5, tile + 0.5);
+        ctx.clip();
+        ctx.strokeStyle = hatch;
+        ctx.lineWidth = Math.max(1, tile * 0.05);
+        for (let o = -tile; o < tile * 2; o += Math.max(4, tile * 0.28)) {
+          ctx.beginPath();
+          ctx.moveTo(px + o, py);
+          ctx.lineTo(px + o + tile, py + tile);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+  }
+
   if (highlight) {
     const hx = highlight.x * tile + tile / 2;
     const hy = highlight.y * tile + tile / 2;
@@ -186,9 +223,12 @@ export function WorldMap({ world, selected, theme, highlight }: Props) {
           <p className="eyebrow">Estado real do motor</p>
           <h2>Mapa do mundo · tick {world?.tick ?? 0}</h2>
         </div>
-        <span className="soft-chip">
-          {world ? `${world.width}×${world.height} tiles · seed ${world.seed}` : "aguardando"}
-        </span>
+        <div className="map-card-chips">
+          <span className="soft-chip">
+            {world ? `${world.width}×${world.height} tiles · seed ${world.seed}` : "aguardando"}
+          </span>
+          {world?.fogOfWar && <span className="soft-chip fog-chip">🌫 névoa de guerra · vendo como {CIV_LABEL[selected]}</span>}
+        </div>
       </div>
       <div className="map-frame" ref={frameRef}>
         {world ? (

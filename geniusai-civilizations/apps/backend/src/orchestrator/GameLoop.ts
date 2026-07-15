@@ -42,6 +42,11 @@ export interface GameLoopOptions {
   definitions?: Partial<Record<CivId, CivilizationDefinition>>;
   /** Logger estruturado dos agentes (padrão: uma linha JSON no console). */
   agentLogger?: AgentLogger;
+  /**
+   * Visão limitada por civilização em vez de global (Fase 20, §20 — RF-22).
+   * Só tem efeito ao CRIAR um mundo novo — padrão `false`.
+   */
+  fogOfWar?: boolean;
 }
 
 /**
@@ -69,7 +74,7 @@ export class GameLoop {
 
   constructor(opts: GameLoopOptions) {
     const definitions = { ...DEFAULT_CIVILIZATIONS, ...opts.definitions };
-    this.world = opts.world ?? createWorld(opts.seed ?? 42, definitions);
+    this.world = opts.world ?? createWorld(opts.seed ?? 42, definitions, opts.fogOfWar ?? false);
     this.speedMs = opts.speedMs ?? 1000;
     this.turnTimeoutMs = opts.turnTimeoutMs ?? 60_000;
     this.gameId = opts.gameId ?? `game-${this.world.seed}`;

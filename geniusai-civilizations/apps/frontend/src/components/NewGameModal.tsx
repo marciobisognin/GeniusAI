@@ -4,6 +4,7 @@ export interface NewGameOptions {
   name: string;
   seed?: number;
   speedMs: number;
+  fogOfWar?: boolean;
 }
 
 interface Props {
@@ -33,6 +34,7 @@ export function NewGameModal({ runner, onClose, onCreate }: Props) {
   const [name, setName] = useState("");
   const [seedText, setSeedText] = useState("");
   const [speedMs, setSpeedMs] = useState(2000);
+  const [fogOfWar, setFogOfWar] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -51,6 +53,7 @@ export function NewGameModal({ runner, onClose, onCreate }: Props) {
       name: trimmed,
       seed: seedText.trim() === "" ? undefined : Number(seedText.trim()),
       speedMs,
+      fogOfWar,
     });
   };
 
@@ -104,6 +107,11 @@ export function NewGameModal({ runner, onClose, onCreate }: Props) {
             </select>
           </label>
         </div>
+
+        <label className="modal-field modal-checkbox">
+          <input type="checkbox" checked={fogOfWar} onChange={(e) => setFogOfWar(e.target.checked)} />
+          <span>Névoa de guerra (visão limitada ao território descoberto por cada civilização)</span>
+        </label>
 
         <p className="modal-runner">
           Runner ativo: <b>{runner ?? "—"}</b> <span className="muted">(configurado no backend via RUNNER)</span>

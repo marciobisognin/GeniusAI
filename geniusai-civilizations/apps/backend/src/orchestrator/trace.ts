@@ -92,6 +92,9 @@ const CivilizationSchema = z
     armies: z.array(z.object({ id: z.string(), x: z.number(), y: z.number(), strength: z.number() }).passthrough()),
     memory: z.string(),
     alive: z.boolean(),
+    // Saves anteriores à Fase 20 não têm território descoberto — migra para
+    // {} (sem efeito, já que fogOfWar também migra para false nesses saves).
+    discovered: z.record(z.string(), z.boolean()).default({}),
   })
   .passthrough();
 
@@ -132,6 +135,9 @@ const WorldSchema = z
       .nullable()
       .default(null),
     events: z.array(z.object({ type: z.string() }).passthrough()),
+    // Saves anteriores à Fase 20 não têm névoa de guerra — migra para false
+    // (visão global, o comportamento que já tinham).
+    fogOfWar: z.boolean().default(false),
   })
   .passthrough();
 

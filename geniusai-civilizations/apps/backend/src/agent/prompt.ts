@@ -10,7 +10,13 @@ interface TileView {
   resource: ResourceKind | null;
 }
 
-/** Visão compacta do mundo para um agente (visibilidade global no MVP). */
+/**
+ * Visão compacta do mundo para um agente. Por padrão, visibilidade global
+ * (MVP). Com `world.fogOfWar` ativo (Fase 20, §20 — RF-21), `others[].cities`
+ * e `others[].armies` só mostram posições já reveladas em `you.discovered`
+ * — o resto do snapshot (identidade, postura diplomática, contagem de
+ * tecnologias) continua visível, por não ser reconhecimento militar.
+ */
 export function snapshotForCiv(world: World, civId: CivId) {
   const you = world.civilizations[civId];
 
@@ -21,6 +27,9 @@ export function snapshotForCiv(world: World, civId: CivId) {
     }
   }
 
+  const visible = (x: number, y: number): boolean =>
+    !world.fogOfWar || Boolean(you.discovered[`${x},${y}`]);
+
   const others = CIV_IDS.filter((id) => id !== civId).map((id) => {
     const c = world.civilizations[id];
     return {
@@ -28,8 +37,8 @@ export function snapshotForCiv(world: World, civId: CivId) {
       alive: c.alive,
       persona: c.persona,
       stanceToYou: getStance(world, civId, id),
-      cities: c.cities.map((x) => ({ x: x.x, y: x.y, population: x.population })),
-      armies: c.armies.map((a) => ({ x: a.x, y: a.y, strength: a.strength })),
+      cities: c.cities.filter((x) => visible(x.x, x.y)).map((x) => ({ x: x.x, y: x.y, population: x.population })),
+      armies: c.armies.filter((a) => visible(a.x, a.y)).map((a) => ({ x: a.x, y: a.y, strength: a.strength })),
       techCount: c.tech.length,
     };
   });

@@ -142,3 +142,23 @@ export function neighbors(world: World, x: number, y: number): Tile[] {
   }
   return out;
 }
+
+// ── Névoa de guerra (Fase 20, §20 — RF-21) ──────────────────────────────────
+
+/** Raio (Chebyshev) de visão revelado ao redor de cada cidade/exército. */
+export const DISCOVERY_RADIUS = 2;
+
+/**
+ * Revela, em `discovered`, todos os tiles dentro do raio (Chebyshev) de
+ * (x,y) — determinístico, sem RNG. Um tile descoberto nunca "esquece"
+ * (sem névoa dinâmica nesta fase — simplicidade deliberada).
+ */
+export function revealAround(world: World, discovered: Record<string, boolean>, x: number, y: number, radius: number): void {
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      const tx = x + dx;
+      const ty = y + dy;
+      if (inBounds(world, tx, ty)) discovered[`${tx},${ty}`] = true;
+    }
+  }
+}
