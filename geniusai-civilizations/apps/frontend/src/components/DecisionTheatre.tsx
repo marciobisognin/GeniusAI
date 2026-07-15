@@ -4,7 +4,7 @@ import type { TechBranch } from "@geniusai/shared";
 import { ERA_STAGES, eventHasCiv, getEraProgress } from "../simulationInsights";
 import { ADVISOR_CONFIDENCE_LABEL, ADVISOR_LABEL, CIV_COLOR, CIV_IDS, CIV_LABEL, CIV_LEADER, describeEvent } from "../types";
 import type { CivId, Civilization, GameEvent, World } from "../types";
-import type { CivUiState } from "../useGameSocket";
+import { extractLiveReasoning, type CivUiState } from "../useGameSocket";
 import romeArt from "../assets/civs/rome.svg";
 import egyptArt from "../assets/civs/egypt.svg";
 import greeceArt from "../assets/civs/greece.svg";
@@ -403,6 +403,8 @@ export function DecisionTheatre({ world, civs, selected, onSelect, events }: Pro
             <div aria-live="polite">
               {ui.reasoning ? (
                 <blockquote className="hero-quote">“{ui.reasoning}”</blockquote>
+              ) : ui.status === "thinking" && extractLiveReasoning(ui.rawStream) ? (
+                <blockquote className="hero-quote live-stream">“{extractLiveReasoning(ui.rawStream)}”</blockquote>
               ) : (
                 <p className="muted hero-empty">{ui.status === "thinking" ? "O agente delibera…" : "Nenhuma decisão registrada ainda."}</p>
               )}

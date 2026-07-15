@@ -414,6 +414,9 @@ h1, h2, h3, .font-display { font-family: var(--font-display); }
 .resource-track.science i { background: #438bd0; }
 .quote, .live-text { margin: 0; line-height: 1.42; font-size: 0.78rem; }
 .live-text { color: var(--warn); font-weight: 700; }
+/* Fase 19 (§19 — RF-20): raciocínio chegando ao vivo, token a token. */
+.live-stream { color: var(--ink); font-weight: 400; font-style: italic; }
+.live-stream::after { content: "▍"; display: inline-block; margin-left: 2px; animation: orbPulse 0.9s ease-in-out infinite; }
 .action-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .action-pills span { padding: 4px 8px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-ink); font-size: 0.68rem; font-weight: 800; }
 .action-pills .empty-pill { color: var(--muted); background: color-mix(in srgb, var(--muted) 14%, transparent); }
