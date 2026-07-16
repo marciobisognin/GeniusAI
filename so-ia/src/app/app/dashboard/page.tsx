@@ -12,7 +12,7 @@ import { ConnectorsCard } from "@/components/dashboard/connectors-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useTenantMode } from "@/components/providers/mode-provider";
-import { getAgents } from "@/lib/data/agents";
+import { useOrganization } from "@/components/providers/organization-provider";
 import {
   activityEmpresa,
   activityGoverno,
@@ -27,11 +27,13 @@ import { tenantLabel } from "@/lib/nav-config";
 
 export default function DashboardPage() {
   const { mode } = useTenantMode();
+  const organization = useOrganization();
   const isGoverno = mode === "governo";
   const kpis = isGoverno ? kpisGoverno : kpisEmpresa;
   const activity = isGoverno ? activityGoverno : activityEmpresa;
   const series = isGoverno ? executionsSeriesGoverno : executionsSeriesEmpresa;
-  const agents = getAgents(mode);
+  const agents = organization.assignments.map((a) => a.agent);
+  const orgLabel = organization.orgName || tenantLabel[mode].org;
 
   return (
     <div>
@@ -40,8 +42,8 @@ export default function DashboardPage() {
         title={isGoverno ? "Licitações e Contratos" : "Visão geral"}
         description={
           isGoverno
-            ? `${tenantLabel.governo.org} · agentes governados sob a Lei 14.133/2021, com trilha de auditoria append-only.`
-            : `${tenantLabel.empresa.org} · agentes de IA governados operando nas 7 áreas de negócio.`
+            ? `${orgLabel} · agentes governados sob a Lei 14.133/2021, com trilha de auditoria append-only.`
+            : `${orgLabel} · agentes de IA governados operando nas áreas do seu organograma.`
         }
         actions={
           <Button className="bg-gradient-brand text-white hover:opacity-90 border-0">

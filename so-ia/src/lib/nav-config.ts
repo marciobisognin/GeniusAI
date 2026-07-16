@@ -18,8 +18,14 @@ import {
   Handshake,
   HeadphonesIcon,
   Briefcase,
+  Network,
+  Layers,
+  Building2,
+  Gauge,
+  Puzzle,
   type LucideIcon,
 } from "lucide-react";
+import type { OrgNode } from "./data/org-chart";
 
 export interface PrimaryNavItem {
   href: string;
@@ -30,6 +36,7 @@ export interface PrimaryNavItem {
 
 export const primaryNav: PrimaryNavItem[] = [
   { href: "/app/dashboard", label: "Centro de Comando", icon: LayoutGrid },
+  { href: "/app/organograma", label: "Organograma", icon: Network },
   { href: "/app/agentes", label: "Agentes & Skills", icon: Bot },
   { href: "/app/workflows", label: "Workflows", icon: Workflow },
   { href: "/app/aprovacoes", label: "Caixa de Aprovações", icon: ClipboardCheck, badge: "4" },
@@ -68,3 +75,19 @@ export const tenantLabel: Record<TenantMode, { name: string; org: string }> = {
   empresa: { name: "Modo Empresa", org: "Acme Soluções Ltda." },
   governo: { name: "Modo Governo", org: "IFFar — Campus Frederico Westphalen" },
 };
+
+const dynamicAreaIcons = [Landmark, Wallet, Users, GraduationCap, ShieldCheck, Radio, Server, Boxes, TrendingUp, Megaphone, Handshake, HeadphonesIcon, Briefcase, Layers, Building2, Gauge, Puzzle];
+
+function hashString(text: string): number {
+  let hash = 0;
+  for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+  return hash;
+}
+
+export function areasFromNodes(nodes: OrgNode[]): AreaNavItem[] {
+  const labels = Array.from(new Set(nodes.map((n) => n.area.trim()).filter(Boolean)));
+  return labels.map((label) => ({
+    label,
+    icon: dynamicAreaIcons[hashString(label) % dynamicAreaIcons.length],
+  }));
+}

@@ -8,36 +8,44 @@ import { AgentCard } from "@/components/agents/agent-card";
 import { AgentDetailSheet } from "@/components/agents/agent-detail-sheet";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useTenantMode } from "@/components/providers/mode-provider";
-import { getAgents } from "@/lib/data/agents";
+import { useOrganization } from "@/components/providers/organization-provider";
 import { staggerContainer } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import type { Agent } from "@/lib/data/types";
 
 export default function AgentesPage() {
-  const { mode } = useTenantMode();
-  const agents = getAgents(mode);
-  const areas = useMemo(() => ["Todas", ...Array.from(new Set(agents.map((a) => a.area)))], [agents]);
+  const organization = useOrganization();
+  const assignments = organization.assignments;
+
+  const areas = useMemo(
+    () => ["Todas", ...Array.from(new Set(assignments.map((a) => a.node.area).filter(Boolean)))],
+    [assignments],
+  );
 
   const [query, setQuery] = useState("");
   const [area, setArea] = useState("Todas");
   const [selected, setSelected] = useState<Agent | null>(null);
 
-  const filtered = agents.filter((a) => {
-    const matchesArea = area === "Todas" || a.area === area;
+  const filtered = assignments.filter((a) => {
+    const matchesArea = area === "Todas" || a.node.area === area;
+    const q = query.toLowerCase();
     const matchesQuery =
-      query.trim().length === 0 ||
-      a.nome.toLowerCase().includes(query.toLowerCase()) ||
-      a.skills.some((s) => s.includes(query.toLowerCase()));
+      q.trim().length === 0 ||
+      a.agent.nome.toLowerCase().includes(q) ||
+      a.node.titulo.toLowerCase().includes(q) ||
+      a.agent.skills.some((s) => s.includes(q));
     return matchesArea && matchesQuery;
   });
+
+  const matched = assignments.filter((a) => a.origem === "catalogo").length;
+  const created = assignments.filter((a) => a.origem === "gerado").length;
 
   return (
     <div>
       <PageHeader
         eyebrow="Catálogo"
         title="Agentes & Skills"
-        description="Cada agente combina skills reutilizáveis (SKILL.md), conectores MCP e uma política de modelo — sob o nível de autonomia adequado ao ato que executa."
+        description={`Montado a partir do seu organograma: ${matched} agente(s) do catálogo institucional e ${created} criado(s) sob medida. Cada agente combina skills reutilizáveis (SKILL.md), conectores MCP e uma política de modelo.`}
       />
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center mb-6">
@@ -46,7 +54,7 @@ export default function AgentesPage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por agente ou skill…"
+            placeholder="Buscar por agente, função ou skill…"
             className="pl-8"
           />
         </div>
@@ -73,8 +81,14 @@ export default function AgentesPage() {
         animate="show"
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
       >
-        {filtered.map((agent) => (
-          <AgentCard key={agent.id} agent={agent} onSelect={setSelected} />
+        {filtered.map((a) => (
+          <AgentCard
+            key={a.nodeId}
+            agent={a.agent}
+            roleLabel={a.node.titulo}
+            origem={a.origem}
+            onSelect={setSelected}
+          />
         ))}
       </motion.div>
 

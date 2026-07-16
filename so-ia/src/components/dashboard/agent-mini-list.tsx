@@ -8,7 +8,8 @@ import { fadeUp, staggerContainer } from "@/lib/motion";
 import type { Agent } from "@/lib/data/types";
 
 export function AgentMiniList({ agents }: { agents: Agent[] }) {
-  const top = [...agents].sort((a, b) => b.execucoesMes - a.execucoesMes).slice(0, 5);
+  const unique = Array.from(new Map(agents.map((a) => [a.id, a])).values());
+  const top = unique.sort((a, b) => b.execucoesMes - a.execucoesMes).slice(0, 5);
   const max = Math.max(...top.map((a) => a.execucoesMes));
 
   return (
