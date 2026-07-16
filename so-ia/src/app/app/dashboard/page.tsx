@@ -30,10 +30,28 @@ export default function DashboardPage() {
   const organization = useOrganization();
   const isGoverno = mode === "governo";
   const kpis = isGoverno ? kpisGoverno : kpisEmpresa;
-  const activity = isGoverno ? activityGoverno : activityEmpresa;
   const series = isGoverno ? executionsSeriesGoverno : executionsSeriesEmpresa;
   const agents = organization.assignments.map((a) => a.agent);
   const orgLabel = organization.orgName || tenantLabel[mode].org;
+
+  // Execuções reais (disparadas pelo grafo ou pela árvore do organograma)
+  // entram no topo do feed, antes dos itens ilustrativos.
+  const realActivity = organization.executions.slice(0, 4).map((e) => ({
+    id: e.id,
+    agente: e.agentNome,
+    acao:
+      e.status === "executando"
+        ? `Executando skills da função ${e.funcao}`
+        : `Concluiu execução para a função ${e.funcao}`,
+    area: e.area,
+    timestamp: new Date(e.iniciadoEm).toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    status: e.status === "executando" ? ("aguardando" as const) : ("concluido" as const),
+  }));
+  const mockActivity = isGoverno ? activityGoverno : activityEmpresa;
+  const activity = [...realActivity, ...mockActivity].slice(0, 6);
 
   return (
     <div>

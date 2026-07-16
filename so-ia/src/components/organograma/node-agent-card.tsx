@@ -1,13 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Bot, CheckCircle2, PlayCircle, Sparkles } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Bot, CheckCircle2, Loader2, PlayCircle, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AutonomyBadge } from "@/components/agents/autonomy-badge";
+import { useOrganization } from "@/components/providers/organization-provider";
 import type { AgentAssignment } from "@/lib/org/matching";
+
+const EXECUTION_DURATION_MS = 2600;
 
 export function NodeAgentCard({
   assignment,
@@ -16,12 +18,16 @@ export function NodeAgentCard({
   assignment: AgentAssignment;
   onOpenAgent: () => void;
 }) {
-  const [running, setRunning] = useState(false);
+  const organization = useOrganization();
   const { node, agent, origem } = assignment;
 
+  const nodeExecutions = organization.executions.filter((e) => e.nodeId === assignment.nodeId);
+  const isRunning = nodeExecutions.some((e) => e.status === "executando");
+  const lastDone = nodeExecutions.find((e) => e.status === "concluido");
+
   function handleRun() {
-    setRunning(true);
-    setTimeout(() => setRunning(false), 2200);
+    const id = organization.runAgent(assignment);
+    window.setTimeout(() => organization.completeExecution(id), EXECUTION_DURATION_MS);
   }
 
   return (
@@ -63,19 +69,19 @@ export function NodeAgentCard({
         </div>
 
         <AnimatePresence mode="wait">
-          {running ? (
+          {isRunning ? (
             <motion.div
               key="running"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="flex items-center gap-1.5 text-[11px] text-success"
+              className="flex items-center gap-1.5 text-[11px] text-[var(--brand-1)]"
             >
-              <CheckCircle2 className="size-3" />
-              Execução simulada concluída
+              <Loader2 className="size-3 animate-spin" />
+              Executando…
             </motion.div>
           ) : (
-            <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-1.5">
               <Button
                 size="sm"
                 variant="outline"
@@ -85,6 +91,16 @@ export function NodeAgentCard({
                 <PlayCircle className="size-3.5" />
                 Executar agora
               </Button>
+              {lastDone && (
+                <p className="flex items-center gap-1 text-[10px] text-success">
+                  <CheckCircle2 className="size-3" />
+                  Última execução às{" "}
+                  {new Date(lastDone.iniciadoEm).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </p>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
