@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Building2, Landmark, Network, ShieldCheck, Sparkles } from "lucide-react";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
-import { KnowledgeGraph } from "@/components/landing/knowledge-graph";
+import { GalaxyGraph } from "@/components/landing/galaxy-graph";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useTenantMode } from "@/components/providers/mode-provider";
@@ -142,7 +142,7 @@ export default function LandingPage() {
           </motion.div>
 
           <div className="hidden lg:block">
-            <KnowledgeGraph areas={graphAreas} key={ready ? organization.orgName : mode} />
+            <GalaxyGraph areas={graphAreas} key={ready ? organization.orgName : mode} />
           </div>
         </div>
       </main>
