@@ -14,12 +14,24 @@ import type { TenantMode } from "@/components/providers/mode-provider";
 
 export type OrgStatus = "empty" | "draft" | "ready";
 
+export interface ExecutionRecord {
+  id: string;
+  nodeId: string;
+  agentId: string;
+  agentNome: string;
+  funcao: string;
+  area: string;
+  iniciadoEm: string;
+  status: "executando" | "concluido";
+}
+
 interface OrganizationState {
   orgType: TenantMode | null;
   orgName: string;
   nodes: OrgNode[];
   assignments: AgentAssignment[];
   status: OrgStatus;
+  executions: ExecutionRecord[];
 }
 
 interface OrganizationContextValue extends OrganizationState {
@@ -30,6 +42,8 @@ interface OrganizationContextValue extends OrganizationState {
   updateNode: (id: string, patch: Partial<OrgNode>) => void;
   removeNode: (id: string) => void;
   assemble: () => void;
+  runAgent: (assignment: AgentAssignment) => string;
+  completeExecution: (executionId: string) => void;
   reset: () => void;
   hydrated: boolean;
 }
@@ -42,6 +56,7 @@ const emptyState: OrganizationState = {
   nodes: [],
   assignments: [],
   status: "empty",
+  executions: [],
 };
 
 const OrganizationContext = createContext<OrganizationContextValue | null>(null);
@@ -54,9 +69,11 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
-        const parsed = JSON.parse(raw) as OrganizationState;
+        const parsed = JSON.parse(raw) as Partial<OrganizationState>;
+        // Merge over emptyState so stored payloads from older versions
+        // (without `executions`) hydrate with sane defaults.
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setState(parsed);
+        setState({ ...emptyState, ...parsed });
       } catch {
         // ignore corrupt storage
       }
@@ -110,6 +127,31 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
     setState((s) => ({ ...s, assignments: assembleOrganization(s.nodes), status: "ready" }));
   }, []);
 
+  const runAgent = useCallback((assignment: AgentAssignment) => {
+    const id = `exec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    const record: ExecutionRecord = {
+      id,
+      nodeId: assignment.nodeId,
+      agentId: assignment.agent.id,
+      agentNome: assignment.agent.nome,
+      funcao: assignment.node.titulo,
+      area: assignment.node.area,
+      iniciadoEm: new Date().toISOString(),
+      status: "executando",
+    };
+    setState((s) => ({ ...s, executions: [record, ...s.executions].slice(0, 50) }));
+    return id;
+  }, []);
+
+  const completeExecution = useCallback((executionId: string) => {
+    setState((s) => ({
+      ...s,
+      executions: s.executions.map((e) =>
+        e.id === executionId ? { ...e, status: "concluido" } : e,
+      ),
+    }));
+  }, []);
+
   const reset = useCallback(() => {
     setState(emptyState);
     window.localStorage.removeItem(STORAGE_KEY);
@@ -126,6 +168,8 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         updateNode,
         removeNode,
         assemble,
+        runAgent,
+        completeExecution,
         reset,
         hydrated,
       }}
