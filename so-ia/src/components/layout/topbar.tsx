@@ -1,7 +1,7 @@
 "use client";
 
-import { Bell, Search } from "lucide-react";
-import { ModeSwitch } from "@/components/layout/mode-switch";
+import { useRouter } from "next/navigation";
+import { Bell, RefreshCcw, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -13,8 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useOrganization } from "@/components/providers/organization-provider";
 
 export function Topbar() {
+  const router = useRouter();
+  const organization = useOrganization();
+
+  function handleReconfigure() {
+    organization.reset();
+    router.push("/onboarding/tipo");
+  }
+
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b border-border/70 bg-background/80 backdrop-blur-xl px-4 lg:px-6">
       <div className="hidden md:flex items-center gap-2 rounded-full border border-border bg-secondary/60 px-3.5 py-1.5 text-sm text-muted-foreground w-full max-w-sm cursor-text hover:border-[var(--brand-1)]/40 transition-colors">
@@ -26,7 +35,6 @@ export function Topbar() {
       </div>
 
       <div className="ml-auto flex items-center gap-2">
-        <ModeSwitch className="hidden sm:flex" />
         <ThemeToggle />
         <Button variant="ghost" size="icon" className="relative rounded-full text-muted-foreground hover:text-foreground">
           <Bell className="size-4" />
@@ -40,12 +48,20 @@ export function Topbar() {
               </AvatarFallback>
             </Avatar>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuContent align="end" className="w-64">
             <DropdownMenuLabel>Marcio Bisognin</DropdownMenuLabel>
+            <DropdownMenuLabel className="-mt-2 text-xs font-normal text-muted-foreground truncate">
+              {organization.orgName}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>Meu perfil</DropdownMenuItem>
             <DropdownMenuItem>Preferências</DropdownMenuItem>
             <DropdownMenuItem>Central de ajuda</DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleReconfigure}>
+              <RefreshCcw className="size-4" />
+              Reconfigurar organograma
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">Sair</DropdownMenuItem>
           </DropdownMenuContent>

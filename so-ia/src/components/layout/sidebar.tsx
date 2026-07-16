@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
 import { useTenantMode } from "@/components/providers/mode-provider";
-import { areasByMode, primaryNav, tenantLabel } from "@/lib/nav-config";
+import { useOrganization } from "@/components/providers/organization-provider";
+import { areasByMode, areasFromNodes, primaryNav, tenantLabel } from "@/lib/nav-config";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -12,7 +13,10 @@ import { cn } from "@/lib/utils";
 export function Sidebar() {
   const pathname = usePathname();
   const { mode } = useTenantMode();
-  const areas = areasByMode[mode];
+  const organization = useOrganization();
+  const ready = organization.status === "ready";
+  const areas = ready ? areasFromNodes(organization.nodes) : areasByMode[mode];
+  const orgLabel = organization.orgName || tenantLabel[mode].org;
 
   return (
     <aside className="hidden lg:flex lg:w-72 lg:flex-col lg:shrink-0 border-r border-sidebar-border bg-sidebar">
@@ -71,7 +75,7 @@ export function Sidebar() {
 
         <div>
           <p className="px-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70 mb-1.5">
-            {mode === "empresa" ? "Áreas de Negócio" : "Modo Governo · Áreas"}
+            {ready ? "Áreas do organograma" : mode === "empresa" ? "Áreas de Negócio" : "Modo Governo · Áreas"}
           </p>
           <div className="space-y-0.5">
             {areas.map((area) => (
@@ -90,7 +94,7 @@ export function Sidebar() {
       <div className="px-4 py-4 border-t border-sidebar-border">
         <div className="glass-panel rounded-xl px-3 py-2.5">
           <p className="text-[11px] text-muted-foreground">Tenant ativo</p>
-          <p className="text-sm font-medium truncate">{tenantLabel[mode].org}</p>
+          <p className="text-sm font-medium truncate">{orgLabel}</p>
         </div>
       </div>
     </aside>
