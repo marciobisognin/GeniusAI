@@ -23,6 +23,7 @@ import {
   Building2,
   Gauge,
   Puzzle,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import type { OrgNode } from "./data/org-chart";
@@ -38,6 +39,7 @@ export const primaryNav: PrimaryNavItem[] = [
   { href: "/app/dashboard", label: "Centro de Comando", icon: LayoutGrid },
   { href: "/app/organograma", label: "Organograma", icon: Network },
   { href: "/app/agentes", label: "Agentes & Skills", icon: Bot },
+  { href: "/app/squads", label: "Squads", icon: UsersRound },
   { href: "/app/workflows", label: "Workflows", icon: Workflow },
   { href: "/app/aprovacoes", label: "Caixa de Aprovações", icon: ClipboardCheck, badge: "4" },
   { href: "/app/conhecimento", label: "Núcleo de Conhecimento", icon: Database },

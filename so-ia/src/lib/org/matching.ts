@@ -1,8 +1,8 @@
 import { agentsEmpresa, agentsGoverno } from "@/lib/data/agents";
-import { skillDescriptions } from "@/lib/data/skills";
 import type { Agent, AutonomyLevel } from "@/lib/data/types";
 import type { OrgNode } from "@/lib/data/org-chart";
 import { slugify } from "@/lib/data/org-chart";
+import { ensureSkill } from "@/lib/org/skills-registry";
 
 const STOPWORDS = new Set([
   "de","da","do","das","dos","e","a","o","as","os","para","com","em","no","na",
@@ -56,11 +56,9 @@ const MATCH_THRESHOLD = 0.34;
 
 function synthesizeAgent(node: OrgNode): Agent {
   const skills = node.responsabilidades.map((r) => slugify(r)).filter(Boolean);
-  for (const [i, skill] of skills.entries()) {
-    if (!skillDescriptions[skill]) {
-      skillDescriptions[skill] = `${node.responsabilidades[i]} (gerada a partir da função "${node.titulo}").`;
-    }
-  }
+  skills.forEach((skill, i) => {
+    ensureSkill(skill, `${node.responsabilidades[i]} (gerada a partir da função "${node.titulo}").`);
+  });
 
   const autonomia: AutonomyLevel = "A2";
 

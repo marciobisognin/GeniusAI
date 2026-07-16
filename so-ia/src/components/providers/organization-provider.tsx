@@ -10,6 +10,7 @@ import {
 import type { OrgNode } from "@/lib/data/org-chart";
 import { createEmptyNode } from "@/lib/data/org-chart";
 import { assembleOrganization, type AgentAssignment } from "@/lib/org/matching";
+import { buildSquads, type Squad } from "@/lib/org/squads";
 import type { TenantMode } from "@/components/providers/mode-provider";
 
 export type OrgStatus = "empty" | "draft" | "ready";
@@ -30,6 +31,7 @@ interface OrganizationState {
   orgName: string;
   nodes: OrgNode[];
   assignments: AgentAssignment[];
+  squads: Squad[];
   status: OrgStatus;
   executions: ExecutionRecord[];
 }
@@ -55,6 +57,7 @@ const emptyState: OrganizationState = {
   orgName: "",
   nodes: [],
   assignments: [],
+  squads: [],
   status: "empty",
   executions: [],
 };
@@ -124,7 +127,10 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
   }, []);
 
   const assemble = useCallback(() => {
-    setState((s) => ({ ...s, assignments: assembleOrganization(s.nodes), status: "ready" }));
+    setState((s) => {
+      const assignments = assembleOrganization(s.nodes);
+      return { ...s, assignments, squads: buildSquads(assignments), status: "ready" };
+    });
   }, []);
 
   const runAgent = useCallback((assignment: AgentAssignment) => {
