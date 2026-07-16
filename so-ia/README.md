@@ -1,87 +1,167 @@
 # SO-IA — Sistema Operacional de IA
 
-Front-end premium e navegável do **SO-IA**, a plataforma de agentes de IA
-governados descrita no [PRD v2.0](docs/PRD-so-ia-v2.md) — um núcleo único
-que atende **empresas privadas (20–500 colaboradores)** e o **setor público
+> Um sistema de agentes de IA que se monta sozinho a partir do organograma
+> da sua empresa ou órgão público — em vez de vir pronto com um catálogo
+> genérico que ninguém pediu.
+
+Baseado no [PRD v2.0](docs/PRD-so-ia-v2.md), pensado para atender tanto
+**empresas privadas (20–500 colaboradores)** quanto o **setor público
 brasileiro** (âncora: Instituto Federal Farroupilha / Coordenação de
 Licitação e Contratos).
 
-**Nada vem pré-carregado.** Não existe um "Modo Empresa" ou "Modo Governo"
-fixo com dados prontos: o sistema só é montado depois que o usuário descreve
-o organograma da sua organização — cargos/funções, área de cada um e suas
-responsabilidades. A partir disso, o SO-IA busca um agente compatível no
-catálogo institucional para cada função ou cria um novo, sob medida, quando
-não encontra correspondência — e disponibiliza esse agente para aquele
-elemento do organograma executar.
+![Landing — nada pré-carregado até você configurar sua organização](docs/screenshots/01-landing.png)
 
-Este é o primeiro incremento do produto: a camada de apresentação, com um
-motor de correspondência/criação de agentes simulado no cliente (sem LLM
-real), para validar o fluxo e a direção de design antes de plugar um backend
-real (multi-tenant, Temporal, Postgres+RLS, conectores MCP para
-PNCP/SIPAC/SIAFI, geração de agentes via LLM etc. — ver `docs/PRD-so-ia-v2.md`, §11).
+---
 
-## Stack
+## Em uma frase
 
-- **Next.js 16** (App Router, Turbopack) + **TypeScript**
-- **Tailwind CSS v4**
-- **shadcn/ui** (sobre `@base-ui/react`) para os componentes de base
-- **Framer Motion** para as animações (entradas, transições, gráfico radial, contadores, console de montagem)
-- **Recharts** para os gráficos do Centro de Comando
-- **next-themes** para dark/light mode
+Você conta **quem faz o quê** na sua organização, e o SO-IA monta, para
+cada função, um agente de IA — reaproveitando um agente pronto do catálogo
+quando ele serve, ou criando um novo na hora quando não serve.
+
+## Por que não vem tudo pronto?
+
+Porque "um catálogo genérico de agentes" raramente encaixa na estrutura
+real de uma empresa ou de um órgão público — cada organização tem seus
+próprios cargos, suas próprias responsabilidades e sua própria hierarquia.
+Em vez de forçar isso num molde fixo (o antigo "Modo Empresa" / "Modo
+Governo" pré-carregado), o SO-IA começa **em branco** e só monta o sistema
+depois de entender a sua organização.
+
+---
+
+## Como funciona, passo a passo
+
+### 1. Você diz o tipo de organização
+
+Empresa privada ou órgão público, e o nome da organização. Isso só ajusta o
+vocabulário e o tema visual (cores) do restante do sistema.
+
+![Passo 1 — tipo de organização](docs/screenshots/02-onboarding-tipo.png)
+
+### 2. Você monta o organograma
+
+Para cada cargo/função: **qual é o nome**, **em qual área** ele fica, **quais
+são as responsabilidades** (em texto livre, viram tags) e **a quem ele se
+reporta** — isso monta a hierarquia. Dá para começar do zero ou carregar um
+exemplo pronto só para acelerar (e depois editar à vontade).
+
+![Passo 2 — construtor de organograma](docs/screenshots/03-onboarding-organograma.png)
+
+### 3. O sistema é montado sozinho
+
+Para cada função, o SO-IA:
+
+1. Compara as responsabilidades cadastradas com a descrição e as *skills*
+   de cada agente do **catálogo institucional** (uma biblioteca de agentes
+   já prontos, comum a todas as organizações).
+2. Se encontra um agente com sobreposição suficiente, **reaproveita** esse
+   agente para a função.
+3. Se não encontra nada parecido, **cria um agente novo na hora** — com
+   nome, descrição e *skills* derivados das responsabilidades daquele
+   cargo.
+
+Isso acontece com uma pequena animação, função por função — não é uma
+tabela estática, é um processo que você acompanha acontecendo:
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/04-onboarding-montagem.png" alt="Montagem em andamento, buscando um agente compatível" /><br/><sub>Durante — buscando um agente compatível</sub></td>
+<td width="50%"><img src="docs/screenshots/05-onboarding-montagem-completa.png" alt="Montagem concluída, com todas as funções resolvidas" /><br/><sub>Ao final — cada função resolvida</sub></td>
+</tr>
+</table>
+
+### 4. Pronto: cada função tem seu agente
+
+O resultado vira uma árvore navegável — o seu organograma, agora com um
+agente de IA atribuído a cada caixinha, pronto para ser executado.
+
+![Organograma montado, com agentes atribuídos](docs/screenshots/06-app-organograma.png)
+
+E o catálogo de agentes passa a mostrar exatamente os agentes que foram
+atribuídos ao *seu* organograma — não mais uma lista genérica:
+
+![Catálogo de Agentes & Skills, montado a partir do organograma](docs/screenshots/07-app-agentes.png)
+
+E o resto do sistema — Centro de Comando incluído — já reconhece a sua
+organização pelo nome real, não por um tenant fictício:
+
+![Centro de Comando com o nome real da organização](docs/screenshots/08-app-dashboard.png)
+
+---
+
+## Conceitos-chave
+
+| Termo | O que significa aqui |
+|---|---|
+| **Organograma** | A estrutura de cargos/funções que você cadastra: título, área, responsabilidades e hierarquia. É o único "input" que o sistema precisa para se montar. |
+| **Catálogo institucional** | A biblioteca de agentes de IA já existentes (ex.: *Agente de Atesto de Nota Fiscal*, *Agente de Triagem de Tickets*) que o sistema tenta reaproveitar antes de criar algo novo. |
+| **Agente "do catálogo"** | Quando uma função do organograma encontrou um agente pronto compatível o suficiente. |
+| **Agente "sob medida"** | Quando nenhum agente do catálogo serviu, e um novo foi criado especificamente para aquela função. |
+| **Skill (SKILL.md)** | Uma capacidade reutilizável de um agente (ex.: `conferir-nf-contra-empenho`), no formato aberto SKILL.md da Anthropic. |
+| **Autonomia (A0–A5)** | O quanto um agente pode agir sem revisão humana — de A0 (só observa) até A5 (autonomia ampliada). Atos administrativos vinculados ficam travados em A2 (prepara, mas não decide). |
+| **Auditoria append-only** | Todo registro de execução/decisão de agente é imutável e rastreável — nunca sobrescrito. |
+| **Conector MCP** | A forma padronizada (Model Context Protocol) como um agente se conecta a um sistema externo (SIPAC, PNCP, CRM etc.). |
+
+---
 
 ## Rodando localmente
 
 ```bash
+cd so-ia
 npm install
 npm run dev
 ```
 
-Abra `http://localhost:3000`. Sem uma organização configurada, qualquer rota
-`/app/*` redireciona automaticamente para o onboarding.
+Abra `http://localhost:3000`. Sem uma organização configurada, qualquer
+tela do app (`/app/*`) redireciona automaticamente para o onboarding — não
+tem como "pular" a etapa de configuração.
 
-## Fluxo de onboarding (o coração do produto)
+## Mapa de telas
 
-| Rota | O que acontece |
+| Rota | O que você encontra |
 |---|---|
-| `/onboarding/tipo` | Escolha entre **Empresa privada** ou **Órgão público** + nome da organização. |
-| `/onboarding/organograma` | Construtor do organograma: cargos/funções, área, responsabilidades (tags) e hierarquia ("reporta-se a"). Pode partir do zero ou carregar um exemplo editável para acelerar. |
-| `/onboarding/montagem` | Console animado: para cada função, busca um agente compatível no catálogo institucional (score por sobreposição de palavras-chave entre responsabilidades e a descrição/skills dos agentes existentes); sem correspondência ≥ limiar, sintetiza um novo agente (nome, descrição, skills e autonomia A2 por padrão) na hora. |
+| `/` | Landing — apresenta o produto e leva para o onboarding (ou direto para o Centro de Comando, se você já configurou uma organização antes). |
+| `/onboarding/tipo` | Passo 1 — tipo de organização + nome. |
+| `/onboarding/organograma` | Passo 2 — construtor de organograma. |
+| `/onboarding/montagem` | Passo 3 — console animado da montagem (busca no catálogo / criação de agente, função por função). |
+| `/app/organograma` | O organograma final, em árvore, com o agente de cada função e um botão "Executar agora". |
+| `/app/agentes` | Catálogo de Agentes & Skills — os agentes realmente atribuídos ao seu organograma, com busca, filtro por área e um painel de detalhe (skills, conectores, política de modelo, autonomia). |
+| `/app/dashboard` | Centro de Comando — KPIs, execuções, atividade recente (cenário de referência ilustrativo, já com o nome real da sua organização). |
+| `/app/workflows` | Cenário de referência: um workflow de pesquisa de preços com a regra de **segregação de funções** (Acórdão TCU nº 1668/2021) em destaque. |
+| `/app/aprovacoes` | Cenário de referência: caixa de aprovações *human-in-the-loop*, com citações verificáveis. |
+| `/app/aprovacoes/atesto-nf` | Cenário de referência (§9.1 do PRD): um atesto de nota fiscal completo, do início ao fim, com citações e trilha de auditoria. |
 
-O motor de correspondência/criação vive em `src/lib/org/matching.ts`
-(`assembleOrganization`), sobre o catálogo institucional combinado
-(`src/lib/data/agents.ts`) e o organograma do usuário (`src/lib/data/org-chart.ts`).
-Todo o estado (organograma + resultado da montagem) é mantido em
-`OrganizationProvider` (`src/components/providers/organization-provider.tsx`)
-e persistido em `localStorage`.
+## Stack técnica
 
-## Estrutura de telas (pós-montagem)
+- **Next.js 16** (App Router, Turbopack) + **TypeScript**
+- **Tailwind CSS v4**
+- **shadcn/ui** (sobre `@base-ui/react`) para os componentes de base
+- **Framer Motion** para as animações (onboarding, gráfico radial, console de montagem, contadores)
+- **Recharts** para os gráficos do Centro de Comando
+- **next-themes** para dark/light mode
 
-| Rota | Descrição |
-|---|---|
-| `/` | Landing com o grafo radial do Núcleo de Conhecimento — mostra as áreas do organograma já montado, ou uma prévia genérica antes da configuração. |
-| `/app/organograma` | Árvore do organograma com o agente atribuído a cada função (badge "do catálogo" ou "criado sob medida"), botão para executar e link para o detalhe completo do agente. |
-| `/app/dashboard` | Centro de Comando — KPIs, execuções x aprovações, atividade recente (conteúdo ilustrativo de referência, com o nome real da organização). |
-| `/app/agentes` | Catálogo de Agentes & Skills — lista os agentes efetivamente atribuídos pelo organograma, com busca, filtro por área e painel de detalhe (skills SKILL.md, conectores MCP, política de modelo, autonomia). |
-| `/app/workflows` | Cenário de referência: workflow de pesquisa de preços com a regra de **segregação de funções** (Acórdão TCU nº 1668/2021) destacada. |
-| `/app/aprovacoes` | Cenário de referência: caixa de aprovações (human-in-the-loop) com citações verificáveis e ação de aprovar/rejeitar. |
-| `/app/aprovacoes/atesto-nf` | Cenário de referência (§9.1 do PRD): extração da NF-e, conferência contra o empenho, citações e trilha de auditoria append-only. |
+Todo o estado do organograma e da montagem vive em `OrganizationProvider`
+(`src/components/providers/organization-provider.tsx`) e fica salvo no
+`localStorage` do navegador. O motor de correspondência/criação de agentes
+está em `src/lib/org/matching.ts`.
 
-Os "cenários de referência" (dashboard, workflows, aprovações, caso de
-atesto) continuam com dados mockados fixos — eles ilustram o que os agentes
-fazem em operação, mas não são recalculados a partir do organograma
-específico do usuário nesta etapa.
+## O que ainda é simulado (por enquanto)
 
-## Dados
+Este é o primeiro incremento do produto: a camada de apresentação.
 
-Catálogo institucional, skills e cenários de referência em
-`src/lib/data/*.ts`, derivados do PRD (§7, §9, §12). Nenhuma integração real
-(SIPAC, PNCP, Compras.gov.br etc.) e nenhum LLM real foram implementados
-nesta etapa — a "criação de agente" é uma síntese determinística no cliente.
+- A "criação de um agente novo" é uma síntese determinística no cliente
+  (compara palavras-chave), não uma chamada real a um LLM.
+- Os cenários de referência (dashboard, workflows, aprovações, caso de
+  atesto) usam dados mockados fixos — eles ilustram o que os agentes fazem
+  em operação, mas não são recalculados a partir do organograma específico
+  de cada usuário.
+- Nenhuma integração real (SIPAC, PNCP, Compras.gov.br, SIAFI etc.) foi
+  implementada ainda.
 
 ## Próximos passos
 
-Ver roadmap em 5 fases no PRD (§25). Este incremento cobre o essencial da
-**Fase 1 (Núcleo) — camada de apresentação com onboarding orientado a
-organograma**; faltam multi-tenancy real, geração de agentes via LLM, RAG
-com citações vivas, motor de autonomia A0–A5 com guardrails, e os
-conectores MCP para os sistemas governamentais.
+Ver o roadmap em 5 fases no PRD (§25). Depois desta camada de apresentação,
+faltam: multi-tenancy real, geração de agentes via LLM de verdade, RAG com
+citações vivas, motor de autonomia A0–A5 com guardrails, e os conectores
+MCP para os sistemas governamentais e de CRM.
