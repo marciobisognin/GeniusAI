@@ -75,8 +75,14 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         const parsed = JSON.parse(raw) as Partial<OrganizationState>;
         // Merge over emptyState so stored payloads from older versions
         // (without `executions`) hydrate with sane defaults.
+        const merged = { ...emptyState, ...parsed };
+        // Squads persisted before the repository existed lack templateId —
+        // recompute them so they gain origem/desempenho/criadoPor.
+        if (merged.status === "ready" && merged.assignments.length > 0 && !merged.squads[0]?.templateId) {
+          merged.squads = buildSquads(merged.assignments);
+        }
         // eslint-disable-next-line react-hooks/set-state-in-effect
-        setState({ ...emptyState, ...parsed });
+        setState(merged);
       } catch {
         // ignore corrupt storage
       }

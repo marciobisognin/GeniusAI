@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { Bot, Crown, Loader2, PlayCircle, Users } from "lucide-react";
+import { Bot, Crown, Gauge, Loader2, PlayCircle, Sparkles, Users, Warehouse } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,24 @@ export function SquadCard({ squad }: { squad: Squad }) {
           <Users className="size-3" />
           {squad.membros.length}
         </Badge>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        {squad.origem === "repositorio" ? (
+          <Badge variant="outline" className="text-[10px] border-success/30 text-success font-normal">
+            <Warehouse className="size-3" /> Do repositório
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-[10px] border-[var(--brand-1)]/30 text-[var(--brand-1)] font-normal">
+            <Sparkles className="size-3" /> Criado pela ferramenta
+          </Badge>
+        )}
+        <Badge variant="outline" className="text-[10px] font-normal">
+          <Gauge className="size-3" /> {Math.round(squad.desempenho * 100)}% desempenho
+        </Badge>
+        {squad.criadoPor && (
+          <span className="text-[10px] text-muted-foreground">por {squad.criadoPor}</span>
+        )}
       </div>
 
       <motion.ul variants={staggerContainer(0.05)} initial="hidden" animate="show" className="space-y-2">
