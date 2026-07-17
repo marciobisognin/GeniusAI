@@ -8,9 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { OrgNodeForm } from "@/components/onboarding/org-node-form";
 import { OrgTreePreview } from "@/components/onboarding/org-tree-preview";
+import { OrgImportPanel } from "@/components/onboarding/org-import-panel";
 import { useOrganization } from "@/components/providers/organization-provider";
 import { templateEmpresa, templateGoverno } from "@/lib/org/templates";
 import { fadeUp, staggerContainer } from "@/lib/motion";
+import type { OrgNode } from "@/lib/data/org-chart";
 
 export default function OnboardingOrganogramaPage() {
   const router = useRouter();
@@ -30,6 +32,10 @@ export default function OnboardingOrganogramaPage() {
     organization.setNodes(structuredClone(template));
   }
 
+  function applyImportedNodes(nodes: OrgNode[], mode: "substituir" | "adicionar") {
+    organization.setNodes(mode === "adicionar" ? [...organization.nodes, ...nodes] : nodes);
+  }
+
   return (
     <motion.div variants={staggerContainer(0.08)} initial="hidden" animate="show">
       <motion.p variants={fadeUp} className="text-xs font-semibold uppercase tracking-wider text-gradient-brand mb-2">
@@ -40,11 +46,16 @@ export default function OnboardingOrganogramaPage() {
       </motion.h1>
       <motion.p variants={fadeUp} className="mt-2 max-w-2xl text-sm text-muted-foreground">
         Cadastre os cargos/funções, a área de cada um, suas responsabilidades e a
-        quem cada um se reporta. É a partir disso que o SO-IA vai montar o
-        sistema de agentes — nada é pré-carregado.
+        quem cada um se reporta — ou carregue um arquivo com essas informações
+        e revise o que o SO-IA pré-preencher. É a partir disso que o sistema
+        vai montar os agentes — nada é pré-carregado.
       </motion.p>
 
-      <div className="grid gap-6 lg:grid-cols-3 mt-8">
+      <motion.div variants={fadeUp} className="mt-6">
+        <OrgImportPanel hasExistingNodes={organization.nodes.length > 0} onApply={applyImportedNodes} />
+      </motion.div>
+
+      <div className="grid gap-6 lg:grid-cols-3 mt-6">
         <div className="lg:col-span-2 space-y-3">
           <AnimatePresence initial={false}>
             {organization.nodes.map((node, i) => (

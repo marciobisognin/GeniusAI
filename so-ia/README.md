@@ -39,12 +39,34 @@ vocabulário e o tema visual (cores) do restante do sistema.
 
 ![Passo 1 — tipo de organização](docs/screenshots/02-onboarding-tipo.png)
 
-### 2. Você monta o organograma
+### 2. Você monta o organograma — digitando ou carregando um arquivo
 
 Para cada cargo/função: **qual é o nome**, **em qual área** ele fica, **quais
 são as responsabilidades** (em texto livre, viram tags) e **a quem ele se
-reporta** — isso monta a hierarquia. Dá para começar do zero ou carregar um
-exemplo pronto só para acelerar (e depois editar à vontade).
+reporta** — isso monta a hierarquia.
+
+Você não precisa digitar tudo à mão: dá para **carregar um arquivo** com o
+organograma (ou colar/digitar o texto direto) e o SO-IA pré-preenche os
+cargos para você revisar — sem perder a opção de completar, corrigir ou
+adicionar qualquer coisa manualmente depois.
+
+![Painel de importação do organograma](docs/screenshots/03b-onboarding-importar.png)
+
+Formatos aceitos:
+
+| Formato | Como o SO-IA reconhece |
+|---|---|
+| **.json** | Lista de objetos (ou `{ "nodes": [...] }`), com `cargo`/`titulo`, `area`, `responsabilidades` e `reportaA` (pelo nome do cargo superior). Também aceita árvore aninhada via `subordinados`/`children`. |
+| **.csv** | Cabeçalho com colunas `cargo`, `area`, `responsabilidades` (itens separados por `\|`) e `reporta_a`. |
+| **.txt / .md** | Texto livre com indentação representando a hierarquia — cada linha no formato `Cargo (Área): responsabilidade 1; responsabilidade 2`. |
+| **.pdf** | O texto do PDF é extraído no navegador e analisado com o mesmo parser de texto acima. Organogramas **gráficos** (caixas/setas, como a maioria dos organogramas oficiais em PDF) tendem a extrair de forma fragmentada — o sistema avisa quando isso acontece, para você revisar com atenção. |
+| **colar texto** | Mesma lógica do .txt, útil para colar um trecho copiado de um Word/PDF que o upload não leu bem. |
+
+Depois de analisado, você escolhe **substituir** o organograma atual pelo
+importado ou **adicionar** os cargos importados aos que já existem — nunca é
+tudo ou nada. Baixe os arquivos de exemplo
+([.json](public/templates/organograma-exemplo.json) ·
+[.csv](public/templates/organograma-exemplo.csv)) para ver o formato esperado.
 
 ![Passo 2 — construtor de organograma](docs/screenshots/03-onboarding-organograma.png)
 
@@ -228,6 +250,7 @@ Todo o estado do organograma e da montagem vive em `OrganizationProvider`
 | Squads + repositório | `src/lib/org/squads.ts` + `squad-registry.ts` | Um squad por área: reaproveita do repositório ou cria via Squad de Fundação. |
 | Cobertura do organograma | `src/lib/org/relevance.ts` | Decide se um conteúdo institucional existe para esta organização. |
 | Gerador de workflows | `src/lib/org/workflow-builder.ts` | Gera um workflow a partir de uma função real quando nenhum exemplo cobre as áreas. |
+| Importação de organograma | `src/lib/org/import.ts` + `pdf-extract.ts` | Analisa .json/.csv/.txt/.md/.pdf (ou texto colado) e pré-preenche os cargos, a área, as responsabilidades e a hierarquia. |
 
 ## O que ainda é simulado (por enquanto)
 
