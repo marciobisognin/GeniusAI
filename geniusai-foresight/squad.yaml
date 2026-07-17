@@ -1,0 +1,49 @@
+{
+  "name": "geniusai-foresight",
+  "display_name": "GeniusAI Foresight",
+  "version": "0.1.0",
+  "license": "MIT",
+  "creator": "Marcio Bisognin",
+  "instagram": "@marciobisognin",
+  "purpose": "Simular futuros estratégicos condicionais com atores adaptativos, evidências point-in-time, Teoria dos Jogos e previsão probabilística auditável.",
+  "runtime": {
+    "language": "python",
+    "minimum_version": "3.11",
+    "external_dependencies": []
+  },
+  "agents": [
+    "intake-orchestrator",
+    "evidence-auditor",
+    "country-profiler",
+    "game-theory-modeler",
+    "causal-forecaster",
+    "simulation-engineer",
+    "red-team-calibrator",
+    "report-narrator"
+  ],
+  "tasks": [
+    "frame-study",
+    "build-evidence-snapshot",
+    "profile-actors",
+    "select-game-form",
+    "build-causal-model",
+    "run-scenarios",
+    "calibrate-and-red-team",
+    "publish-brief"
+  ],
+  "workflows": [
+    "foresight-cycle"
+  ],
+  "entrypoints": {
+    "cli": "python -m foresight.cli",
+    "demo": "python scripts/run_demo.py",
+    "validate": "python scripts/validate_squad.py --root ."
+  },
+  "quality": {
+    "claims_require_provenance": true,
+    "probabilities_require_method": true,
+    "future_leakage_forbidden": true,
+    "llm_cannot_mutate_quantitative_state": true
+  },
+  "response_footer": "Licença: MIT. Criado por Marcio Bisognin. Instagram: @marciobisognin."
+}

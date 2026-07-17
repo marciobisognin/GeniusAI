@@ -1,0 +1,100 @@
+{
+  "brief": {
+    "name": "Choque de soja e reposicionamento comercial",
+    "problem": "A China reduz importações brasileiras de soja enquanto os Estados Unidos ampliam subsídios agrícolas; comparar coordenação, diversificação, suporte ao produtor e escalada comercial em 24 meses.",
+    "cutoff": "2026-07-17T00:00:00-03:00",
+    "horizon_steps": 24,
+    "step_unit": "month",
+    "actor_ids": ["brazil", "china", "united-states", "european-union", "global-commodity-market"],
+    "variables": {
+      "soy_price_index": 100.0,
+      "brl_usd_index": 100.0,
+      "brazil_inflation_index": 100.0,
+      "trade_balance_index": 100.0
+    },
+    "primary_variable": "soy_price_index",
+    "variable_models": {
+      "soy_price_index": {"annual_drift": -0.01, "shock_loading": 1.0, "cooperation_loading": 0.08, "mean_reversion": 0.25, "floor": 20.0, "ceiling": 300.0},
+      "brl_usd_index": {"annual_drift": 0.01, "shock_loading": 0.75, "cooperation_loading": -0.04, "mean_reversion": 0.30, "floor": 30.0, "ceiling": 300.0},
+      "brazil_inflation_index": {"annual_drift": 0.025, "shock_loading": 0.45, "cooperation_loading": -0.03, "mean_reversion": 0.45, "floor": 50.0, "ceiling": 250.0},
+      "trade_balance_index": {"annual_drift": 0.0, "shock_loading": 0.65, "cooperation_loading": 0.10, "mean_reversion": 0.20, "floor": -200.0, "ceiling": 400.0}
+    },
+    "interventions": ["diversification", "negotiation", "producer_support", "retaliation"],
+    "intervention_models": {
+      "diversification": {
+        "domain": "economy",
+        "cooperation": 0.55,
+        "objective_affinity": {"trade": 1.0, "economic_stability": 0.8, "exports": 0.7, "price_stability": 0.5, "risk_adjusted_return": 0.4},
+        "required_capabilities": ["market_diversification", "market_access"],
+        "constraint_exposure": ["logistics"],
+        "variable_effects": {"soy_price_index": -0.01, "brl_usd_index": -0.015, "brazil_inflation_index": -0.01, "trade_balance_index": 0.045}
+      },
+      "negotiation": {
+        "domain": "diplomacy",
+        "cooperation": 0.90,
+        "objective_affinity": {"diplomacy": 1.0, "trade": 0.8, "alliances": 0.8, "trade_rules": 0.7, "food_security": 0.5},
+        "required_capabilities": ["diplomacy"],
+        "constraint_exposure": ["member_state_coordination"],
+        "variable_effects": {"soy_price_index": 0.035, "brl_usd_index": -0.02, "brazil_inflation_index": -0.01, "trade_balance_index": 0.035}
+      },
+      "producer_support": {
+        "domain": "domestic",
+        "cooperation": 0.10,
+        "objective_affinity": {"farm_support": 1.0, "domestic_support": 0.9, "domestic_politics": 0.8, "economic_stability": 0.4},
+        "required_capabilities": ["subsidies", "state_finance"],
+        "constraint_exposure": ["fiscal_space", "legislature"],
+        "variable_effects": {"soy_price_index": 0.015, "brl_usd_index": 0.005, "brazil_inflation_index": 0.012, "trade_balance_index": 0.01}
+      },
+      "retaliation": {
+        "domain": "diplomacy",
+        "cooperation": -0.80,
+        "objective_affinity": {"strategic_leverage": 1.0, "exports": 0.5, "domestic_politics": 0.4, "risk_adjusted_return": 0.2},
+        "required_capabilities": ["market_access", "import_scale"],
+        "constraint_exposure": ["food_demand", "liquidity"],
+        "variable_effects": {"soy_price_index": 0.08, "brl_usd_index": 0.04, "brazil_inflation_index": 0.03, "trade_balance_index": -0.075}
+      }
+    },
+    "relations": [
+      {"source": "brazil", "target": "china", "strength": 0.55},
+      {"source": "brazil", "target": "united-states", "strength": 0.15},
+      {"source": "brazil", "target": "european-union", "strength": 0.40},
+      {"source": "china", "target": "united-states", "strength": -0.55},
+      {"source": "china", "target": "european-union", "strength": 0.05},
+      {"source": "united-states", "target": "european-union", "strength": 0.50}
+    ],
+    "scenario_rules": [
+      {"name": "adverse", "variable": "soy_price_index", "operator": "lt", "thresholds": [95.0], "trigger": "Índice final de soja abaixo de 95"},
+      {"name": "favorable", "variable": "soy_price_index", "operator": "gt", "thresholds": [105.0], "trigger": "Índice final de soja acima de 105"},
+      {"name": "central", "variable": "soy_price_index", "operator": "between", "thresholds": [95.0, 105.0], "trigger": "Índice final de soja entre 95 e 105"}
+    ],
+    "event_thresholds": {"high_volatility": 0.15, "cooperative_path": 0.55},
+    "forecast_contract": {
+      "contract_id": "soy-index-24m",
+      "question": "Qual será a distribuição do índice sintético de soja ao final de 24 meses?",
+      "target_variable": "soy_price_index",
+      "cutoff": "2026-07-17T00:00:00-03:00",
+      "resolution_time": "2028-07-17T00:00:00-03:00",
+      "resolution_source": "https://www.fao.org/faostat/",
+      "outcome_type": "continuous"
+    },
+    "runs": 600,
+    "seed": 20260717,
+    "game_form": "bayesian_stochastic_repeated"
+  },
+  "domains": ["economy", "market", "diplomacy", "resources", "domestic"],
+  "actors": [
+    {"actor_id":"brazil","name":"Brasil","kind":"country","governance":"presidential_federal","objectives":{"economic_stability":0.35,"trade":0.35,"domestic_support":0.20,"diplomacy":0.10},"risk_tolerance":0.45,"time_preference":0.94,"capabilities":["agriculture","diplomacy","market_diversification"],"constraints":["fiscal_space","logistics"]},
+    {"actor_id":"china","name":"China","kind":"country","governance":"party_state","objectives":{"food_security":0.35,"price_stability":0.25,"strategic_leverage":0.25,"trade":0.15},"risk_tolerance":0.50,"time_preference":0.98,"capabilities":["import_scale","state_finance"],"constraints":["food_demand"]},
+    {"actor_id":"united-states","name":"Estados Unidos","kind":"country","governance":"presidential_federal","objectives":{"farm_support":0.30,"exports":0.35,"domestic_politics":0.20,"alliances":0.15},"risk_tolerance":0.55,"time_preference":0.93,"capabilities":["subsidies","financial_markets","diplomacy"],"constraints":["legislature"]},
+    {"actor_id":"european-union","name":"União Europeia","kind":"organization","governance":"supranational","objectives":{"food_security":0.25,"sustainability":0.30,"price_stability":0.25,"trade_rules":0.20},"risk_tolerance":0.30,"time_preference":0.97,"capabilities":["market_access","regulation","diplomacy"],"constraints":["member_state_coordination"]},
+    {"actor_id":"global-commodity-market","name":"Mercado Global de Commodities","kind":"market","governance":"market","objectives":{"liquidity":0.30,"risk_adjusted_return":0.40,"price_discovery":0.30},"risk_tolerance":0.65,"time_preference":0.85,"capabilities":["price_discovery","capital_reallocation"],"constraints":["liquidity","position_limits"]}
+  ],
+  "evidence": [
+    {
+      "evidence_id":"ev-001","revision_id":"v1","claim":"Índice-base sintético igual a 100 para demonstração metodológica; não representa dado de mercado real.","entity":"study","variable":"baseline","event_time":"2026-07-16T12:00:00-03:00","release_time":"2026-07-16T12:00:00-03:00","captured_time":"2026-07-16T13:00:00-03:00","valid_from":"2026-07-16T12:00:00-03:00","source_url":"https://github.com/marciobisognin/GeniusAI","source_type":"synthetic_fixture","reliability":1.0,"directness":1.0,"independent_group":"fixture","license":"MIT","metadata":{}
+    },
+    {
+      "evidence_id":"ev-002","revision_id":"v1","claim":"Cenário hipotético: redução de demanda chinesa e expansão de subsídios; não afirma ocorrência real.","entity":"study","variable":"scenario_assumption","event_time":"2026-07-17T00:00:00-03:00","release_time":"2026-07-17T00:00:00-03:00","captured_time":"2026-07-17T00:00:00-03:00","valid_from":"2026-07-17T00:00:00-03:00","source_url":"https://github.com/marciobisognin/GeniusAI","source_type":"scenario_assumption","reliability":1.0,"directness":1.0,"independent_group":"briefing","license":"MIT","metadata":{"variable_effects":{"soy_price_index":{"annual_drift_delta":-0.04,"shock_multiplier":1.20},"trade_balance_index":{"annual_drift_delta":-0.02,"shock_multiplier":1.10}}}
+    }
+  ]
+}

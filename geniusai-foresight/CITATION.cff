@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "Se você usar o GeniusAI Foresight, cite este software."
+title: "GeniusAI Foresight"
+type: software
+version: 0.1.0
+date-released: 2026-07-17
+authors:
+  - family-names: Bisognin
+    given-names: Marcio
+url: "https://github.com/marciobisognin/GeniusAI/tree/main/geniusai-foresight"
+license: MIT

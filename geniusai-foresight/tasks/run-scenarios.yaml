@@ -1,0 +1,30 @@
+{
+  "id": "run-scenarios",
+  "description": "run scenarios",
+  "assigned_agent": "simulation-engineer",
+  "dependencies": [
+    "build-causal-model"
+  ],
+  "input_schema": [
+    "game_model",
+    "causal_model",
+    "actor_cells",
+    "evidence_snapshot"
+  ],
+  "output_schema": [
+    "simulation_runs",
+    "scenario_tree"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": false,
+  "failure_behavior": "stop_and_report"
+}

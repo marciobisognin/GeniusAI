@@ -1,0 +1,28 @@
+{
+  "id": "calibrate-and-red-team",
+  "description": "calibrate and red team",
+  "assigned_agent": "red-team-calibrator",
+  "dependencies": [
+    "run-scenarios"
+  ],
+  "input_schema": [
+    "simulation_runs",
+    "forecast_contracts"
+  ],
+  "output_schema": [
+    "quality_report",
+    "go_no_go"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": false,
+  "failure_behavior": "stop_and_report"
+}
