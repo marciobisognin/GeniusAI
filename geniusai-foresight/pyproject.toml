@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geniusai-foresight"
+version = "0.1.0"
+description = "Simulação prospectiva multiagente com Teoria dos Jogos e evidência auditável"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Marcio Bisognin"}]
+dependencies = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering",
+]
+
+[project.urls]
+Homepage = "https://github.com/marciobisognin/GeniusAI/tree/main/geniusai-foresight"
+Repository = "https://github.com/marciobisognin/GeniusAI"
+Issues = "https://github.com/marciobisognin/GeniusAI/issues"
+
+[project.scripts]
+geniusai-foresight = "foresight.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["foresight*"]
+
+[tool.setuptools.data-files]
+"share/doc/geniusai-foresight" = ["NOTICE.md", "AUTHORS.md", "examples/soy-trade-shock.json"]

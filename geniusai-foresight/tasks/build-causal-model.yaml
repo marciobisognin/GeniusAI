@@ -1,0 +1,32 @@
+{
+  "id": "build-causal-model",
+  "description": "build explicit named-variable causal and transition model",
+  "assigned_agent": "causal-forecaster",
+  "dependencies": [
+    "select-game-form",
+    "build-evidence-snapshot"
+  ],
+  "input_schema": [
+    "game_model",
+    "actor_profiles",
+    "evidence_snapshot",
+    "variable_models"
+  ],
+  "output_schema": [
+    "causal_model",
+    "evidence_effects",
+    "baselines"
+  ],
+  "validation_rules": [
+    "named_variable_models",
+    "evidence_linked",
+    "finite_coefficients"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": false,
+  "failure_behavior": "stop_and_report"
+}

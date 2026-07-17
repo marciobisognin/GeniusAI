@@ -1,0 +1,29 @@
+{
+  "id": "publish-brief",
+  "description": "publish brief",
+  "assigned_agent": "report-narrator",
+  "dependencies": [
+    "calibrate-and-red-team"
+  ],
+  "input_schema": [
+    "quality_report",
+    "scenario_tree"
+  ],
+  "output_schema": [
+    "executive_brief",
+    "technical_report",
+    "html_report"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": true,
+  "failure_behavior": "stop_and_report"
+}

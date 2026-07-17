@@ -1,0 +1,25 @@
+{
+  "id": "frame-study",
+  "description": "frame study",
+  "assigned_agent": "intake-orchestrator",
+  "dependencies": [],
+  "input_schema": [
+    "briefing"
+  ],
+  "output_schema": [
+    "study_spec",
+    "forecast_contracts"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": true,
+  "failure_behavior": "stop_and_report"
+}

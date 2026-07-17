@@ -1,0 +1,28 @@
+{
+  "id": "profile-actors",
+  "description": "profile actors",
+  "assigned_agent": "country-profiler",
+  "dependencies": [
+    "build-evidence-snapshot"
+  ],
+  "input_schema": [
+    "study_spec",
+    "evidence_snapshot"
+  ],
+  "output_schema": [
+    "actor_profiles",
+    "actor_cells"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": false,
+  "failure_behavior": "stop_and_report"
+}

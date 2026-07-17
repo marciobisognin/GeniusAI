@@ -1,0 +1,97 @@
+{
+  "id": "foresight-cycle",
+  "entrypoint": "frame-study",
+  "steps": [
+    {
+      "task": "frame-study",
+      "depends_on": [],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "human",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "build-evidence-snapshot",
+      "depends_on": [
+        "frame-study"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "profile-actors",
+      "depends_on": [
+        "build-evidence-snapshot"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "select-game-form",
+      "depends_on": [
+        "profile-actors"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "build-causal-model",
+      "depends_on": [
+        "select-game-form",
+        "build-evidence-snapshot"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "finite_named_model_and_evidence_effects"
+    },
+    {
+      "task": "run-scenarios",
+      "depends_on": [
+        "build-causal-model"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "calibrate-and-red-team",
+      "depends_on": [
+        "run-scenarios"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "automatic",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    },
+    {
+      "task": "publish-brief",
+      "depends_on": [
+        "calibrate-and-red-team"
+      ],
+      "timeout_seconds": 600,
+      "retries": 1,
+      "gate": "human",
+      "failure_path": "halt_with_evidence",
+      "resume_condition": "gate_approved_or_issue_resolved"
+    }
+  ],
+  "conditions": {
+    "probability_output": "model_implied_research_label_plus_mcse_or_empirically_calibrated",
+    "report_publication": "red_team_go_research_only_or_empirically_calibrated"
+  }
+}

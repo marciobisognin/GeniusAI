@@ -1,0 +1,26 @@
+{
+  "id": "build-evidence-snapshot",
+  "description": "build evidence snapshot",
+  "assigned_agent": "evidence-auditor",
+  "dependencies": [
+    "frame-study"
+  ],
+  "input_schema": [
+    "study_spec"
+  ],
+  "output_schema": [
+    "evidence_snapshot"
+  ],
+  "validation_rules": [
+    "schema_valid",
+    "evidence_linked",
+    "no_unlabeled_probability"
+  ],
+  "timeout_seconds": 600,
+  "retry_policy": {
+    "max_attempts": 2,
+    "backoff_seconds": 5
+  },
+  "human_approval": false,
+  "failure_behavior": "stop_and_report"
+}
