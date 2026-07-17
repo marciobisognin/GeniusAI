@@ -3,12 +3,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight, Boxes, CheckCircle2, Sparkles } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { ArrowRight, Boxes, CheckCircle2, Sparkles, UsersRound, Warehouse, Wrench } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AssemblyRow } from "@/components/onboarding/assembly-row";
 import { useOrganization } from "@/components/providers/organization-provider";
 import { assembleOrganization } from "@/lib/org/matching";
+import { buildSquads } from "@/lib/org/squads";
 import { fadeUp } from "@/lib/motion";
 
 export default function OnboardingMontagemPage() {
@@ -50,6 +51,13 @@ export default function OnboardingMontagemPage() {
   const matched = assignments.slice(0, index).filter((a) => a.origem === "catalogo").length;
   const created = assignments.slice(0, index).filter((a) => a.origem === "gerado").length;
 
+  // Dry-run preview of squad formation — nothing is persisted here; the real
+  // registration in the repository happens inside assemble().
+  const squadPreview = useMemo(
+    () => (done && assignments.length > 0 ? buildSquads(assignments, { dryRun: true }) : []),
+    [done, assignments],
+  );
+
   function handleEnter() {
     organization.assemble();
     router.push("/app/organograma");
@@ -84,6 +92,48 @@ export default function OnboardingMontagemPage() {
               phase={i === index && !done ? phase : "resolved"}
             />
           ))}
+
+          {done && squadPreview.length > 0 && (
+            <motion.div variants={fadeUp} initial="hidden" animate="show">
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <UsersRound className="size-4 text-[var(--brand-1)]" />
+                    Formação de squads
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Para cada área, o sistema procura um squad no repositório
+                    institucional — só cria um novo quando nenhum serve.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {squadPreview.map((squad) => (
+                    <div
+                      key={squad.id}
+                      className="flex items-start justify-between gap-3 rounded-lg border border-border/70 px-3 py-2.5"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium">{squad.nome}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {squad.area} · {squad.membros.length} agente(s)
+                        </p>
+                      </div>
+                      {squad.origem === "repositorio" ? (
+                        <span className="flex items-center gap-1.5 text-xs text-success shrink-0">
+                          <Warehouse className="size-3.5" /> Reaproveitado do repositório
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-xs text-[var(--brand-1)] shrink-0 text-right">
+                          <Wrench className="size-3.5" /> Criado agora
+                          {squad.criadoPor ? ` — por ${squad.criadoPor}` : ""}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
         </div>
 
         <div className="space-y-4">
