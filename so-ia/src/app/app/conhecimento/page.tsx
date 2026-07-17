@@ -10,15 +10,40 @@ import { AgentDetailSheet } from "@/components/agents/agent-detail-sheet";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTenantMode } from "@/components/providers/mode-provider";
 import { useOrganization } from "@/components/providers/organization-provider";
+import { organizationCovers } from "@/lib/org/relevance";
 import type { AgentAssignment } from "@/lib/org/matching";
 import type { Agent } from "@/lib/data/types";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
 const EXECUTION_DURATION_MS = 2600;
 
-const sourcesByMode = {
-  empresa: ["Google Drive", "CRM (HubSpot/Pipedrive)", "Confluence / Notion", "Gmail / Outlook"],
-  governo: ["SIPAC/SIG", "PNCP", "Compras.gov.br", "Diário Oficial da União"],
+// Fontes sem `cobertura` são infraestrutura genérica; as demais só são
+// conectadas se o organograma tiver a área correspondente.
+const sourcesByMode: Record<
+  "empresa" | "governo",
+  { nome: string; cobertura?: { area: string; texto?: string } }[]
+> = {
+  empresa: [
+    { nome: "Google Drive" },
+    {
+      nome: "CRM (HubSpot/Pipedrive)",
+      cobertura: { area: "Vendas", texto: "leads propostas comerciais clientes funil" },
+    },
+    { nome: "Confluence / Notion" },
+    { nome: "Gmail / Outlook" },
+  ],
+  governo: [
+    { nome: "SIPAC/SIG" },
+    {
+      nome: "PNCP",
+      cobertura: { area: "Licitações e Contratos", texto: "licitações contratações compras pesquisa de preços" },
+    },
+    {
+      nome: "Compras.gov.br",
+      cobertura: { area: "Licitações e Contratos", texto: "licitações contratações compras pesquisa de preços" },
+    },
+    { nome: "Diário Oficial da União" },
+  ],
 };
 
 export default function ConhecimentoPage() {
@@ -35,7 +60,9 @@ export default function ConhecimentoPage() {
     [organization],
   );
 
-  const sources = sourcesByMode[mode];
+  const sources = sourcesByMode[organization.orgType ?? mode]
+    .filter((s) => !s.cobertura || organizationCovers(s.cobertura, organization.nodes))
+    .map((s) => s.nome);
   const recent = organization.executions.slice(0, 6);
 
   return (

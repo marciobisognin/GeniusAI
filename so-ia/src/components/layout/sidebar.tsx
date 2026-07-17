@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { useTenantMode } from "@/components/providers/mode-provider";
 import { useOrganization } from "@/components/providers/organization-provider";
 import { areasByMode, areasFromNodes, primaryNav, tenantLabel } from "@/lib/nav-config";
+import { getApprovalsForOrganization } from "@/lib/data/approvals";
 import { LogoMark } from "@/components/layout/logo-mark";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,10 @@ export function Sidebar() {
   const ready = organization.status === "ready";
   const areas = ready ? areasFromNodes(organization.nodes) : areasByMode[mode];
   const orgLabel = organization.orgName || tenantLabel[mode].org;
+  // Badge da Caixa de Aprovações = pendências reais das áreas do organograma.
+  const pendencias = ready
+    ? getApprovalsForOrganization(organization.orgType, organization.nodes).length
+    : 0;
 
   return (
     <aside className="hidden lg:flex lg:w-72 lg:flex-col lg:shrink-0 border-r border-sidebar-border bg-sidebar">
@@ -60,12 +65,12 @@ export function Sidebar() {
                   )}
                 />
                 <span className="relative z-10">{item.label}</span>
-                {item.badge && (
+                {item.href === "/app/aprovacoes" && pendencias > 0 && (
                   <Badge
                     variant="secondary"
                     className="relative z-10 ml-auto h-5 min-w-5 justify-center rounded-full px-1.5 text-[10px] bg-gradient-brand text-white border-0"
                   >
-                    {item.badge}
+                    {pendencias}
                   </Badge>
                 )}
               </Link>

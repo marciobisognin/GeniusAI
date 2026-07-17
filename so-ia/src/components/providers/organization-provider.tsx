@@ -87,7 +87,6 @@ export function OrganizationProvider({ children }: { children: React.ReactNode }
         // ignore corrupt storage
       }
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, []);
 
