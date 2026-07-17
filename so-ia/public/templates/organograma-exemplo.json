@@ -1,0 +1,20 @@
+[
+  {
+    "cargo": "Diretor(a) de Operações",
+    "area": "Direção",
+    "responsabilidades": ["visibilidade de processos", "automação sem novas contratações"],
+    "reportaA": null
+  },
+  {
+    "cargo": "Head de Vendas",
+    "area": "Vendas",
+    "responsabilidades": ["qualificar leads", "preparar propostas comerciais"],
+    "reportaA": "Diretor(a) de Operações"
+  },
+  {
+    "cargo": "Analista Financeiro",
+    "area": "Back Office",
+    "responsabilidades": ["conciliar lançamentos", "sinalizar divergências"],
+    "reportaA": "Diretor(a) de Operações"
+  }
+]
