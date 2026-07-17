@@ -1,4 +1,6 @@
-import type { ApprovalItem } from "./types";
+import type { ApprovalItem, TenantMode } from "./types";
+import type { OrgNode } from "./org-chart";
+import { organizationCovers } from "@/lib/org/relevance";
 
 export const approvalsGoverno: ApprovalItem[] = [
   {
@@ -147,4 +149,25 @@ export const approvalsEmpresa: ApprovalItem[] = [
 
 export function getApprovals(mode: "empresa" | "governo") {
   return mode === "empresa" ? approvalsEmpresa : approvalsGoverno;
+}
+
+/**
+ * Pendências filtradas pelo organograma: um item só existe se a organização
+ * tiver a área correspondente (ou responsabilidades que cubram o assunto).
+ * Sem área contábil/contratos no organograma → nenhum item de NF ou contrato.
+ */
+export function getApprovalsForOrganization(
+  orgType: TenantMode | null,
+  nodes: OrgNode[],
+): ApprovalItem[] {
+  const base = orgType === "empresa" ? approvalsEmpresa : approvalsGoverno;
+  return base.filter((item) =>
+    organizationCovers(
+      {
+        area: item.area,
+        texto: `${item.tipo} ${item.titulo} ${item.agente} ${item.resumo}`,
+      },
+      nodes,
+    ),
+  );
 }

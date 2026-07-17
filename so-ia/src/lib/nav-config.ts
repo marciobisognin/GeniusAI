@@ -41,7 +41,7 @@ export const primaryNav: PrimaryNavItem[] = [
   { href: "/app/agentes", label: "Agentes & Skills", icon: Bot },
   { href: "/app/squads", label: "Squads", icon: UsersRound },
   { href: "/app/workflows", label: "Workflows", icon: Workflow },
-  { href: "/app/aprovacoes", label: "Caixa de Aprovações", icon: ClipboardCheck, badge: "4" },
+  { href: "/app/aprovacoes", label: "Caixa de Aprovações", icon: ClipboardCheck },
   { href: "/app/conhecimento", label: "Núcleo de Conhecimento", icon: Database },
   { href: "/app/auditoria", label: "Auditoria", icon: ShieldCheck },
 ];

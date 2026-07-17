@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { PageHeader } from "@/components/layout/page-header";
 import { KpiCard } from "@/components/dashboard/kpi-card";
@@ -18,24 +19,73 @@ import {
   activityGoverno,
   executionsSeriesEmpresa,
   executionsSeriesGoverno,
-  kpisEmpresa,
-  kpisGoverno,
   vigenciasGoverno,
 } from "@/lib/data/dashboard";
+import { getApprovalsForOrganization } from "@/lib/data/approvals";
+import { organizationCovers } from "@/lib/org/relevance";
+import type { KpiCard as KpiCardData } from "@/lib/data/types";
 import { staggerContainer } from "@/lib/motion";
 import { tenantLabel } from "@/lib/nav-config";
 
 export default function DashboardPage() {
   const { mode } = useTenantMode();
   const organization = useOrganization();
-  const isGoverno = mode === "governo";
-  const kpis = isGoverno ? kpisGoverno : kpisEmpresa;
+  const isGoverno = (organization.orgType ?? mode) === "governo";
   const series = isGoverno ? executionsSeriesGoverno : executionsSeriesEmpresa;
   const agents = organization.assignments.map((a) => a.agent);
   const orgLabel = organization.orgName || tenantLabel[mode].org;
 
+  const doCatalogo = organization.assignments.filter((a) => a.origem === "catalogo").length;
+  const sobMedida = organization.assignments.length - doCatalogo;
+  const squadsReuso = organization.squads.filter((s) => s.origem === "repositorio").length;
+  const squadsCriados = organization.squads.length - squadsReuso;
+  const areas = new Set(organization.nodes.map((n) => n.area.trim()).filter(Boolean)).size;
+  const pendencias = useMemo(
+    () => getApprovalsForOrganization(organization.orgType, organization.nodes).length,
+    [organization.orgType, organization.nodes],
+  );
+
+  // KPIs derivados do estado real da organização — nada de métricas de
+  // ferramentas que o organograma não tem.
+  const kpis: KpiCardData[] = [
+    {
+      label: "Funções no organograma",
+      value: String(organization.nodes.length),
+      delta: `${areas} área(s)`,
+      trend: "flat",
+    },
+    {
+      label: "Agentes ativos",
+      value: String(organization.assignments.length),
+      delta: `${doCatalogo} do catálogo`,
+      trend: "up",
+      hint: `${sobMedida} sob medida`,
+    },
+    {
+      label: "Squads ativos",
+      value: String(organization.squads.length),
+      delta: `${squadsReuso} do repositório`,
+      trend: "up",
+      hint: `${squadsCriados} criado(s)`,
+    },
+    {
+      label: "Aprovações pendentes",
+      value: String(pendencias),
+      delta: "das áreas do organograma",
+      trend: "flat",
+    },
+  ];
+
+  // Widget de vigências só existe se o organograma tiver área de contratos.
+  const cobreContratos = organizationCovers(
+    { area: "Licitações e Contratos", texto: "contratos vigência aditivos prorrogação" },
+    organization.nodes,
+  );
+  const showVigencias = isGoverno && cobreContratos;
+
   // Execuções reais (disparadas pelo grafo ou pela árvore do organograma)
-  // entram no topo do feed, antes dos itens ilustrativos.
+  // entram no topo do feed; os itens ilustrativos só entram se a área deles
+  // existir no organograma.
   const realActivity = organization.executions.slice(0, 4).map((e) => ({
     id: e.id,
     agente: e.agentNome,
@@ -50,18 +100,20 @@ export default function DashboardPage() {
     }),
     status: e.status === "executando" ? ("aguardando" as const) : ("concluido" as const),
   }));
-  const mockActivity = isGoverno ? activityGoverno : activityEmpresa;
+  const mockActivity = (isGoverno ? activityGoverno : activityEmpresa).filter((item) =>
+    organizationCovers({ area: item.area, texto: `${item.agente} ${item.acao}` }, organization.nodes),
+  );
   const activity = [...realActivity, ...mockActivity].slice(0, 6);
 
   return (
     <div>
       <PageHeader
         eyebrow="Centro de Comando"
-        title={isGoverno ? "Licitações e Contratos" : "Visão geral"}
+        title={orgLabel}
         description={
           isGoverno
-            ? `${orgLabel} · agentes governados sob a Lei 14.133/2021, com trilha de auditoria append-only.`
-            : `${orgLabel} · agentes de IA governados operando nas áreas do seu organograma.`
+            ? "Agentes de IA governados operando nas áreas do seu organograma, com trilha de auditoria append-only."
+            : "Agentes de IA governados operando nas áreas do seu organograma."
         }
         actions={
           <Button className="bg-gradient-brand text-white hover:opacity-90 border-0">
@@ -88,12 +140,12 @@ export default function DashboardPage() {
             title={isGoverno ? "Execuções instruídas x aprovadas" : "Execuções x aprovações humanas"}
           />
         </div>
-        <div>{isGoverno ? <VigenciaWidget alertas={vigenciasGoverno} /> : <ActivityFeed items={activity} />}</div>
+        <div>{showVigencias ? <VigenciaWidget alertas={vigenciasGoverno} /> : <ActivityFeed items={activity} />}</div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          {isGoverno ? <ActivityFeed items={activity} /> : <AgentMiniList agents={agents} />}
+          {showVigencias ? <ActivityFeed items={activity} /> : <AgentMiniList agents={agents} />}
         </div>
         <div className="flex flex-col gap-6">
           {isGoverno ? (
@@ -111,7 +163,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {isGoverno && (
+      {showVigencias && (
         <div className="mt-6">
           <AgentMiniList agents={agents} />
         </div>
