@@ -2,6 +2,13 @@
 
 Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua própria pasta, com seu próprio `package.json`, README e histórico.
 
+> **Para onde tudo converge:** o [PRD — Genius Allspark](docs/PRD-genius-allspark.md)
+> descreve o produto unificado que funde os três projetos deste repositório
+> (SO-IA, Foresight, Civilizations) com Hermes Agent, OmniRift e os conceitos
+> do Nirvana-OS — regido por quatro leis: nada existe sem o organograma,
+> nenhuma missão sem ensaio, nenhum resultado sem recibo, e autonomia se
+> conquista, não se configura.
+
 ## Projetos
 
 - **[`geniusai-civilizations/`](geniusai-civilizations/)** — *Watchable AI*: simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por agentes autônomos acionados por um CLI de agente (Claude Code / Codex / opencode) ou Ollama, observável em tempo real via uma UI local. Veja o [README do projeto](geniusai-civilizations/README.md) e o [PRD](geniusai-civilizations/docs/PRD-watchable-ai-civilizations.md).
