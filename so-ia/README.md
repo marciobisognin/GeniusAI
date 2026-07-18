@@ -271,3 +271,11 @@ Ver o roadmap em 5 fases no PRD (§25). Depois desta camada de apresentação,
 faltam: multi-tenancy real, geração de agentes via LLM de verdade, RAG com
 citações vivas, motor de autonomia A0–A5 com guardrails, e os conectores
 MCP para os sistemas governamentais e de CRM.
+
+O passo seguinte do ecossistema está especificado no
+[PRD — Genius Allspark](../docs/PRD-genius-allspark.md): o SO-IA é a semente
+(a "Lei 1: nada existe sem o organograma" nasceu aqui, em
+`src/lib/org/relevance.ts`) de um produto unificado que soma ensaio simulado
+de missões (via `geniusai-foresight`), operação assistível com time-travel
+(via `geniusai-civilizations`) e execução real por runtimes agênticos como o
+Hermes — com autonomia conquistada por histórico, não configurada.
