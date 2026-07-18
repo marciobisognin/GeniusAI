@@ -9,10 +9,14 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 > nenhuma missão sem ensaio, nenhum resultado sem recibo, e autonomia se
 > conquista, não se configura.
 >
-> **Como construir:** o [PRD de Execução](docs/PRD-genius-allspark-execucao.md)
-> decompõe a visão em 5 fases, 33 épicos e 116 tarefas com dependências,
-> critérios de aceite e gates go/no-go — cobrindo sistemas, ferramentas,
-> design e ambiente gráfico.
+> **Como construir, agora:** o
+> [Guia de Construção](docs/PRD-genius-allspark-construcao.md) é o plano
+> literal — Motor do Canvas, Hub de Provedores LLM, Biblioteca de Agentes &
+> Squads, Super Construtor (Companies/Squads/Agents/Mind-Clones/Packs) e
+> Motor de Aprendizado com memória indexada — cada etapa com o código
+> existente a reaproveitar e um prompt pronto para uma IA construir agora.
+> O [PRD de Execução](docs/PRD-genius-allspark-execucao.md) mantém a visão em
+> fases mais amplas como contexto complementar.
 
 ## Projetos
 
