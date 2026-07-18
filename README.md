@@ -8,6 +8,11 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 > do Nirvana-OS — regido por quatro leis: nada existe sem o organograma,
 > nenhuma missão sem ensaio, nenhum resultado sem recibo, e autonomia se
 > conquista, não se configura.
+>
+> **Como construir:** o [PRD de Execução](docs/PRD-genius-allspark-execucao.md)
+> decompõe a visão em 5 fases, 33 épicos e 116 tarefas com dependências,
+> critérios de aceite e gates go/no-go — cobrindo sistemas, ferramentas,
+> design e ambiente gráfico.
 
 ## Projetos
 
