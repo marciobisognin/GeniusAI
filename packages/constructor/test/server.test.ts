@@ -78,7 +78,7 @@ describe("servidor do Super Construtor (Fastify)", () => {
     expect(missing.statusCode).toBe(404);
   });
 
-  it("todas as dez entidades do canon têm rota registrada", async () => {
+  it("todas as doze entidades do canon têm rota registrada", async () => {
     const paths = [
       "agents",
       "squads",
@@ -90,10 +90,63 @@ describe("servidor do Super Construtor (Fastify)", () => {
       "approvals",
       "learning-flows",
       "memory-chunks",
+      "canvas-nodes",
+      "canvas-edges",
     ];
     for (const path of paths) {
       const res = await server.app.inject({ method: "GET", url: `/${path}` });
       expect(res.statusCode, `rota /${path} deveria responder 200`).toBe(200);
     }
+  });
+
+  it("persiste a posição de um CanvasNode e permite reler após update", async () => {
+    const created = await server.app.inject({
+      method: "POST",
+      url: "/canvas-nodes",
+      payload: { id: "cn1", kind: "note", title: "Nota", position: { x: 100, y: 200 } },
+    });
+    expect(created.statusCode).toBe(201);
+
+    const moved = await server.app.inject({
+      method: "PATCH",
+      url: "/canvas-nodes/cn1",
+      payload: { position: { x: 300, y: 400 } },
+    });
+    expect(moved.statusCode).toBe(200);
+    expect(moved.json().position).toEqual({ x: 300, y: 400 });
+
+    const fetched = await server.app.inject({ method: "GET", url: "/canvas-nodes/cn1" });
+    expect(fetched.json().position).toEqual({ x: 300, y: 400 });
+  });
+
+  it("conecta dois CanvasNodes por um CanvasEdge", async () => {
+    await server.app.inject({
+      method: "POST",
+      url: "/canvas-nodes",
+      payload: { id: "cn1", kind: "agent", position: { x: 0, y: 0 } },
+    });
+    await server.app.inject({
+      method: "POST",
+      url: "/canvas-nodes",
+      payload: { id: "cn2", kind: "squad", position: { x: 200, y: 0 } },
+    });
+    const edge = await server.app.inject({
+      method: "POST",
+      url: "/canvas-edges",
+      payload: { id: "ce1", source: "cn1", target: "cn2" },
+    });
+    expect(edge.statusCode).toBe(201);
+
+    const list = await server.app.inject({ method: "GET", url: "/canvas-edges" });
+    expect(list.json()).toHaveLength(1);
+  });
+
+  it("responde CORS para origem cruzada (app do canvas em outra porta)", async () => {
+    const res = await server.app.inject({
+      method: "GET",
+      url: "/health",
+      headers: { origin: "http://localhost:5173" },
+    });
+    expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
   });
 });

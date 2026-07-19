@@ -206,3 +206,42 @@ export const MemoryChunk = z.object({
   createdAt: z.string().datetime().default(() => new Date().toISOString()),
 });
 export type MemoryChunk = z.infer<typeof MemoryChunk>;
+
+/**
+ * Camada do Motor do Canvas (Etapa 1) — onde cada nó vive no espaço e o que
+ * ele referencia. Um `CanvasNode` de tipo "agent"/"squad" aponta (`refId`)
+ * para um `Agent`/`Squad` real; "note" e "execution" são autocontidos.
+ */
+export const CanvasNodeKind = z.enum(["agent", "squad", "note", "execution"]);
+export type CanvasNodeKind = z.infer<typeof CanvasNodeKind>;
+
+export const CanvasPosition = z.object({
+  x: z.number(),
+  y: z.number(),
+});
+export type CanvasPosition = z.infer<typeof CanvasPosition>;
+
+export const ExecutionNodeStatus = z.enum(["aguardando", "executando", "concluido", "erro"]);
+export type ExecutionNodeStatus = z.infer<typeof ExecutionNodeStatus>;
+
+export const CanvasNode = z.object({
+  id: z.string().min(1),
+  kind: CanvasNodeKind,
+  refId: z.string().optional(),
+  title: z.string().default(""),
+  content: z.string().default(""),
+  status: ExecutionNodeStatus.optional(),
+  log: z.array(z.string()).default([]),
+  position: CanvasPosition,
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+  updatedAt: z.string().datetime().optional(),
+});
+export type CanvasNode = z.infer<typeof CanvasNode>;
+
+export const CanvasEdge = z.object({
+  id: z.string().min(1),
+  source: z.string().min(1),
+  target: z.string().min(1),
+  createdAt: z.string().datetime().default(() => new Date().toISOString()),
+});
+export type CanvasEdge = z.infer<typeof CanvasEdge>;

@@ -25,18 +25,22 @@ seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
 
 | Pacote | Etapa | O que é |
 |---|---|---|
-| [`packages/canon`](packages/canon/) | 0 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval) + catálogo de eventos |
-| [`packages/constructor`](packages/constructor/) | 0/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as dez entidades do canon |
-| [`apps/canvas`](apps/canvas/) | 0/1 | O app do canvas infinito — hoje um placeholder que já fala com o Super Construtor; o motor de canvas de verdade (React Flow, nós, minimapa) é da Etapa 1 |
+| [`packages/canon`](packages/canon/) | 0/1 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
+| [`packages/constructor`](packages/constructor/) | 0/1/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as doze entidades do canon (inclui a posição/conteúdo de cada nó do canvas) |
+| [`apps/canvas`](apps/canvas/) | 1 | O Motor do Canvas Infinito: React Flow com os quatro tipos de nó (Agente, Squad, Nota, Execução), minimapa, grid de 8pt, auto-layout (Dagre), paleta de comandos (⌘K) e persistência real via `@genius/constructor` — nada vive só no cliente |
 
 Rodar localmente:
 
 ```bash
 npm install
-npm run build && npm run test   # todos os workspaces
+npm run build && npm run test             # todos os workspaces
 node packages/constructor/dist/start.js   # Super Construtor em :4001
 npm run dev -w apps/canvas                # Canvas em :5173
 ```
+
+Abra `http://localhost:5173` com o Super Construtor rodando: o badge no
+canto superior esquerdo mostra "conectado"; `⌘K`/`Ctrl+K` abre a paleta de
+comandos para criar um nó ou buscar um existente pelo nome.
 
 ## Projetos
 
