@@ -1,4 +1,7 @@
 import http from "node:http";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildServer, type ConstructorServer } from "../src/server.js";
@@ -233,5 +236,147 @@ describe("servidor do Super Construtor (Fastify)", () => {
 
     const listedAgain = await server.app.inject({ method: "GET", url: "/agents" });
     expect(listedAgain.json()).toHaveLength(firstBody.totalAgentes); // sem duplicatas
+  });
+});
+
+describe("Etapa 4 — Super Construtor (reaproveitar/criar, Packs, pasta packs/)", () => {
+  let server: ConstructorServer;
+  let packsDir: string;
+
+  beforeEach(async () => {
+    packsDir = await mkdtemp(path.join(tmpdir(), "genius-packs-test-"));
+    server = buildServer({ dbPath: ":memory:", packsDir });
+  });
+
+  afterEach(async () => {
+    await server.app.close();
+    await rm(packsDir, { recursive: true, force: true });
+  });
+
+  it("POST /agents/match sugere reaproveitar quando há sobreposição suficiente", async () => {
+    await server.app.inject({
+      method: "POST",
+      url: "/agents",
+      payload: {
+        id: "agente-atesto-nf",
+        nome: "Agente de Atesto de Nota Fiscal",
+        area: "Orçamento e Finanças",
+        descricao: "Confere NF contra empenho.",
+        skills: ["ler-nota-fiscal", "conferir-nf-contra-empenho"],
+      },
+    });
+
+    const res = await server.app.inject({
+      method: "POST",
+      url: "/agents/match",
+      payload: { titulo: "Fiscal de Nota Fiscal", area: "Finanças", responsabilidades: ["conferir nota fiscal"] },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().candidate?.id).toBe("agente-atesto-nf");
+    expect(res.json().draft).toBeDefined(); // sempre traz o draft, mesmo quando reaproveita
+  });
+
+  it("POST /agents/match não sugere nada e devolve um draft coerente quando não há candidato", async () => {
+    const res = await server.app.inject({
+      method: "POST",
+      url: "/agents/match",
+      payload: { titulo: "Especialista em Apicultura", responsabilidades: ["cuidar de colmeias"] },
+    });
+    expect(res.json().candidate).toBeNull();
+    expect(res.json().draft.nome).toBe("Agente de Especialista em Apicultura");
+    expect(res.json().draft.origem).toBe("gerado");
+  });
+
+  it("POST /squads/match segue o mesmo padrão para squads", async () => {
+    await server.app.inject({
+      method: "POST",
+      url: "/squads",
+      payload: { id: "tpl-financas", nome: "Squad de Orçamento e Finanças", area: "Orçamento e Finanças", descricao: "Atesto e conciliação." },
+    });
+    const res = await server.app.inject({
+      method: "POST",
+      url: "/squads/match",
+      payload: { titulo: "Financeiro", area: "Orçamento e Finanças" },
+    });
+    expect(res.json().candidate?.id).toBe("tpl-financas");
+  });
+
+  it("export-pack → import-pack por HTTP: critério de aceite da Etapa 4 de ponta a ponta", async () => {
+    await server.app.inject({ method: "POST", url: "/agents", payload: { id: "a1", nome: "Agente Um" } });
+    await server.app.inject({ method: "POST", url: "/squads", payload: { id: "s1", nome: "Squad Um", agentIds: ["a1"] } });
+    await server.app.inject({ method: "POST", url: "/companies", payload: { id: "origem", nome: "Empresa Origem", squadIds: ["s1"] } });
+    await server.app.inject({ method: "POST", url: "/companies", payload: { id: "destino", nome: "Empresa Destino", squadIds: [] } });
+
+    const exported = await server.app.inject({ method: "POST", url: "/companies/origem/export-pack" });
+    expect(exported.statusCode).toBe(200);
+    const pack = exported.json();
+    expect(pack.agents).toHaveLength(1);
+
+    const imported = await server.app.inject({
+      method: "POST",
+      url: "/companies/destino/import-pack",
+      payload: pack,
+    });
+    expect(imported.statusCode).toBe(200);
+    expect(imported.json().company.squadIds).toEqual(["s1"]);
+
+    const destinoCompany = await server.app.inject({ method: "GET", url: "/companies/destino" });
+    expect(destinoCompany.json().squadIds).toEqual(["s1"]);
+  });
+
+  it("export-pack de Company inexistente responde 404", async () => {
+    const res = await server.app.inject({ method: "POST", url: "/companies/fantasma/export-pack" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("import-pack com corpo inválido (não é um Pack) responde 400", async () => {
+    await server.app.inject({ method: "POST", url: "/companies", payload: { id: "c1", nome: "Empresa" } });
+    const res = await server.app.inject({ method: "POST", url: "/companies/c1/import-pack", payload: { nada: "a ver" } });
+    expect(res.statusCode).toBe(400);
+  });
+
+  it("GET /packs/available lê a pasta packs/ de verdade (arquivo real em disco, não mock)", async () => {
+    await writeFile(
+      path.join(packsDir, "pack-teste.json"),
+      JSON.stringify({ id: "pack-teste", nome: "Pack de Teste", versao: "1.0.0", agents: [], squads: [] }),
+    );
+    await writeFile(path.join(packsDir, "invalido.json"), "{ isto não é json válido");
+    await writeFile(path.join(packsDir, "README.md"), "# ignorado, não é .json");
+
+    const res = await server.app.inject({ method: "GET", url: "/packs/available" });
+    expect(res.statusCode).toBe(200);
+    const files = res.json();
+    expect(files).toHaveLength(2); // README.md não entra
+
+    const valido = files.find((f: { filename: string }) => f.filename === "pack-teste.json");
+    expect(valido).toMatchObject({ valid: true, nome: "Pack de Teste" });
+
+    const invalido = files.find((f: { filename: string }) => f.filename === "invalido.json");
+    expect(invalido.valid).toBe(false);
+  });
+
+  it("POST /packs/import lê um arquivo real da pasta packs/ e importa na Company", async () => {
+    await writeFile(
+      path.join(packsDir, "pack-real.json"),
+      JSON.stringify({
+        id: "pack-real",
+        nome: "Pack Real",
+        versao: "1.0.0",
+        agents: [{ id: "a1", nome: "Agente do Pack" }],
+        squads: [{ id: "s1", nome: "Squad do Pack", agentIds: ["a1"] }],
+      }),
+    );
+    await server.app.inject({ method: "POST", url: "/companies", payload: { id: "c1", nome: "Empresa", squadIds: [] } });
+
+    const res = await server.app.inject({
+      method: "POST",
+      url: "/packs/import",
+      payload: { filename: "pack-real.json", companyId: "c1" },
+    });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().squadsNovos).toEqual(["s1"]);
+
+    const agentsListed = await server.app.inject({ method: "GET", url: "/agents" });
+    expect(agentsListed.json().map((a: { id: string }) => a.id)).toContain("a1");
   });
 });

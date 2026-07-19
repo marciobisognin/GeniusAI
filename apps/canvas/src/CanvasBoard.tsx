@@ -51,7 +51,7 @@ function toFlowNode(
   };
 }
 
-function CanvasBoardInner() {
+function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<CanvasFlowNode>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [status, setStatus] = useState<"carregando" | "conectado" | "offline">("carregando");
@@ -275,6 +275,9 @@ function CanvasBoardInner() {
         <button type="button" onClick={() => setLibraryOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Biblioteca
         </button>
+        <button type="button" onClick={onOpenConstructor} style={{ padding: "4px 8px", cursor: "pointer" }}>
+          Super Construtor
+        </button>
       </div>
 
       <ProvidersContext.Provider value={providers}>
@@ -313,10 +316,14 @@ function CanvasBoardInner() {
   );
 }
 
-export function CanvasBoard() {
+export interface CanvasBoardProps {
+  onOpenConstructor: () => void;
+}
+
+export function CanvasBoard({ onOpenConstructor }: CanvasBoardProps) {
   return (
     <ReactFlowProvider>
-      <CanvasBoardInner />
+      <CanvasBoardInner onOpenConstructor={onOpenConstructor} />
     </ReactFlowProvider>
   );
 }
