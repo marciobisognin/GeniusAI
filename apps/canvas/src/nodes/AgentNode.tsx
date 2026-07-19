@@ -1,4 +1,5 @@
 import type { NodeProps } from "@xyflow/react";
+import { ExecuteTrigger } from "./ExecuteTrigger.js";
 import { NodeShell } from "./NodeShell.js";
 import { ProviderSelect } from "./ProviderSelect.js";
 import type { CanvasFlowNode } from "./types.js";
@@ -6,7 +7,7 @@ import type { CanvasFlowNode } from "./types.js";
 const AGENT_BLUE = "#2563eb";
 
 export function AgentNode({ data }: NodeProps<CanvasFlowNode>) {
-  const { canvasNode, onUpdate, onDelete } = data;
+  const { canvasNode, onUpdate, onDelete, onExecute } = data;
   return (
     <NodeShell accentColor={AGENT_BLUE} kindLabel="Agente" title={canvasNode.title} onDelete={onDelete}>
       <input
@@ -17,6 +18,7 @@ export function AgentNode({ data }: NodeProps<CanvasFlowNode>) {
       />
       <ProviderSelect value={canvasNode.providerId} onChange={(providerId) => onUpdate({ providerId })} />
       {canvasNode.refId && <div style={{ color: "#6b7280", fontSize: 11 }}>refId: {canvasNode.refId}</div>}
+      <ExecuteTrigger onExecute={onExecute} />
     </NodeShell>
   );
 }

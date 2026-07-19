@@ -28,8 +28,9 @@ seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
 | [`packages/canon`](packages/canon/) | 0/1/2/3 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
 | [`packages/providers`](packages/providers/) | 2 | Hub de Provedores LLM: `LLMProviderAdapter` + adapters reais para Anthropic, OpenAI (ChatGPT), Codex (CLI), Ollama e endpoints OpenAI-compatíveis (OpenRouter/vLLM/LM Studio) — generaliza o `AgentRunner` que já existia em `geniusai-civilizations` |
 | [`packages/agent-library`](packages/agent-library/) | 3 | Biblioteca de Agentes & Squads: importadores puros (sem executar código de outro projeto) que leem, via AST do TypeScript, os catálogos reais de `so-ia` (12 agentes + 7 squads), `geniusai-foresight` (8 agentes YAML) e `geniusai-civilizations` (4 perfis de civilização) |
-| [`packages/constructor`](packages/constructor/) | 0/1/2/3/4 | Super Construtor v0: banco SQLite real, CRUD para as doze entidades do canon, `POST /providers/:id/health-check`, `POST /library/import`, "reaproveitar ou criar" (`/agents/match`, `/squads/match` — porte fiel do algoritmo de `so-ia/src/lib/org/matching.ts`) e Packs (exportar/importar Company, mais a pasta `packs/` observada) |
-| [`apps/canvas`](apps/canvas/) | 1/2/3/4 | O Motor do Canvas Infinito, os painéis "Provedores" e "Biblioteca", e a tela **Super Construtor**: montar Company → Squad → Agent com formulários guiados que sugerem reaproveitar antes de criar, mais o wizard de criação de Mind-Clone (6 camadas + documentos de referência) |
+| [`packages/execution`](packages/execution/) | 5 | Motor de Execução: monta a persona do Agent num prompt de sistema, chama o `LLMProviderAdapter` configurado, decompõe a tarefa entre os membros de um Squad com o líder consolidando, e usa a autonomia (A0–A5) do Agent/líder como gatilho honesto de aprovação humana (A0–A2 sempre pausam) |
+| [`packages/constructor`](packages/constructor/) | 0/1/2/3/4/5 | Super Construtor v0: banco SQLite real, CRUD para as doze entidades do canon, `POST /providers/:id/health-check`, `POST /library/import`, "reaproveitar ou criar" (`/agents/match`, `/squads/match` — porte fiel do algoritmo de `so-ia/src/lib/org/matching.ts`), Packs (exportar/importar Company, mais a pasta `packs/` observada) e o Motor de Execução (`POST /execution/run`, SSE em `GET /execution/runs/:id/events`, `POST /approvals/:id/resolve`) |
+| [`apps/canvas`](apps/canvas/) | 1/2/3/4/5 | O Motor do Canvas Infinito, os painéis "Provedores" e "Biblioteca", a tela **Super Construtor** (montar Company → Squad → Agent com formulários guiados que sugerem reaproveitar antes de criar, mais o wizard de Mind-Clone) e o botão **▶ Executar** em qualquer AgentNode/SquadNode, com o `ExecutionNode` mostrando os passos reais ao vivo (SSE) até concluir ou pedir aprovação humana |
 
 Rodar localmente:
 
@@ -43,6 +44,47 @@ npm run dev -w apps/canvas                # Canvas em :5173
 Abra `http://localhost:5173` com o Super Construtor rodando: o badge no
 canto superior esquerdo mostra "conectado"; `⌘K`/`Ctrl+K` abre a paleta de
 comandos para criar um nó ou buscar um existente pelo nome.
+
+### Como executar uma tarefa de verdade (Etapa 5)
+
+1. Abra **Provedores** e cadastre pelo menos um (ex.: `tipo: ollama`,
+   `baseUrl: http://localhost:11434`) — "Testar conexão" chama o adapter de
+   verdade no servidor, nunca no navegador.
+2. Abra **Biblioteca**, clique em "Importar da Biblioteca" e arraste um
+   agente ou squad real para o canvas.
+3. No nó criado, escolha o provedor no seletor.
+4. Digite uma tarefa em linguagem natural no campo abaixo do nó e clique em
+   **▶**.
+5. Um `ExecutionNode` novo aparece, ligado ao nó de origem por uma seta, e
+   mostra os passos reais ao vivo (via SSE) enquanto o motor:
+   - monta a persona do Agent (ou decompõe a tarefa entre os membros do
+     Squad, com o líder consolidando) e chama o provedor configurado;
+   - conclui direto se a autonomia (do Agent, ou do líder do Squad) for
+     **A3+**;
+   - pausa em **"Aguardando aprovação"** se for **A0–A2** — os botões
+     "Aprovar"/"Rejeitar" aparecem no próprio nó, e a decisão humana
+     chega ao vivo pelo mesmo SSE.
+
+```mermaid
+sequenceDiagram
+    participant U as Você (canvas)
+    participant C as Super Construtor
+    participant M as @genius/execution
+    participant P as Provedor LLM
+
+    U->>C: POST /execution/run (canvasNodeId, tarefa)
+    C-->>U: 202 { runId, taskId }
+    U->>C: GET /execution/runs/:runId/events (SSE)
+    C->>M: runAgentTurn / runSquadTurn
+    M->>P: complete(persona + tarefa)
+    P-->>M: resposta
+    M-->>C: task.step / task.tool_call / task.completed ou task.awaiting_approval
+    C-->>U: eventos ao vivo no ExecutionNode
+    opt autonomia A0–A2
+        U->>C: POST /approvals/:id/resolve
+        C-->>U: task.completed (ao vivo)
+    end
+```
 
 ## Projetos
 

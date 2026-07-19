@@ -152,6 +152,8 @@ export const RunStep = z.object({
   ts: z.string().datetime(),
   type: z.string(),
   message: z.string(),
+  /** Presente só em `task.awaiting_approval` — precisa sobreviver ao replay do SSE para quem conecta depois do evento ao vivo. */
+  approvalId: z.string().optional(),
 });
 export type RunStep = z.infer<typeof RunStep>;
 
@@ -224,7 +226,13 @@ export const CanvasPosition = z.object({
 });
 export type CanvasPosition = z.infer<typeof CanvasPosition>;
 
-export const ExecutionNodeStatus = z.enum(["aguardando", "executando", "concluido", "erro"]);
+export const ExecutionNodeStatus = z.enum([
+  "aguardando",
+  "executando",
+  "aguardando_aprovacao",
+  "concluido",
+  "erro",
+]);
 export type ExecutionNodeStatus = z.infer<typeof ExecutionNodeStatus>;
 
 export const CanvasNode = z.object({

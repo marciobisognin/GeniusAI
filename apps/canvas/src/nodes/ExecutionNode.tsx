@@ -1,11 +1,13 @@
 import type { NodeProps } from "@xyflow/react";
 import type { ExecutionNodeStatus } from "@genius/canon";
+import { executionApi } from "../api/executionApi.js";
 import { NodeShell } from "./NodeShell.js";
 import type { CanvasFlowNode } from "./types.js";
 
 const STATUS_COLOR: Record<ExecutionNodeStatus, string> = {
   aguardando: "#6b7280",
   executando: "#2563eb",
+  aguardando_aprovacao: "#d97706",
   concluido: "#16a34a",
   erro: "#dc2626",
 };
@@ -13,6 +15,7 @@ const STATUS_COLOR: Record<ExecutionNodeStatus, string> = {
 const STATUS_LABEL: Record<ExecutionNodeStatus, string> = {
   aguardando: "Aguardando",
   executando: "Executando",
+  aguardando_aprovacao: "Aguardando aprovação",
   concluido: "Concluído",
   erro: "Erro",
 };
@@ -20,23 +23,33 @@ const STATUS_LABEL: Record<ExecutionNodeStatus, string> = {
 const NEXT_STATUS: Record<ExecutionNodeStatus, ExecutionNodeStatus> = {
   aguardando: "executando",
   executando: "concluido",
+  aguardando_aprovacao: "concluido",
   concluido: "aguardando",
   erro: "aguardando",
 };
 
 /**
- * O motor de execução real chega na Etapa 5 — por ora este nó só prova a
- * estrutura (status + log persistidos) com um botão manual, sem fingir que
- * já existe orquestração de verdade.
+ * Nó de execução: quando `refId` está presente é o `Run.id` real (Etapa 5) —
+ * o CanvasBoard já mantém `status`/`log` sincronizados ao vivo via SSE, e
+ * aqui só falta o gatilho humano de aprovação. Sem `refId` é um nó solto
+ * (criado pela paleta de comandos), sem execução real por trás — mantém o
+ * botão manual de simulação para prototipagem livre no canvas.
  */
 export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete } = data;
   const status = canvasNode.status ?? "aguardando";
+  const isRealRun = Boolean(canvasNode.refId);
+  const approvalId = canvasNode.content || undefined;
 
   function avancar() {
     const next = NEXT_STATUS[status];
     const line = `[${new Date().toLocaleTimeString()}] ${STATUS_LABEL[status]} → ${STATUS_LABEL[next]}`;
     onUpdate({ status: next, log: [...canvasNode.log, line] });
+  }
+
+  async function decidir(decisao: "aprovado" | "rejeitado") {
+    if (!approvalId) return;
+    await executionApi.resolveApproval(approvalId, decisao);
   }
 
   return (
@@ -71,20 +84,41 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
           canvasNode.log.map((line, i) => <div key={i}>{line}</div>)
         )}
       </div>
-      <button
-        type="button"
-        onClick={avancar}
-        style={{
-          width: "100%",
-          border: "1px solid #e5e7eb",
-          borderRadius: 4,
-          padding: 4,
-          background: "#fff",
-          cursor: "pointer",
-        }}
-      >
-        Simular próximo passo
-      </button>
+      {isRealRun ? (
+        status === "aguardando_aprovacao" && approvalId ? (
+          <div style={{ display: "flex", gap: 4 }}>
+            <button
+              type="button"
+              onClick={() => decidir("aprovado")}
+              style={{ flex: 1, border: "1px solid #16a34a", borderRadius: 4, padding: 4, background: "#16a34a", color: "#fff", cursor: "pointer" }}
+            >
+              Aprovar
+            </button>
+            <button
+              type="button"
+              onClick={() => decidir("rejeitado")}
+              style={{ flex: 1, border: "1px solid #dc2626", borderRadius: 4, padding: 4, background: "#fff", color: "#dc2626", cursor: "pointer" }}
+            >
+              Rejeitar
+            </button>
+          </div>
+        ) : null
+      ) : (
+        <button
+          type="button"
+          onClick={avancar}
+          style={{
+            width: "100%",
+            border: "1px solid #e5e7eb",
+            borderRadius: 4,
+            padding: 4,
+            background: "#fff",
+            cursor: "pointer",
+          }}
+        >
+          Simular próximo passo
+        </button>
+      )}
     </NodeShell>
   );
 }
