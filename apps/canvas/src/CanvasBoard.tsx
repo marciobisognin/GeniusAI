@@ -18,6 +18,7 @@ import "@xyflow/react/dist/style.css";
 import type { CanvasNode, CanvasNodeKind, ProviderConfig } from "@genius/canon";
 import { canvasApi } from "./api/canvasApi.js";
 import { apiClient } from "./api/client.js";
+import { executionApi, type ExecutionStreamEvent } from "./api/executionApi.js";
 import { providersApi } from "./api/providersApi.js";
 import { applyDagreLayout } from "./layout/dagreLayout.js";
 import { nodeTypes, type CanvasFlowNode } from "./nodes/index.js";
@@ -38,6 +39,7 @@ function toFlowNode(
   canvasNode: CanvasNode,
   onUpdate: (id: string, patch: Partial<CanvasNode>) => void,
   onDelete: (id: string) => void,
+  onExecute?: (id: string, taskDescription: string) => void,
 ): CanvasFlowNode {
   return {
     id: canvasNode.id,
@@ -47,6 +49,10 @@ function toFlowNode(
       canvasNode,
       onUpdate: (patch: Partial<CanvasNode>) => onUpdate(canvasNode.id, patch),
       onDelete: () => onDelete(canvasNode.id),
+      onExecute:
+        onExecute && (canvasNode.kind === "agent" || canvasNode.kind === "squad")
+          ? (taskDescription: string) => onExecute(canvasNode.id, taskDescription)
+          : undefined,
     },
   };
 }
@@ -99,6 +105,88 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
     [setNodes, setEdges],
   );
 
+  /** runId -> função de fechar o EventSource; usado para não vazar conexões quando um run termina ou o board desmonta. */
+  const activeStreams = useRef(new Map<string, () => void>());
+  useEffect(() => {
+    const streams = activeStreams.current;
+    return () => {
+      for (const close of streams.values()) close();
+      streams.clear();
+    };
+  }, []);
+
+  /** Aplica um evento SSE do Motor de Execução ao ExecutionNode correspondente — log e status ao vivo, com persistência. */
+  const applyExecutionEvent = useCallback(
+    (executionNodeId: string, event: ExecutionStreamEvent) => {
+      setNodes((current) =>
+        current.map((n) => {
+          if (n.id !== executionNodeId) return n;
+          const cn = n.data.canvasNode;
+          const line = `[${new Date(event.ts).toLocaleTimeString()}] ${event.message}`;
+          const patch: Partial<CanvasNode> = { log: [...cn.log, line] };
+          if (event.type === "task.completed") patch.status = "concluido";
+          else if (event.type === "task.failed") patch.status = "erro";
+          else if (event.type === "task.awaiting_approval") {
+            patch.status = "aguardando_aprovacao";
+            patch.content = event.approvalId ?? cn.content;
+          } else patch.status = "executando";
+          void canvasApi.updateNode(executionNodeId, patch).catch(() => setStatus("offline"));
+          return { ...n, data: { ...n.data, canvasNode: { ...cn, ...patch } } };
+        }),
+      );
+      if (event.type === "task.completed" || event.type === "task.failed") {
+        activeStreams.current.get(event.runId)?.();
+        activeStreams.current.delete(event.runId);
+      }
+    },
+    [setNodes],
+  );
+
+  /** "▶ Executar" de um AgentNode/SquadNode: dispara o run, cria o ExecutionNode ligado e assina o SSE. */
+  const handleExecute = useCallback(
+    (sourceNodeId: string, taskDescription: string) => {
+      void (async () => {
+        let runId: string;
+        try {
+          ({ runId } = await executionApi.run(sourceNodeId, taskDescription));
+        } catch (err) {
+          window.alert(`Não foi possível iniciar a execução: ${(err as Error).message}`);
+          return;
+        }
+
+        const sourceFlowNode = getNode(sourceNodeId);
+        const basePosition = sourceFlowNode?.position ?? { x: 80, y: 80 };
+        const executionNodeId = crypto.randomUUID();
+        const executionCanvasNode: CanvasNode = {
+          id: executionNodeId,
+          kind: "execution",
+          refId: runId,
+          title: taskDescription,
+          content: "",
+          status: "executando",
+          log: [],
+          position: { x: basePosition.x + 320, y: basePosition.y },
+          createdAt: new Date().toISOString(),
+        };
+        setNodes((current) => [
+          ...current,
+          toFlowNode(executionCanvasNode, handleUpdateNode, handleDeleteNode, handleExecute),
+        ]);
+        void canvasApi.createNode(executionCanvasNode).catch(() => setStatus("offline"));
+
+        const edgeId = crypto.randomUUID();
+        setEdges((current) => [...current, { id: edgeId, source: sourceNodeId, target: executionNodeId }]);
+        void canvasApi
+          .createEdge({ id: edgeId, source: sourceNodeId, target: executionNodeId, createdAt: new Date().toISOString() })
+          .catch(() => setStatus("offline"));
+
+        const close = executionApi.streamEvents(runId, (event) => applyExecutionEvent(executionNodeId, event));
+        activeStreams.current.set(runId, close);
+      })();
+    },
+    [getNode, setNodes, setEdges, handleUpdateNode, handleDeleteNode, applyExecutionEvent],
+  );
+
   useEffect(() => {
     let cancelled = false;
     async function load() {
@@ -106,9 +194,17 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         await apiClient.health();
         const [canvasNodes, canvasEdges] = await Promise.all([canvasApi.listNodes(), canvasApi.listEdges()]);
         if (cancelled) return;
-        setNodes(canvasNodes.map((n) => toFlowNode(n, handleUpdateNode, handleDeleteNode)));
+        setNodes(canvasNodes.map((n) => toFlowNode(n, handleUpdateNode, handleDeleteNode, handleExecute)));
         setEdges(canvasEdges.map((e) => ({ id: e.id, source: e.source, target: e.target })));
         setStatus("conectado");
+
+        // Runs reais ainda em andamento (execução ou aguardando aprovação) voltam a receber eventos ao vivo após um reload.
+        for (const node of canvasNodes) {
+          if (node.kind === "execution" && node.refId && (node.status === "executando" || node.status === "aguardando_aprovacao")) {
+            const close = executionApi.streamEvents(node.refId, (event) => applyExecutionEvent(node.id, event));
+            activeStreams.current.set(node.refId, close);
+          }
+        }
       } catch {
         if (!cancelled) setStatus("offline");
       }
@@ -162,10 +258,10 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         createdAt: new Date().toISOString(),
         ...(kind === "execution" ? { status: "aguardando" as const } : {}),
       };
-      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode)]);
+      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute)]);
       void canvasApi.createNode(canvasNode).catch(() => setStatus("offline"));
     },
-    [setNodes, handleUpdateNode, handleDeleteNode],
+    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute],
   );
 
   /** Instancia um nó real ligado a um Agent/Squad do banco (refId) — não uma cópia solta. */
@@ -182,10 +278,10 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         position,
         createdAt: new Date().toISOString(),
       };
-      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode)]);
+      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute)]);
       void canvasApi.createNode(canvasNode).catch(() => setStatus("offline"));
     },
-    [setNodes, handleUpdateNode, handleDeleteNode],
+    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute],
   );
 
   const onDragOver = useCallback((e: React.DragEvent) => {

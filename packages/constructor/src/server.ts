@@ -18,6 +18,7 @@ import {
 } from "@genius/canon";
 import { createAdapter } from "@genius/providers";
 import { createRepository, migrate, openDatabase, type Repository } from "./db.js";
+import { registerExecutionRoutes } from "./execution.js";
 import { DEFAULT_REPO_ROOT, registerLibraryImport } from "./libraryImport.js";
 import { CompanyNotFoundError, exportCompanyAsPack, importPackIntoCompany, type PackRepos } from "./pack.js";
 import { listAvailablePackFiles, readPackFile } from "./packsDir.js";
@@ -214,6 +215,15 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
     { agents: repos.agents, squads: repos.squads, companies: repos.companies },
     options.packsDir ?? path.join(options.repoRoot ?? DEFAULT_REPO_ROOT, "packs"),
   );
+  registerExecutionRoutes(app, {
+    canvasNodes: repos.canvasNodes,
+    agents: repos.agents,
+    squads: repos.squads,
+    providers: repos.providers,
+    tasks: repos.tasks,
+    runs: repos.runs,
+    approvals: repos.approvals,
+  });
 
   return { app, repos };
 }
