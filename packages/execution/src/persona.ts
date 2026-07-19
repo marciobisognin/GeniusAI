@@ -1,13 +1,21 @@
 import type { Agent } from "@genius/canon";
 
-/** Monta o prompt de sistema a partir da persona do Agent — a "DNA" mínima hoje disponível no canon. */
-export function buildPersonaPrompt(agent: Agent): string {
+/**
+ * Monta o prompt de sistema a partir da persona do Agent — a "DNA" mínima
+ * hoje disponível no canon. `memoryContext` (Etapa 6) é o texto já
+ * recuperado da memória indexada pelo chamador — este pacote não sabe o
+ * que é `@genius/learning`, só recebe uma string opcional.
+ */
+export function buildPersonaPrompt(agent: Agent, memoryContext?: string): string {
   let prompt = `Você é ${agent.nome}`;
   if (agent.area) prompt += `, atuando na área de ${agent.area}`;
   prompt += `.`;
   if (agent.descricao) prompt += ` ${agent.descricao}`;
   if (agent.skills.length > 0) prompt += ` Suas habilidades incluem: ${agent.skills.join(", ")}.`;
   prompt += ` Responda de forma direta e profissional, adequada ao seu papel.`;
+  if (memoryContext) {
+    prompt += `\n\nContexto de execuções aprovadas anteriores relevantes para esta tarefa:\n${memoryContext}`;
+  }
   return prompt;
 }
 

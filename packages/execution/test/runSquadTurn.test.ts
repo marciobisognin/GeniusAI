@@ -95,4 +95,21 @@ describe("runSquadTurn", () => {
     });
     expect(result.requiresApproval).toBe(false);
   });
+
+  it("injeta memoryContext no prompt de sistema de membros e líder (Etapa 6)", async () => {
+    const membro1 = agent("a1", "Líder Um");
+    const membro2 = agent("a2", "Membro Dois");
+    const adapter = new FakeAdapter("ok");
+    await runSquadTurn({
+      squad: SQUAD,
+      members: [membro1, membro2],
+      leader: membro1,
+      adapterFor: () => adapter,
+      taskDescription: "Preparar relatório",
+      runId: "run1",
+      onEvent: () => {},
+      memoryContext: "- Execução anterior aprovada: campanha similar rodou bem com foco em retenção.",
+    });
+    expect(adapter.calls.every((c) => c.system?.includes("campanha similar rodou bem"))).toBe(true);
+  });
 });

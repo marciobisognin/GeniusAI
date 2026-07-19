@@ -26,6 +26,7 @@ import { CommandPalette } from "./palette/CommandPalette.js";
 import { ProvidersContext } from "./providers/ProvidersContext.js";
 import { ProvidersPanel } from "./providers/ProvidersPanel.js";
 import { LIBRARY_DRAG_MIME, LibraryPanel, type LibraryDragPayload } from "./library/LibraryPanel.js";
+import { MemoryPanel } from "./memory/MemoryPanel.js";
 
 function debounce<Args extends unknown[]>(fn: (...args: Args) => void, ms: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -64,6 +65,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [providersOpen, setProvidersOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [memoryOpen, setMemoryOpen] = useState(false);
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const reloadProviders = useCallback(() => {
     void providersApi.list().then(setProviders);
@@ -371,6 +373,9 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         <button type="button" onClick={() => setLibraryOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Biblioteca
         </button>
+        <button type="button" onClick={() => setMemoryOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
+          Memória
+        </button>
         <button type="button" onClick={onOpenConstructor} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Super Construtor
         </button>
@@ -408,6 +413,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
 
       <ProvidersPanel open={providersOpen} onClose={() => setProvidersOpen(false)} onChanged={reloadProviders} />
       <LibraryPanel open={libraryOpen} onClose={() => setLibraryOpen(false)} />
+      <MemoryPanel open={memoryOpen} onClose={() => setMemoryOpen(false)} />
     </div>
   );
 }

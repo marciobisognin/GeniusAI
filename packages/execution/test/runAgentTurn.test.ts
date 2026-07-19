@@ -90,4 +90,30 @@ describe("runAgentTurn", () => {
     });
     expect(events.map((e) => e.type)).toEqual(["task.step", "task.tool_call", "task.completed"]);
   });
+
+  it("injeta memoryContext no prompt de sistema quando fornecido (Etapa 6)", async () => {
+    const adapter = new FakeAdapter("ok");
+    await runAgentTurn({
+      agent: baseAgent({}),
+      adapter,
+      taskDescription: "tarefa",
+      runId: "run1",
+      onEvent: () => {},
+      memoryContext: "- Execução anterior aprovada: NF 2040 conferida com o empenho 11/2025.",
+    });
+    expect(adapter.lastInput?.system).toContain("Contexto de execuções aprovadas anteriores");
+    expect(adapter.lastInput?.system).toContain("NF 2040 conferida com o empenho 11/2025");
+  });
+
+  it("sem memoryContext, o prompt de sistema não menciona memória", async () => {
+    const adapter = new FakeAdapter("ok");
+    await runAgentTurn({
+      agent: baseAgent({}),
+      adapter,
+      taskDescription: "tarefa",
+      runId: "run1",
+      onEvent: () => {},
+    });
+    expect(adapter.lastInput?.system).not.toContain("Contexto de execuções aprovadas");
+  });
 });

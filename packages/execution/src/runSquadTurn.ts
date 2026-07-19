@@ -16,6 +16,8 @@ export interface RunSquadTurnInput {
   taskDescription: string;
   runId: string;
   onEvent: (event: ExecutionEvent) => void;
+  /** Trechos relevantes recuperados da memória indexada (Etapa 6) — opcional, o chamador decide se busca. */
+  memoryContext?: string;
 }
 
 /**
@@ -25,7 +27,7 @@ export interface RunSquadTurnInput {
  * as contribuições numa resposta final.
  */
 export async function runSquadTurn(input: RunSquadTurnInput): Promise<RunTurnResult> {
-  const { squad, members, leader, adapterFor, taskDescription, runId, onEvent } = input;
+  const { squad, members, leader, adapterFor, taskDescription, runId, onEvent, memoryContext } = input;
 
   onEvent({
     type: "task.step",
@@ -39,7 +41,7 @@ export async function runSquadTurn(input: RunSquadTurnInput): Promise<RunTurnRes
     onEvent({ type: "task.step", runId, message: `${member.nome} está trabalhando na tarefa.`, ts: nowIso() });
     onEvent({ type: "task.tool_call", runId, message: `${member.nome} chamando o modelo.`, ts: nowIso() });
     const result = await adapterFor(member).complete({
-      system: buildPersonaPrompt(member),
+      system: buildPersonaPrompt(member, memoryContext),
       prompt: taskDescription,
     });
     contributions.push(`${member.nome}: ${result.text}`);
@@ -47,7 +49,7 @@ export async function runSquadTurn(input: RunSquadTurnInput): Promise<RunTurnRes
 
   onEvent({ type: "task.step", runId, message: `${leader.nome} (líder) consolidando as contribuições.`, ts: nowIso() });
   const consolidation = await adapterFor(leader).complete({
-    system: buildPersonaPrompt(leader),
+    system: buildPersonaPrompt(leader, memoryContext),
     prompt: `Tarefa original: ${taskDescription}\n\nContribuições da equipe:\n${contributions.join("\n\n")}\n\nConsolide isso numa resposta final única, coesa.`,
   });
 

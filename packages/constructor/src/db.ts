@@ -23,6 +23,7 @@ export const TABLES = [
   "memory_chunks",
   "canvas_nodes",
   "canvas_edges",
+  "skills",
 ] as const;
 export type TableName = (typeof TABLES)[number];
 

@@ -1,18 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
-import type { Agent, Approval, CanvasNode, ProviderConfig, Run, RunStep, Squad, Task } from "@genius/canon";
+import type { Agent, Approval, CanvasNode, ProviderConfig, Run, RunStep, Task } from "@genius/canon";
 import { createAdapter } from "@genius/providers";
 import { runAgentTurn, runSquadTurn, type ExecutionEvent } from "@genius/execution";
+import { LearningMemory } from "@genius/learning";
 import type { FastifyInstance } from "fastify";
 import type { Repository } from "./db.js";
+import { formatMemoryContext, recordApprovedRun, type LearningRepos } from "./learning.js";
 
-export interface ExecutionRepos {
+export interface ExecutionRepos extends LearningRepos {
   canvasNodes: Repository<CanvasNode>;
-  agents: Repository<Agent>;
-  squads: Repository<Squad>;
   providers: Repository<ProviderConfig>;
-  tasks: Repository<Task>;
-  runs: Repository<Run>;
   approvals: Repository<Approval>;
 }
 
@@ -28,7 +26,7 @@ function nowIso(): string {
  * conectar atrasado); `POST /approvals/:id/resolve` é o gatilho humano que
  * completa ou derruba uma execução pausada em A0–A2.
  */
-export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRepos) {
+export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRepos, memory: LearningMemory) {
   const emitter = new EventEmitter();
   emitter.setMaxListeners(100);
 
@@ -56,10 +54,22 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
     };
 
     try {
+      // Etapa 6: busca na memória indexada antes de rodar — o sistema literalmente fica melhor a cada aprovação.
+      const memoryResults = await memory.search(task.descricao, 3);
+      const memoryContext = memoryResults.length > 0 ? formatMemoryContext(memoryResults) : undefined;
+      if (memoryContext) {
+        onEvent({
+          type: "task.step",
+          runId: run.id,
+          message: `Memória: ${memoryResults.length} trecho(s) relevante(s) de execuções aprovadas anteriores injetado(s) como contexto.`,
+          ts: nowIso(),
+        });
+      }
+
       let result: { requiresApproval: boolean };
       if (kind === "agent") {
         const agent = repos.agents.getById(run.agentId!)!;
-        result = await runAgentTurn({ agent, adapter, taskDescription: task.descricao, runId: run.id, onEvent });
+        result = await runAgentTurn({ agent, adapter, taskDescription: task.descricao, runId: run.id, onEvent, memoryContext });
       } else {
         const squad = repos.squads.getById(run.squadId!)!;
         const members = squad.agentIds.map((id) => repos.agents.getById(id)).filter((a): a is Agent => Boolean(a));
@@ -72,6 +82,7 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
           taskDescription: task.descricao,
           runId: run.id,
           onEvent,
+          memoryContext,
         });
       }
       const status = result.requiresApproval ? "requer_aprovacao" : "concluido";
@@ -209,6 +220,20 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
       };
       persistStep(run.id, event);
       emitter.emit(run.id, event);
+
+      // Etapa 6: toda aprovação positiva vira aprendizado — best-effort, uma
+      // falha aqui (ex.: provedor indisponível) não pode derrubar a aprovação já concluída.
+      if (body.status === "aprovado" && run.providerId) {
+        const providerConfig = repos.providers.getById(run.providerId);
+        if (providerConfig) {
+          try {
+            const adapter = createAdapter(providerConfig);
+            await recordApprovedRun(run.id, repos, memory, adapter);
+          } catch {
+            // silencioso de propósito — o aprendizado é um extra, não pode quebrar a aprovação humana.
+          }
+        }
+      }
     }
 
     return updated;
