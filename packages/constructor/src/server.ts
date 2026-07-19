@@ -1,7 +1,10 @@
+import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
 import {
   Agent,
   Approval,
+  CanvasEdge,
+  CanvasNode,
   Company,
   LearningFlow,
   MemoryChunk,
@@ -34,6 +37,8 @@ function buildRepositories(db: ReturnType<typeof openDatabase>) {
     approvals: createRepository(db, "approvals", Approval),
     learningFlows: createRepository(db, "learning_flows", LearningFlow),
     memoryChunks: createRepository(db, "memory_chunks", MemoryChunk),
+    canvasNodes: createRepository(db, "canvas_nodes", CanvasNode),
+    canvasEdges: createRepository(db, "canvas_edges", CanvasEdge),
   };
 }
 
@@ -81,6 +86,8 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   const repos = buildRepositories(db);
   const app = Fastify({ logger: false });
 
+  app.register(cors, { origin: true });
+
   app.get("/health", async () => ({ status: "ok" }));
 
   registerCrud(app, "agents", repos.agents);
@@ -93,6 +100,8 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   registerCrud(app, "approvals", repos.approvals);
   registerCrud(app, "learning-flows", repos.learningFlows);
   registerCrud(app, "memory-chunks", repos.memoryChunks);
+  registerCrud(app, "canvas-nodes", repos.canvasNodes);
+  registerCrud(app, "canvas-edges", repos.canvasEdges);
 
   return { app, repos };
 }

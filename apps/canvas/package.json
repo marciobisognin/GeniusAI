@@ -2,7 +2,7 @@
   "name": "@genius/canvas",
   "version": "0.1.0",
   "private": true,
-  "description": "Genius Allspark Canvas — canvas infinito (app). Motor de canvas real chega na Etapa 1.",
+  "description": "Genius Allspark Canvas — o Motor do Canvas Infinito (React Flow) e as superfícies do produto.",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^1.1.4",
+    "@genius/canon": "^0.1.0",
+    "@xyflow/react": "^12.3.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

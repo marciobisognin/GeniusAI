@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   Agent,
   Approval,
+  CanvasEdge,
+  CanvasNode,
   Company,
   LearningFlow,
   MemoryChunk,
@@ -108,5 +110,25 @@ describe("schemas canônicos — round-trip parse/serialize", () => {
   it("rejeita entidades sem os campos obrigatórios", () => {
     expect(() => Agent.parse({ id: "a3" })).toThrow();
     expect(() => Squad.parse({ nome: "sem id" })).toThrow();
+  });
+
+  it("CanvasNode exige posição e aceita os quatro tipos", () => {
+    const note = CanvasNode.parse({ id: "cn1", kind: "note", position: { x: 10, y: 20 } });
+    expect(note.log).toEqual([]);
+    const execution = CanvasNode.parse({
+      id: "cn2",
+      kind: "execution",
+      position: { x: 0, y: 0 },
+      status: "executando",
+      log: ["iniciado"],
+    });
+    expect(execution.status).toBe("executando");
+    expect(() => CanvasNode.parse({ id: "cn3", kind: "note" })).toThrow();
+    expect(() => CanvasNode.parse({ id: "cn4", kind: "invalido", position: { x: 0, y: 0 } })).toThrow();
+  });
+
+  it("CanvasEdge conecta dois nós pelo id", () => {
+    const edge = CanvasEdge.parse({ id: "ce1", source: "cn1", target: "cn2" });
+    expect(edge.source).toBe("cn1");
   });
 });
