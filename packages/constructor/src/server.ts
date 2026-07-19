@@ -1,3 +1,5 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import cors from "@fastify/cors";
 import Fastify, { type FastifyInstance } from "fastify";
@@ -13,12 +15,15 @@ import {
   Pack,
   ProviderConfig,
   Run,
+  Skill,
   Squad,
   Task,
 } from "@genius/canon";
 import { createAdapter } from "@genius/providers";
+import { LearningMemory } from "@genius/learning";
 import { createRepository, migrate, openDatabase, type Repository } from "./db.js";
 import { registerExecutionRoutes } from "./execution.js";
+import { registerLearningRoutes } from "./learning.js";
 import { DEFAULT_REPO_ROOT, registerLibraryImport } from "./libraryImport.js";
 import { CompanyNotFoundError, exportCompanyAsPack, importPackIntoCompany, type PackRepos } from "./pack.js";
 import { listAvailablePackFiles, readPackFile } from "./packsDir.js";
@@ -30,6 +35,8 @@ export interface BuildServerOptions {
   repoRoot?: string;
   /** Pasta de packs a observar (Etapa 4). Padrão: <repoRoot>/packs. */
   packsDir?: string;
+  /** Pasta do índice vetorial local (Etapa 6). Padrão: uma pasta temporária nova a cada `buildServer` — isola testes automaticamente. */
+  memoryDir?: string;
 }
 
 export interface ConstructorServer {
@@ -51,6 +58,7 @@ function buildRepositories(db: ReturnType<typeof openDatabase>) {
     memoryChunks: createRepository(db, "memory_chunks", MemoryChunk),
     canvasNodes: createRepository(db, "canvas_nodes", CanvasNode),
     canvasEdges: createRepository(db, "canvas_edges", CanvasEdge),
+    skills: createRepository(db, "skills", Skill),
   };
 }
 
@@ -189,6 +197,7 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   const db = openDatabase(options.dbPath ?? ":memory:");
   migrate(db);
   const repos = buildRepositories(db);
+  const memory = new LearningMemory(options.memoryDir ?? mkdtempSync(path.join(tmpdir(), "genius-memory-")));
   const app = Fastify({ logger: false });
 
   app.register(cors, { origin: true });
@@ -207,6 +216,7 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   registerCrud(app, "memory-chunks", repos.memoryChunks);
   registerCrud(app, "canvas-nodes", repos.canvasNodes);
   registerCrud(app, "canvas-edges", repos.canvasEdges);
+  registerCrud(app, "skills", repos.skills);
   registerProviderHealthCheck(app, repos.providers);
   registerLibraryImport(app, { agents: repos.agents, squads: repos.squads }, { repoRoot: options.repoRoot });
   registerReuseRoutes(app, { agents: repos.agents, squads: repos.squads });
@@ -215,15 +225,23 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
     { agents: repos.agents, squads: repos.squads, companies: repos.companies },
     options.packsDir ?? path.join(options.repoRoot ?? DEFAULT_REPO_ROOT, "packs"),
   );
-  registerExecutionRoutes(app, {
-    canvasNodes: repos.canvasNodes,
-    agents: repos.agents,
-    squads: repos.squads,
-    providers: repos.providers,
-    tasks: repos.tasks,
-    runs: repos.runs,
-    approvals: repos.approvals,
-  });
+  registerExecutionRoutes(
+    app,
+    {
+      canvasNodes: repos.canvasNodes,
+      agents: repos.agents,
+      squads: repos.squads,
+      providers: repos.providers,
+      tasks: repos.tasks,
+      runs: repos.runs,
+      approvals: repos.approvals,
+      learningFlows: repos.learningFlows,
+      memoryChunks: repos.memoryChunks,
+      skills: repos.skills,
+    },
+    memory,
+  );
+  registerLearningRoutes(app, memory);
 
   return { app, repos };
 }

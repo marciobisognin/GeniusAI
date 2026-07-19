@@ -2,8 +2,9 @@ import { buildServer } from "./server.js";
 
 const port = Number(process.env.PORT ?? 4001);
 const dbPath = process.env.GENIUS_DB_PATH ?? "genius-allspark.sqlite3";
+const memoryDir = process.env.GENIUS_MEMORY_DIR ?? "genius-allspark-memory";
 
-const { app } = buildServer({ dbPath });
+const { app } = buildServer({ dbPath, memoryDir });
 
 app
   .listen({ port, host: "127.0.0.1" })

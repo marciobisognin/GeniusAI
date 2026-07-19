@@ -1,7 +1,7 @@
 {
-  "name": "@genius/constructor",
+  "name": "@genius/learning",
   "version": "0.1.0",
-  "description": "Super Construtor: banco SQLite (Companies/Squads/Agents/Mind-Clones/Packs) + servidor Fastify de CRUD.",
+  "description": "Motor de Aprendizado + Memória Indexada: generaliza execuções aprovadas em LearningFlow, propõe promoção de Skill por uso real, e indexa tudo num índice vetorial local (vectra) pesquisável por significado.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,21 +14,14 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node dist/server.js"
+    "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@fastify/cors": "^9.0.1",
-    "@genius/agent-library": "^0.1.0",
     "@genius/canon": "^0.1.0",
-    "@genius/execution": "^0.1.0",
-    "@genius/learning": "^0.1.0",
     "@genius/providers": "^0.1.0",
-    "better-sqlite3": "^11.3.0",
-    "fastify": "^4.28.1"
+    "vectra": "^0.15.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^22.7.4",
     "typescript": "^5.6.2",
     "vitest": "^2.1.1"

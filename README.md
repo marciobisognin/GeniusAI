@@ -28,9 +28,10 @@ seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
 | [`packages/canon`](packages/canon/) | 0/1/2/3 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
 | [`packages/providers`](packages/providers/) | 2 | Hub de Provedores LLM: `LLMProviderAdapter` + adapters reais para Anthropic, OpenAI (ChatGPT), Codex (CLI), Ollama e endpoints OpenAI-compatíveis (OpenRouter/vLLM/LM Studio) — generaliza o `AgentRunner` que já existia em `geniusai-civilizations` |
 | [`packages/agent-library`](packages/agent-library/) | 3 | Biblioteca de Agentes & Squads: importadores puros (sem executar código de outro projeto) que leem, via AST do TypeScript, os catálogos reais de `so-ia` (12 agentes + 7 squads), `geniusai-foresight` (8 agentes YAML) e `geniusai-civilizations` (4 perfis de civilização) |
-| [`packages/execution`](packages/execution/) | 5 | Motor de Execução: monta a persona do Agent num prompt de sistema, chama o `LLMProviderAdapter` configurado, decompõe a tarefa entre os membros de um Squad com o líder consolidando, e usa a autonomia (A0–A5) do Agent/líder como gatilho honesto de aprovação humana (A0–A2 sempre pausam) |
-| [`packages/constructor`](packages/constructor/) | 0/1/2/3/4/5 | Super Construtor v0: banco SQLite real, CRUD para as doze entidades do canon, `POST /providers/:id/health-check`, `POST /library/import`, "reaproveitar ou criar" (`/agents/match`, `/squads/match` — porte fiel do algoritmo de `so-ia/src/lib/org/matching.ts`), Packs (exportar/importar Company, mais a pasta `packs/` observada) e o Motor de Execução (`POST /execution/run`, SSE em `GET /execution/runs/:id/events`, `POST /approvals/:id/resolve`) |
-| [`apps/canvas`](apps/canvas/) | 1/2/3/4/5 | O Motor do Canvas Infinito, os painéis "Provedores" e "Biblioteca", a tela **Super Construtor** (montar Company → Squad → Agent com formulários guiados que sugerem reaproveitar antes de criar, mais o wizard de Mind-Clone) e o botão **▶ Executar** em qualquer AgentNode/SquadNode, com o `ExecutionNode` mostrando os passos reais ao vivo (SSE) até concluir ou pedir aprovação humana |
+| [`packages/execution`](packages/execution/) | 5/6 | Motor de Execução: monta a persona do Agent num prompt de sistema (com contexto de memória indexada opcional, Etapa 6), chama o `LLMProviderAdapter` configurado, decompõe a tarefa entre os membros de um Squad com o líder consolidando, e usa a autonomia (A0–A5) do Agent/líder como gatilho honesto de aprovação humana (A0–A2 sempre pausam) |
+| [`packages/learning`](packages/learning/) | 6 | Motor de Aprendizado + Memória Indexada: generaliza uma execução aprovada num `LearningFlow` reutilizável (via LLM), propõe promoção de `Skill` formal quando um padrão se repete N vezes para o mesmo agente, e indexa tudo num índice vetorial local (`vectra`) pesquisável por significado — embedding local por hashing trick, sem depender de nenhuma API externa |
+| [`packages/constructor`](packages/constructor/) | 0/1/2/3/4/5/6 | Super Construtor v0: banco SQLite real, CRUD para as treze entidades do canon, `POST /providers/:id/health-check`, `POST /library/import`, "reaproveitar ou criar" (`/agents/match`, `/squads/match` — porte fiel do algoritmo de `so-ia/src/lib/org/matching.ts`), Packs (exportar/importar Company, mais a pasta `packs/` observada), o Motor de Execução (`POST /execution/run`, SSE em `GET /execution/runs/:id/events`, `POST /approvals/:id/resolve`) e o Motor de Aprendizado (toda aprovação gera um `LearningFlow` automaticamente, `GET /memory/search`) |
+| [`apps/canvas`](apps/canvas/) | 1/2/3/4/5/6 | O Motor do Canvas Infinito, os painéis "Provedores", "Biblioteca" e **"Memória"** (busca semântica com procedência), a tela **Super Construtor** (montar Company → Squad → Agent com formulários guiados que sugerem reaproveitar antes de criar, mais o wizard de Mind-Clone) e o botão **▶ Executar** em qualquer AgentNode/SquadNode, com o `ExecutionNode` mostrando os passos reais ao vivo (SSE) — incluindo quando o contexto de memória de execuções aprovadas anteriores é injetado — até concluir ou pedir aprovação humana |
 
 Rodar localmente:
 
@@ -85,6 +86,26 @@ sequenceDiagram
         C-->>U: task.completed (ao vivo)
     end
 ```
+
+### Como o sistema aprende sozinho (Etapa 6)
+
+Toda vez que um humano **aprova** uma execução, o sistema vira isso em
+aprendizado reutilizável — sem esperar nenhum comando extra:
+
+| Passo | O que acontece |
+|---|---|
+| 1. Aprovação | Você clica "Aprovar" num `ExecutionNode` (A0–A2). |
+| 2. Generalização | O motor pede ao mesmo provedor LLM para resumir a execução num procedimento reutilizável (`LearningFlow`: padrão da tarefa, passos generalizados, tags). |
+| 3. Indexação | O resultado é fatiado e indexado num índice vetorial local (`vectra`) — pesquisável por significado, não só por palavra-chave exata. |
+| 4. Promoção de Skill | Se o mesmo padrão se repete (mesmo agente, mesma tag) três vezes ou mais, uma `Skill` formal nasce sozinha na Biblioteca, com `origem: "gerada"`. |
+| 5. Próxima execução | Antes de rodar uma tarefa nova, o motor busca os trechos mais relevantes na memória e injeta como contexto — visível no log como `Memória: N trecho(s) relevante(s)... injetado(s)`. |
+
+Para ver isso ao vivo: rode a mesma tarefa duas vezes seguidas (aprovando a
+primeira). Na segunda vez, o `ExecutionNode` mostra a linha de "Memória:"
+logo no início — o sistema literalmente ficou melhor depois da primeira
+aprovação. O painel **Memória** (botão no topo do canvas) deixa buscar por
+significado em qualquer momento, mostrando de qual execução/aprovação cada
+resultado veio.
 
 ## Projetos
 
