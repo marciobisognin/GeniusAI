@@ -25,10 +25,11 @@ seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
 
 | Pacote | Etapa | O que é |
 |---|---|---|
-| [`packages/canon`](packages/canon/) | 0/1/2 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
+| [`packages/canon`](packages/canon/) | 0/1/2/3 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
 | [`packages/providers`](packages/providers/) | 2 | Hub de Provedores LLM: `LLMProviderAdapter` + adapters reais para Anthropic, OpenAI (ChatGPT), Codex (CLI), Ollama e endpoints OpenAI-compatíveis (OpenRouter/vLLM/LM Studio) — generaliza o `AgentRunner` que já existia em `geniusai-civilizations` |
-| [`packages/constructor`](packages/constructor/) | 0/1/2/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as doze entidades do canon, mais `POST /providers/:id/health-check` (testa a conexão de verdade, no servidor — a chave nunca trafega para o navegador) |
-| [`apps/canvas`](apps/canvas/) | 1/2 | O Motor do Canvas Infinito (React Flow, 4 tipos de nó, minimapa, grid de 8pt, auto-layout, paleta de comandos) + o painel "Provedores" para registrar e testar LLMs, com seletor de provedor em cada nó de Agente/Squad |
+| [`packages/agent-library`](packages/agent-library/) | 3 | Biblioteca de Agentes & Squads: importadores puros (sem executar código de outro projeto) que leem, via AST do TypeScript, os catálogos reais de `so-ia` (12 agentes + 7 squads), `geniusai-foresight` (8 agentes YAML) e `geniusai-civilizations` (4 perfis de civilização) |
+| [`packages/constructor`](packages/constructor/) | 0/1/2/3/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as doze entidades do canon, `POST /providers/:id/health-check` e `POST /library/import` (roda os importadores de verdade com diff novo × existente) |
+| [`apps/canvas`](apps/canvas/) | 1/2/3 | O Motor do Canvas Infinito (React Flow, 4 tipos de nó, minimapa, grid de 8pt, auto-layout, paleta de comandos), o painel "Provedores" e o painel "Biblioteca" — arrastar um agente/squad real para o canvas cria um nó vinculado (`refId`), não uma cópia solta |
 
 Rodar localmente:
 

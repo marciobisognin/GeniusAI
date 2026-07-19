@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
+    "@genius/agent-library": "^0.1.0",
     "@genius/canon": "^0.1.0",
     "@genius/providers": "^0.1.0",
     "better-sqlite3": "^11.3.0",

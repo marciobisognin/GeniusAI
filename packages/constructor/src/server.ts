@@ -16,9 +16,12 @@ import {
 } from "@genius/canon";
 import { createAdapter } from "@genius/providers";
 import { createRepository, migrate, openDatabase, type Repository } from "./db.js";
+import { registerLibraryImport } from "./libraryImport.js";
 
 export interface BuildServerOptions {
   dbPath?: string;
+  /** Raiz do monorepo, para a Etapa 3 (POST /library/import) achar so-ia/foresight/civilizations. */
+  repoRoot?: string;
 }
 
 export interface ConstructorServer {
@@ -130,6 +133,7 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   registerCrud(app, "canvas-nodes", repos.canvasNodes);
   registerCrud(app, "canvas-edges", repos.canvasEdges);
   registerProviderHealthCheck(app, repos.providers);
+  registerLibraryImport(app, { agents: repos.agents, squads: repos.squads }, { repoRoot: options.repoRoot });
 
   return { app, repos };
 }
