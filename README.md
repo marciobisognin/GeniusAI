@@ -18,6 +18,26 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 > O [PRD de Execução](docs/PRD-genius-allspark-execucao.md) mantém a visão em
 > fases mais amplas como contexto complementar.
 
+## Genius Allspark Canvas — em construção
+
+O monorepo `packages/*` + `apps/*` na raiz é o código do Canvas em si,
+seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
+
+| Pacote | Etapa | O que é |
+|---|---|---|
+| [`packages/canon`](packages/canon/) | 0 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval) + catálogo de eventos |
+| [`packages/constructor`](packages/constructor/) | 0/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as dez entidades do canon |
+| [`apps/canvas`](apps/canvas/) | 0/1 | O app do canvas infinito — hoje um placeholder que já fala com o Super Construtor; o motor de canvas de verdade (React Flow, nós, minimapa) é da Etapa 1 |
+
+Rodar localmente:
+
+```bash
+npm install
+npm run build && npm run test   # todos os workspaces
+node packages/constructor/dist/start.js   # Super Construtor em :4001
+npm run dev -w apps/canvas                # Canvas em :5173
+```
+
 ## Projetos
 
 - **[`geniusai-civilizations/`](geniusai-civilizations/)** — *Watchable AI*: simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por agentes autônomos acionados por um CLI de agente (Claude Code / Codex / opencode) ou Ollama, observável em tempo real via uma UI local. Veja o [README do projeto](geniusai-civilizations/README.md) e o [PRD](geniusai-civilizations/docs/PRD-watchable-ai-civilizations.md).

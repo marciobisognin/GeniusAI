@@ -1,0 +1,98 @@
+import Fastify, { type FastifyInstance } from "fastify";
+import {
+  Agent,
+  Approval,
+  Company,
+  LearningFlow,
+  MemoryChunk,
+  MindClone,
+  ProviderConfig,
+  Run,
+  Squad,
+  Task,
+} from "@genius/canon";
+import { createRepository, migrate, openDatabase, type Repository } from "./db.js";
+
+export interface BuildServerOptions {
+  dbPath?: string;
+}
+
+export interface ConstructorServer {
+  app: FastifyInstance;
+  repos: ReturnType<typeof buildRepositories>;
+}
+
+function buildRepositories(db: ReturnType<typeof openDatabase>) {
+  return {
+    agents: createRepository(db, "agents", Agent),
+    squads: createRepository(db, "squads", Squad),
+    companies: createRepository(db, "companies", Company),
+    mindClones: createRepository(db, "mind_clones", MindClone),
+    providers: createRepository(db, "providers", ProviderConfig),
+    tasks: createRepository(db, "tasks", Task),
+    runs: createRepository(db, "runs", Run),
+    approvals: createRepository(db, "approvals", Approval),
+    learningFlows: createRepository(db, "learning_flows", LearningFlow),
+    memoryChunks: createRepository(db, "memory_chunks", MemoryChunk),
+  };
+}
+
+function registerCrud(app: FastifyInstance, path: string, repo: Repository<{ id: string }>) {
+  app.get(`/${path}`, async () => repo.list());
+
+  app.get(`/${path}/:id`, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const entity = repo.getById(id);
+    if (!entity) return reply.code(404).send({ error: "not_found" });
+    return entity;
+  });
+
+  app.post(`/${path}`, async (request, reply) => {
+    try {
+      const entity = repo.insert(request.body);
+      return reply.code(201).send(entity);
+    } catch (err) {
+      return reply.code(400).send({ error: "invalid_entity", detail: String(err) });
+    }
+  });
+
+  app.patch(`/${path}/:id`, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    try {
+      const updated = repo.update(id, request.body as Record<string, unknown>);
+      if (!updated) return reply.code(404).send({ error: "not_found" });
+      return updated;
+    } catch (err) {
+      return reply.code(400).send({ error: "invalid_entity", detail: String(err) });
+    }
+  });
+
+  app.delete(`/${path}/:id`, async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const removed = repo.remove(id);
+    return reply.code(removed ? 204 : 404).send();
+  });
+}
+
+/** Monta o servidor do Super Construtor. Não chama `.listen()` — quem chama decide a porta (produção vs. teste). */
+export function buildServer(options: BuildServerOptions = {}): ConstructorServer {
+  const db = openDatabase(options.dbPath ?? ":memory:");
+  migrate(db);
+  const repos = buildRepositories(db);
+  const app = Fastify({ logger: false });
+
+  app.get("/health", async () => ({ status: "ok" }));
+
+  registerCrud(app, "agents", repos.agents);
+  registerCrud(app, "squads", repos.squads);
+  registerCrud(app, "companies", repos.companies);
+  registerCrud(app, "mind-clones", repos.mindClones);
+  registerCrud(app, "providers", repos.providers);
+  registerCrud(app, "tasks", repos.tasks);
+  registerCrud(app, "runs", repos.runs);
+  registerCrud(app, "approvals", repos.approvals);
+  registerCrud(app, "learning-flows", repos.learningFlows);
+  registerCrud(app, "memory-chunks", repos.memoryChunks);
+
+  return { app, repos };
+}

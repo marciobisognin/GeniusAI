@@ -1,0 +1,48 @@
+name: Genius Allspark Canvas CI
+
+on:
+  push:
+    paths:
+      - "packages/**"
+      - "apps/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/genius-allspark-ci.yml"
+  pull_request:
+    paths:
+      - "packages/**"
+      - "apps/**"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/genius-allspark-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: build · typecheck · testes (packages/* + apps/*)
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Configurar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar dependências do workspace
+        run: npm ci
+
+      - name: Typecheck (todos os workspaces)
+        run: npm run typecheck --workspaces --if-present
+
+      - name: Testes (todos os workspaces)
+        run: npm run test --workspaces --if-present
+
+      - name: Build (todos os workspaces)
+        run: npm run build --workspaces --if-present

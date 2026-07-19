@@ -3,3 +3,9 @@ node_modules/
 dist/
 *.log
 .DS_Store
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+packs/*
+!packs/.gitkeep
+!packs/README.md
