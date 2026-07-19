@@ -1,10 +1,11 @@
 const BASE_URL = import.meta.env.VITE_CONSTRUCTOR_URL ?? "http://127.0.0.1:4001";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init?.headers },
-  });
+  // Só declara Content-Type: application/json quando há corpo de verdade —
+  // Fastify rejeita (400) um POST com esse header e corpo vazio.
+  const headers: Record<string, string> = { ...(init?.headers as Record<string, string>) };
+  if (init?.body !== undefined) headers["Content-Type"] = "application/json";
+  const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`${init?.method ?? "GET"} ${path} -> ${res.status}: ${body}`);

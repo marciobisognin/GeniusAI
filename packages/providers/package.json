@@ -1,0 +1,27 @@
+{
+  "name": "@genius/providers",
+  "version": "0.1.0",
+  "description": "Hub de Provedores LLM — adapters para Anthropic, OpenAI (ChatGPT), Codex, Ollama e endpoints OpenAI-compatíveis.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@genius/canon": "^0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}

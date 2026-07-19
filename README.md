@@ -25,9 +25,10 @@ seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
 
 | Pacote | Etapa | O que é |
 |---|---|---|
-| [`packages/canon`](packages/canon/) | 0/1 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
-| [`packages/constructor`](packages/constructor/) | 0/1/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as doze entidades do canon (inclui a posição/conteúdo de cada nó do canvas) |
-| [`apps/canvas`](apps/canvas/) | 1 | O Motor do Canvas Infinito: React Flow com os quatro tipos de nó (Agente, Squad, Nota, Execução), minimapa, grid de 8pt, auto-layout (Dagre), paleta de comandos (⌘K) e persistência real via `@genius/constructor` — nada vive só no cliente |
+| [`packages/canon`](packages/canon/) | 0/1/2 | Schemas Zod compartilhados (Agent, Squad, Company, MindClone, Pack, ProviderConfig, LearningFlow, MemoryChunk, Task, Run, Approval, CanvasNode, CanvasEdge) + catálogo de eventos |
+| [`packages/providers`](packages/providers/) | 2 | Hub de Provedores LLM: `LLMProviderAdapter` + adapters reais para Anthropic, OpenAI (ChatGPT), Codex (CLI), Ollama e endpoints OpenAI-compatíveis (OpenRouter/vLLM/LM Studio) — generaliza o `AgentRunner` que já existia em `geniusai-civilizations` |
+| [`packages/constructor`](packages/constructor/) | 0/1/2/4 | Super Construtor v0: banco SQLite real + servidor Fastify de CRUD para as doze entidades do canon, mais `POST /providers/:id/health-check` (testa a conexão de verdade, no servidor — a chave nunca trafega para o navegador) |
+| [`apps/canvas`](apps/canvas/) | 1/2 | O Motor do Canvas Infinito (React Flow, 4 tipos de nó, minimapa, grid de 8pt, auto-layout, paleta de comandos) + o painel "Provedores" para registrar e testar LLMs, com seletor de provedor em cada nó de Agente/Squad |
 
 Rodar localmente:
 

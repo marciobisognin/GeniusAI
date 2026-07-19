@@ -1,5 +1,21 @@
+import http from "node:http";
+import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { buildServer, type ConstructorServer } from "../src/server.js";
+
+/** Servidor HTTP real — só para simular "há um Ollama respondendo aqui", sem depender de rede externa. */
+function startFakeOllama(): Promise<{ url: string; close: () => Promise<void> }> {
+  return new Promise((resolve) => {
+    const server = http.createServer((req, res) => {
+      if (req.url === "/api/tags") res.writeHead(200).end("{}");
+      else res.writeHead(404).end();
+    });
+    server.listen(0, "127.0.0.1", () => {
+      const { port } = server.address() as AddressInfo;
+      resolve({ url: `http://127.0.0.1:${port}`, close: () => new Promise((r) => server.close(() => r())) });
+    });
+  });
+}
 
 describe("servidor do Super Construtor (Fastify)", () => {
   let server: ConstructorServer;
@@ -148,5 +164,52 @@ describe("servidor do Super Construtor (Fastify)", () => {
       headers: { origin: "http://localhost:5173" },
     });
     expect(res.headers["access-control-allow-origin"]).toBe("http://localhost:5173");
+  });
+
+  it("POST /providers/:id/health-check chama o provedor de verdade e persiste o resultado", async () => {
+    const fakeOllama = await startFakeOllama();
+    try {
+      await server.app.inject({
+        method: "POST",
+        url: "/providers",
+        payload: { id: "prov1", tipo: "ollama", nome: "Ollama local", baseUrl: fakeOllama.url },
+      });
+
+      const checked = await server.app.inject({ method: "POST", url: "/providers/prov1/health-check" });
+      expect(checked.statusCode).toBe(200);
+      expect(checked.json().healthy).toBe(true);
+      expect(checked.json().lastCheckedAt).toBeDefined();
+
+      const fetched = await server.app.inject({ method: "GET", url: "/providers/prov1" });
+      expect(fetched.json().healthy).toBe(true);
+    } finally {
+      await fakeOllama.close();
+    }
+  });
+
+  it("POST /providers/:id/health-check com provedor inalcançável persiste healthy:false", async () => {
+    await server.app.inject({
+      method: "POST",
+      url: "/providers",
+      payload: { id: "prov2", tipo: "ollama", nome: "Ollama inexistente", baseUrl: "http://127.0.0.1:1" },
+    });
+    const checked = await server.app.inject({ method: "POST", url: "/providers/prov2/health-check" });
+    expect(checked.json().healthy).toBe(false);
+  });
+
+  it("POST /providers/:id/health-check com provedor inexistente responde 404", async () => {
+    const res = await server.app.inject({ method: "POST", url: "/providers/fantasma/health-check" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("POST /providers/:id/health-check responde 400 quando falta apiKeyRef (anthropic/openai-chat exigem chave)", async () => {
+    await server.app.inject({
+      method: "POST",
+      url: "/providers",
+      payload: { id: "prov3", tipo: "anthropic", nome: "Claude sem chave" },
+    });
+    const checked = await server.app.inject({ method: "POST", url: "/providers/prov3/health-check" });
+    expect(checked.statusCode).toBe(400);
+    expect(checked.json().error).toBe("adapter_error");
   });
 });

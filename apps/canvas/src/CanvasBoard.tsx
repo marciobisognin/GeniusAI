@@ -15,12 +15,15 @@ import {
   type OnConnect,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import type { CanvasNode, CanvasNodeKind } from "@genius/canon";
+import type { CanvasNode, CanvasNodeKind, ProviderConfig } from "@genius/canon";
 import { canvasApi } from "./api/canvasApi.js";
 import { apiClient } from "./api/client.js";
+import { providersApi } from "./api/providersApi.js";
 import { applyDagreLayout } from "./layout/dagreLayout.js";
 import { nodeTypes, type CanvasFlowNode } from "./nodes/index.js";
 import { CommandPalette } from "./palette/CommandPalette.js";
+import { ProvidersContext } from "./providers/ProvidersContext.js";
+import { ProvidersPanel } from "./providers/ProvidersPanel.js";
 
 function debounce<Args extends unknown[]>(fn: (...args: Args) => void, ms: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -52,6 +55,11 @@ function CanvasBoardInner() {
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [status, setStatus] = useState<"carregando" | "conectado" | "offline">("carregando");
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const [providersOpen, setProvidersOpen] = useState(false);
+  const [providers, setProviders] = useState<ProviderConfig[]>([]);
+  const reloadProviders = useCallback(() => {
+    void providersApi.list().then(setProviders);
+  }, []);
   const { setCenter, getNode } = useReactFlow<CanvasFlowNode>();
   const persistPositionDebounced = useRef(
     debounce((id: string, position: { x: number; y: number }) => {
@@ -109,6 +117,10 @@ function CanvasBoardInner() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    reloadProviders();
+  }, [reloadProviders]);
 
   const onNodeDragStop = useCallback(
     (_event: unknown, node: CanvasFlowNode) => {
@@ -218,25 +230,30 @@ function CanvasBoardInner() {
         <button type="button" onClick={organizeAutomatically} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Organizar automaticamente
         </button>
+        <button type="button" onClick={() => setProvidersOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
+          Provedores
+        </button>
       </div>
 
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeDragStop={onNodeDragStop}
-        onConnect={onConnect}
-        onEdgesDelete={onEdgesDeleteHandler}
-        snapToGrid
-        snapGrid={[8, 8]}
-        fitView
-      >
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-        <MiniMap pannable zoomable />
-        <Controls />
-      </ReactFlow>
+      <ProvidersContext.Provider value={providers}>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onNodeDragStop={onNodeDragStop}
+          onConnect={onConnect}
+          onEdgesDelete={onEdgesDeleteHandler}
+          snapToGrid
+          snapGrid={[8, 8]}
+          fitView
+        >
+          <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+          <MiniMap pannable zoomable />
+          <Controls />
+        </ReactFlow>
+      </ProvidersContext.Provider>
 
       <CommandPalette
         open={paletteOpen}
@@ -245,6 +262,8 @@ function CanvasBoardInner() {
         onCreateNode={createNode}
         onFocusNode={focusNode}
       />
+
+      <ProvidersPanel open={providersOpen} onClose={() => setProvidersOpen(false)} onChanged={reloadProviders} />
     </div>
   );
 }

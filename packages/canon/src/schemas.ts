@@ -118,6 +118,8 @@ export const ProviderConfig = z.object({
   /** Nunca a chave em texto puro — referência ao keychain/variável de ambiente. */
   apiKeyRef: z.string().optional(),
   model: z.string().optional(),
+  /** Binário/CLI para provedores baseados em processo (ex.: "openai-codex", "codex" ou caminho absoluto). */
+  cmd: z.string().optional(),
   healthy: z.boolean().optional(),
   lastCheckedAt: z.string().datetime().optional(),
 });
@@ -233,6 +235,8 @@ export const CanvasNode = z.object({
   status: ExecutionNodeStatus.optional(),
   log: z.array(z.string()).default([]),
   position: CanvasPosition,
+  /** Provedor LLM padrão deste nó (id de um ProviderConfig) — usado por Agent/Squad. */
+  providerId: z.string().optional(),
   createdAt: z.string().datetime().default(() => new Date().toISOString()),
   updatedAt: z.string().datetime().optional(),
 });
