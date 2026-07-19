@@ -1,0 +1,16 @@
+{
+  "name": "genius-allspark",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Monorepo do Genius Allspark Canvas — packages/* (lógica compartilhada) e apps/* (aplicações).",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w packages/canon -w packages/constructor -w apps/canvas",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  }
+}
