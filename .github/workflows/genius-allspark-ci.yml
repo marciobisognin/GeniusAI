@@ -43,7 +43,7 @@ jobs:
       # compilar antes. "npm run build" na raiz já respeita essa ordem
       # (ver package.json) — não trocar por "--workspaces" genérico sem
       # garantir a ordem de dependência entre os pacotes.
-      - name: Build (ordem de dependência: canon → constructor → canvas)
+      - name: "Build (ordem de dependência: canon → constructor → canvas)"
         run: npm run build
 
       - name: Typecheck (todos os workspaces, já com os tipos compilados)
