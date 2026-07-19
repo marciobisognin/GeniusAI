@@ -14,6 +14,7 @@ import {
   Squad,
   Task,
 } from "@genius/canon";
+import { createAdapter } from "@genius/providers";
 import { createRepository, migrate, openDatabase, type Repository } from "./db.js";
 
 export interface BuildServerOptions {
@@ -79,6 +80,32 @@ function registerCrud(app: FastifyInstance, path: string, repo: Repository<{ id:
   });
 }
 
+/**
+ * Testa a conexão de um provedor de verdade — chama `healthy()` do adapter
+ * real (HTTP ou processo, conforme o tipo) e persiste o resultado. A chamada
+ * de rede/processo acontece aqui, no servidor — nunca no navegador, para que
+ * a chave de API (resolvida de `apiKeyRef` via variável de ambiente) nunca
+ * trafegue para o cliente.
+ */
+function registerProviderHealthCheck(app: FastifyInstance, repo: Repository<ProviderConfig>) {
+  app.post("/providers/:id/health-check", async (request, reply) => {
+    const { id } = request.params as { id: string };
+    const config = repo.getById(id);
+    if (!config) return reply.code(404).send({ error: "not_found" });
+
+    let healthy: boolean;
+    try {
+      const adapter = createAdapter(config);
+      healthy = await adapter.healthy();
+    } catch (err) {
+      return reply.code(400).send({ error: "adapter_error", detail: String(err) });
+    }
+
+    const updated = repo.update(id, { healthy, lastCheckedAt: new Date().toISOString() });
+    return updated;
+  });
+}
+
 /** Monta o servidor do Super Construtor. Não chama `.listen()` — quem chama decide a porta (produção vs. teste). */
 export function buildServer(options: BuildServerOptions = {}): ConstructorServer {
   const db = openDatabase(options.dbPath ?? ":memory:");
@@ -102,6 +129,7 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
   registerCrud(app, "memory-chunks", repos.memoryChunks);
   registerCrud(app, "canvas-nodes", repos.canvasNodes);
   registerCrud(app, "canvas-edges", repos.canvasEdges);
+  registerProviderHealthCheck(app, repos.providers);
 
   return { app, repos };
 }

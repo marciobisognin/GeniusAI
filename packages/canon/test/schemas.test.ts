@@ -82,6 +82,11 @@ describe("schemas canônicos — round-trip parse/serialize", () => {
     expect(provider.apiKeyRef).toBeUndefined();
   });
 
+  it("ProviderConfig aceita cmd para provedores baseados em CLI (ex.: openai-codex)", () => {
+    const provider = ProviderConfig.parse({ id: "prov2", tipo: "openai-codex", nome: "Codex", cmd: "codex" });
+    expect(provider.cmd).toBe("codex");
+  });
+
   it("Task, Run e Approval encadeiam pelo id", () => {
     const task = Task.parse({ id: "t1", descricao: "Preparar atesto da NF 2041" });
     const run = Run.parse({ id: "r1", taskId: task.id, status: "em_execucao" });
@@ -125,6 +130,16 @@ describe("schemas canônicos — round-trip parse/serialize", () => {
     expect(execution.status).toBe("executando");
     expect(() => CanvasNode.parse({ id: "cn3", kind: "note" })).toThrow();
     expect(() => CanvasNode.parse({ id: "cn4", kind: "invalido", position: { x: 0, y: 0 } })).toThrow();
+  });
+
+  it("CanvasNode de agente referencia um provedor", () => {
+    const agentNode = CanvasNode.parse({
+      id: "cn5",
+      kind: "agent",
+      position: { x: 0, y: 0 },
+      providerId: "prov1",
+    });
+    expect(agentNode.providerId).toBe("prov1");
   });
 
   it("CanvasEdge conecta dois nós pelo id", () => {
