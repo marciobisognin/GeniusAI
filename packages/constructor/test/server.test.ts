@@ -212,4 +212,26 @@ describe("servidor do Super Construtor (Fastify)", () => {
     expect(checked.statusCode).toBe(400);
     expect(checked.json().error).toBe("adapter_error");
   });
+
+  it("POST /library/import roda contra os arquivos REAIS do monorepo e persiste com diff", async () => {
+    const first = await server.app.inject({ method: "POST", url: "/library/import" });
+    expect(first.statusCode).toBe(200);
+    const firstBody = first.json();
+    expect(firstBody.totalAgentes).toBeGreaterThan(20); // 12 so-ia + 8 foresight + 4 civilizations
+    expect(firstBody.totalSquads).toBe(7);
+    expect(firstBody.agentesNovos.length).toBe(firstBody.totalAgentes);
+    expect(firstBody.agentesExistentes).toHaveLength(0);
+
+    const listed = await server.app.inject({ method: "GET", url: "/agents" });
+    expect(listed.json()).toHaveLength(firstBody.totalAgentes);
+
+    // Rodar de novo é idempotente: tudo que já existia agora é "existente", nada duplica.
+    const second = await server.app.inject({ method: "POST", url: "/library/import" });
+    const secondBody = second.json();
+    expect(secondBody.agentesNovos).toHaveLength(0);
+    expect(secondBody.agentesExistentes.length).toBe(firstBody.totalAgentes);
+
+    const listedAgain = await server.app.inject({ method: "GET", url: "/agents" });
+    expect(listedAgain.json()).toHaveLength(firstBody.totalAgentes); // sem duplicatas
+  });
 });

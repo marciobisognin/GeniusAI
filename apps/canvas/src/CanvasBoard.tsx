@@ -24,6 +24,7 @@ import { nodeTypes, type CanvasFlowNode } from "./nodes/index.js";
 import { CommandPalette } from "./palette/CommandPalette.js";
 import { ProvidersContext } from "./providers/ProvidersContext.js";
 import { ProvidersPanel } from "./providers/ProvidersPanel.js";
+import { LIBRARY_DRAG_MIME, LibraryPanel, type LibraryDragPayload } from "./library/LibraryPanel.js";
 
 function debounce<Args extends unknown[]>(fn: (...args: Args) => void, ms: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -56,11 +57,12 @@ function CanvasBoardInner() {
   const [status, setStatus] = useState<"carregando" | "conectado" | "offline">("carregando");
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [providersOpen, setProvidersOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const reloadProviders = useCallback(() => {
     void providersApi.list().then(setProviders);
   }, []);
-  const { setCenter, getNode } = useReactFlow<CanvasFlowNode>();
+  const { setCenter, getNode, screenToFlowPosition } = useReactFlow<CanvasFlowNode>();
   const persistPositionDebounced = useRef(
     debounce((id: string, position: { x: number; y: number }) => {
       void canvasApi.updateNode(id, { position }).catch(() => setStatus("offline"));
@@ -166,6 +168,43 @@ function CanvasBoardInner() {
     [setNodes, handleUpdateNode, handleDeleteNode],
   );
 
+  /** Instancia um nó real ligado a um Agent/Squad do banco (refId) — não uma cópia solta. */
+  const createNodeFromLibrary = useCallback(
+    (payload: LibraryDragPayload, position: { x: number; y: number }) => {
+      const id = crypto.randomUUID();
+      const canvasNode: CanvasNode = {
+        id,
+        kind: payload.kind,
+        refId: payload.id,
+        title: payload.nome,
+        content: "",
+        log: [],
+        position,
+        createdAt: new Date().toISOString(),
+      };
+      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode)]);
+      void canvasApi.createNode(canvasNode).catch(() => setStatus("offline"));
+    },
+    [setNodes, handleUpdateNode, handleDeleteNode],
+  );
+
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      const raw = e.dataTransfer.getData(LIBRARY_DRAG_MIME);
+      if (!raw) return;
+      const payload = JSON.parse(raw) as LibraryDragPayload;
+      const position = screenToFlowPosition({ x: e.clientX, y: e.clientY });
+      createNodeFromLibrary(payload, position);
+    },
+    [screenToFlowPosition, createNodeFromLibrary],
+  );
+
   const focusNode = useCallback(
     (id: string) => {
       const node = getNode(id);
@@ -233,26 +272,31 @@ function CanvasBoardInner() {
         <button type="button" onClick={() => setProvidersOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Provedores
         </button>
+        <button type="button" onClick={() => setLibraryOpen(true)} style={{ padding: "4px 8px", cursor: "pointer" }}>
+          Biblioteca
+        </button>
       </div>
 
       <ProvidersContext.Provider value={providers}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeDragStop={onNodeDragStop}
-          onConnect={onConnect}
-          onEdgesDelete={onEdgesDeleteHandler}
-          snapToGrid
-          snapGrid={[8, 8]}
-          fitView
-        >
-          <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-          <MiniMap pannable zoomable />
-          <Controls />
-        </ReactFlow>
+        <div style={{ width: "100%", height: "100%" }} onDragOver={onDragOver} onDrop={onDrop}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={nodeTypes}
+            onNodesChange={onNodesChange}
+            onEdgesChange={onEdgesChange}
+            onNodeDragStop={onNodeDragStop}
+            onConnect={onConnect}
+            onEdgesDelete={onEdgesDeleteHandler}
+            snapToGrid
+            snapGrid={[8, 8]}
+            fitView
+          >
+            <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
+            <MiniMap pannable zoomable />
+            <Controls />
+          </ReactFlow>
+        </div>
       </ProvidersContext.Provider>
 
       <CommandPalette
@@ -264,6 +308,7 @@ function CanvasBoardInner() {
       />
 
       <ProvidersPanel open={providersOpen} onClose={() => setProvidersOpen(false)} onChanged={reloadProviders} />
+      <LibraryPanel open={libraryOpen} onClose={() => setLibraryOpen(false)} />
     </div>
   );
 }

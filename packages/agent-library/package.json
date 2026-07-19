@@ -1,0 +1,28 @@
+{
+  "name": "@genius/agent-library",
+  "version": "0.1.0",
+  "description": "Biblioteca de Agentes & Squads — importadores puros dos catálogos reais de so-ia, geniusai-foresight e geniusai-civilizations.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@genius/canon": "^0.1.0",
+    "typescript": "^5.6.2",
+    "yaml": "^2.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.4",
+    "vitest": "^2.1.1"
+  }
+}

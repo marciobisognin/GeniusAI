@@ -52,6 +52,7 @@ export const Squad = z.object({
   liderAgentId: z.string().optional(),
   desempenho: z.number().min(0).max(1).optional(),
   origem: EntityOrigin.default("criado"),
+  origemDetalhe: z.string().optional(),
   companyId: z.string().optional(),
   createdAt: z.string().datetime().default(() => new Date().toISOString()),
 });

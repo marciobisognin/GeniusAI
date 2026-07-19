@@ -58,7 +58,12 @@ export interface Repository<T extends { id: string }> {
 export function createRepository<T extends { id: string }>(
   db: Database.Database,
   table: TableName,
-  schema: z.ZodType<T>,
+  // Input propositalmente "any": schemas com `.default(...)` (a maioria das
+  // entidades do canon) têm tipo de entrada diferente do de saída (campos
+  // opcionais na entrada, resolvidos no output) — fixar Input=T aqui
+  // quebraria a atribuição de `Agent`/`Squad`/etc. Só o output (T) importa
+  // para o Repository; o que entra em `.parse()` é sempre `unknown` mesmo.
+  schema: z.ZodType<T, z.ZodTypeDef, any>,
 ): Repository<T> {
   const upsertStmt = db.prepare(`
     INSERT INTO ${table} (id, data) VALUES (@id, @data)
