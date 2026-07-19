@@ -38,11 +38,16 @@ jobs:
       - name: Instalar dependências do workspace
         run: npm ci
 
-      - name: Typecheck (todos os workspaces)
+      # Ordem importa: packages/constructor importa tipos e runtime de
+      # @genius/canon a partir de node_modules (dist/), então canon precisa
+      # compilar antes. "npm run build" na raiz já respeita essa ordem
+      # (ver package.json) — não trocar por "--workspaces" genérico sem
+      # garantir a ordem de dependência entre os pacotes.
+      - name: Build (ordem de dependência: canon → constructor → canvas)
+        run: npm run build
+
+      - name: Typecheck (todos os workspaces, já com os tipos compilados)
         run: npm run typecheck --workspaces --if-present
 
-      - name: Testes (todos os workspaces)
+      - name: Testes (todos os workspaces, já com o runtime compilado)
         run: npm run test --workspaces --if-present
-
-      - name: Build (todos os workspaces)
-        run: npm run build --workspaces --if-present
