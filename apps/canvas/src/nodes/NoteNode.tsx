@@ -2,7 +2,7 @@ import type { NodeProps } from "@xyflow/react";
 import { NodeShell } from "./NodeShell.js";
 import type { CanvasFlowNode } from "./types.js";
 
-const NOTE_GRAY = "#6b7280";
+const NOTE_GRAY = "var(--cor-texto-suave)";
 
 export function NoteNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete } = data;
@@ -12,14 +12,14 @@ export function NoteNode({ data }: NodeProps<CanvasFlowNode>) {
         value={canvasNode.title}
         placeholder="Título"
         onChange={(e) => onUpdate({ title: e.target.value })}
-        style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 4, padding: 4, marginBottom: 4 }}
+        style={{ width: "100%", border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 4, marginBottom: 4 }}
       />
       <textarea
         value={canvasNode.content}
         placeholder="Escreva aqui..."
         onChange={(e) => onUpdate({ content: e.target.value })}
         rows={3}
-        style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 4, padding: 4, resize: "vertical" }}
+        style={{ width: "100%", border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 4, resize: "vertical" }}
       />
     </NodeShell>
   );

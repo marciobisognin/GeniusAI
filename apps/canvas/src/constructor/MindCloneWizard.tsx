@@ -67,9 +67,9 @@ export function MindCloneWizard({ onCreated }: MindCloneWizardProps) {
   }
 
   return (
-    <div style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: 12, marginTop: 12 }}>
+    <div style={{ border: "1px solid var(--cor-borda)", borderRadius: 6, padding: 12, marginTop: 12 }}>
       <strong>Criar Mind-Clone</strong>
-      <p style={{ color: "#6b7280", fontSize: 11, marginTop: 2 }}>
+      <p style={{ color: "var(--cor-texto-suave)", fontSize: 11, marginTop: 2 }}>
         Perfil cognitivo estruturado de uma pessoa real — a base de DNA de um agente.
       </p>
 
@@ -77,18 +77,18 @@ export function MindCloneWizard({ onCreated }: MindCloneWizardProps) {
         placeholder="Nome da pessoa"
         value={nome}
         onChange={(e) => setNome(e.target.value)}
-        style={{ width: "100%", padding: 6, margin: "6px 0", border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ width: "100%", padding: 6, margin: "6px 0", border: "1px solid var(--cor-borda)", borderRadius: 4 }}
       />
 
       {LAYERS.map(({ key, label, ajuda }) => (
         <div key={key} style={{ marginBottom: 6 }}>
           <label style={{ fontSize: 12, fontWeight: 600 }}>{label}</label>
-          <div style={{ color: "#9ca3af", fontSize: 11 }}>{ajuda}</div>
+          <div style={{ color: "var(--cor-texto-apagado)", fontSize: 11 }}>{ajuda}</div>
           <textarea
             value={layers[key] ?? ""}
             onChange={(e) => setLayers((current) => ({ ...current, [key]: e.target.value }))}
             rows={2}
-            style={{ width: "100%", padding: 4, border: "1px solid #e5e7eb", borderRadius: 4, resize: "vertical" }}
+            style={{ width: "100%", padding: 4, border: "1px solid var(--cor-borda)", borderRadius: 4, resize: "vertical" }}
           />
         </div>
       ))}
@@ -100,7 +100,7 @@ export function MindCloneWizard({ onCreated }: MindCloneWizardProps) {
         onChange={(e) => setDocNames(Array.from(e.target.files ?? []).map((f) => f.name))}
         style={{ display: "block", margin: "4px 0" }}
       />
-      {docNames.length > 0 && <div style={{ fontSize: 11, color: "#6b7280" }}>{docNames.join(", ")}</div>}
+      {docNames.length > 0 && <div style={{ fontSize: 11, color: "var(--cor-texto-suave)" }}>{docNames.join(", ")}</div>}
 
       <label style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, marginTop: 8 }}>
         <input type="checkbox" checked={criarAgenteJunto} onChange={(e) => setCriarAgenteJunto(e.target.checked)} />
@@ -110,7 +110,7 @@ export function MindCloneWizard({ onCreated }: MindCloneWizardProps) {
       <button type="button" onClick={criar} disabled={busy || !nome.trim()} style={{ marginTop: 8, padding: 6, cursor: "pointer" }}>
         {busy ? "Criando..." : "Criar Mind-Clone"}
       </button>
-      {done && <div style={{ color: "#16a34a", fontSize: 12, marginTop: 4 }}>Criado: {done}</div>}
+      {done && <div style={{ color: "var(--cor-sucesso)", fontSize: 12, marginTop: 4 }}>Criado: {done}</div>}
     </div>
   );
 }

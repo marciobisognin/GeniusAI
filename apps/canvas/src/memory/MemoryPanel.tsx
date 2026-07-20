@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { memoryApi, type MemorySearchResult } from "../api/memoryApi.js";
+import { humanizeApiError } from "../api/client.js";
 
 export interface MemoryPanelProps {
   open: boolean;
@@ -32,7 +33,7 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
       setResults(await memoryApi.search(query.trim(), 5));
       setSearched(true);
     } catch (err) {
-      setError(String(err));
+      setError(humanizeApiError(err));
     } finally {
       setSearching(false);
     }
@@ -50,11 +51,11 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
         right: 0,
         bottom: 0,
         width: 420,
-        background: "#fff",
-        borderLeft: "1px solid #e5e7eb",
+        background: "var(--cor-fundo)",
+        borderLeft: "1px solid var(--cor-borda)",
         boxShadow: "-4px 0 12px rgba(0,0,0,0.08)",
         zIndex: 900,
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--fonte-ui)",
         fontSize: 13,
         overflowY: "auto",
         padding: 16,
@@ -67,7 +68,7 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
         </button>
       </div>
 
-      <p style={{ color: "#6b7280", marginTop: 0 }}>
+      <p style={{ color: "var(--cor-texto-suave)", marginTop: 0 }}>
         Busca por significado em execuções aprovadas, não por palavra-chave exata.
       </p>
 
@@ -79,22 +80,22 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
           onKeyDown={(e) => {
             if (e.key === "Enter") void handleSearch();
           }}
-          style={{ flex: 1, border: "1px solid #e5e7eb", borderRadius: 4, padding: 6 }}
+          style={{ flex: 1, border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 6 }}
         />
         <button type="button" onClick={handleSearch} disabled={searching || !query.trim()} style={{ padding: "6px 10px", cursor: "pointer" }}>
           {searching ? "Buscando..." : "Buscar"}
         </button>
       </div>
 
-      {error && <div style={{ color: "#dc2626", marginBottom: 8 }}>{error}</div>}
+      {error && <div style={{ color: "var(--cor-erro)", marginBottom: 8 }}>{error}</div>}
 
       {searched && results.length === 0 && !error && (
-        <div style={{ color: "#9ca3af" }}>Nada relevante encontrado na memória ainda.</div>
+        <div style={{ color: "var(--cor-texto-apagado)" }}>Nada relevante encontrado na memória ainda.</div>
       )}
 
       <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
         {results.map((r) => (
-          <li key={r.id} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: 8, marginBottom: 8 }}>
+          <li key={r.id} style={{ border: "1px solid var(--cor-borda)", borderRadius: 6, padding: 8, marginBottom: 8 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
               <span
                 style={{
@@ -102,15 +103,15 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
                   borderRadius: 4,
                   fontSize: 11,
                   color: "#fff",
-                  background: "#7c3aed",
+                  background: "var(--cor-squad)",
                 }}
               >
                 {SOURCE_LABEL[r.sourceType] ?? r.sourceType}
               </span>
-              <span style={{ color: "#6b7280", fontSize: 11 }}>score {r.score.toFixed(2)}</span>
+              <span style={{ color: "var(--cor-texto-suave)", fontSize: 11 }}>score {r.score.toFixed(2)}</span>
             </div>
             <div>{r.text}</div>
-            <div style={{ color: "#9ca3af", fontSize: 11, marginTop: 4 }}>
+            <div style={{ color: "var(--cor-texto-apagado)", fontSize: 11, marginTop: 4 }}>
               origem: {r.sourceId} · {new Date(r.createdAt).toLocaleString()}
             </div>
           </li>

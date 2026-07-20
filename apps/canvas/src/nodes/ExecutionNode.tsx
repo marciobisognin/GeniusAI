@@ -5,11 +5,11 @@ import { NodeShell } from "./NodeShell.js";
 import type { CanvasFlowNode } from "./types.js";
 
 const STATUS_COLOR: Record<ExecutionNodeStatus, string> = {
-  aguardando: "#6b7280",
-  executando: "#2563eb",
-  aguardando_aprovacao: "#d97706",
-  concluido: "#16a34a",
-  erro: "#dc2626",
+  aguardando: "var(--cor-texto-suave)",
+  executando: "var(--cor-agente)",
+  aguardando_aprovacao: "var(--cor-aprovacao)",
+  concluido: "var(--cor-sucesso)",
+  erro: "var(--cor-erro)",
 };
 
 const STATUS_LABEL: Record<ExecutionNodeStatus, string> = {
@@ -70,23 +70,23 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
         value={canvasNode.title}
         placeholder="O que esta execução representa"
         onChange={(e) => onUpdate({ title: e.target.value })}
-        style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 4, padding: 4, marginBottom: 4 }}
+        style={{ width: "100%", border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 4, marginBottom: 4 }}
       />
       <div
         style={{
-          background: "#f9fafb",
-          border: "1px solid #e5e7eb",
+          background: "var(--cor-fundo-suave)",
+          border: "1px solid var(--cor-borda)",
           borderRadius: 4,
           padding: 4,
           maxHeight: 80,
           overflowY: "auto",
-          fontFamily: "monospace",
+          fontFamily: "var(--fonte-mono)",
           fontSize: 11,
           marginBottom: 4,
         }}
       >
         {canvasNode.log.length === 0 ? (
-          <span style={{ color: "#9ca3af" }}>sem eventos ainda</span>
+          <span style={{ color: "var(--cor-texto-apagado)" }}>sem eventos ainda</span>
         ) : (
           canvasNode.log.map((line, i) => <div key={i}>{line}</div>)
         )}
@@ -97,14 +97,14 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
             <button
               type="button"
               onClick={() => decidir("aprovado")}
-              style={{ flex: 1, border: "1px solid #16a34a", borderRadius: 4, padding: 4, background: "#16a34a", color: "#fff", cursor: "pointer" }}
+              style={{ flex: 1, border: "1px solid var(--cor-sucesso)", borderRadius: 4, padding: 4, background: "var(--cor-sucesso)", color: "#fff", cursor: "pointer" }}
             >
               Aprovar
             </button>
             <button
               type="button"
               onClick={() => decidir("rejeitado")}
-              style={{ flex: 1, border: "1px solid #dc2626", borderRadius: 4, padding: 4, background: "#fff", color: "#dc2626", cursor: "pointer" }}
+              style={{ flex: 1, border: "1px solid var(--cor-erro)", borderRadius: 4, padding: 4, background: "var(--cor-fundo)", color: "var(--cor-erro)", cursor: "pointer" }}
             >
               Rejeitar
             </button>
@@ -116,10 +116,10 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
           onClick={avancar}
           style={{
             width: "100%",
-            border: "1px solid #e5e7eb",
+            border: "1px solid var(--cor-borda)",
             borderRadius: 4,
             padding: 4,
-            background: "#fff",
+            background: "var(--cor-fundo)",
             cursor: "pointer",
           }}
         >

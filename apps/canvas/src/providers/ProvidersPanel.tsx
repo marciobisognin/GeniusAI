@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ProviderConfig, ProviderType } from "@genius/canon";
 import { providersApi } from "../api/providersApi.js";
+import { humanizeApiError } from "../api/client.js";
 
 export interface ProvidersPanelProps {
   open: boolean;
@@ -53,7 +54,7 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
       await reload();
       onChanged();
     } catch (err) {
-      setError(String(err));
+      setError(humanizeApiError(err));
     }
   }
 
@@ -86,11 +87,11 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
         right: 0,
         bottom: 0,
         width: 420,
-        background: "#fff",
-        borderLeft: "1px solid #e5e7eb",
+        background: "var(--cor-fundo)",
+        borderLeft: "1px solid var(--cor-borda)",
         boxShadow: "-4px 0 12px rgba(0,0,0,0.08)",
         zIndex: 900,
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--fonte-ui)",
         fontSize: 13,
         overflowY: "auto",
         padding: 16,
@@ -104,11 +105,11 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
       </div>
 
       <ul style={{ listStyle: "none", margin: 0, padding: 0, marginBottom: 16 }}>
-        {providers.length === 0 && <li style={{ color: "#9ca3af" }}>Nenhum provedor configurado ainda.</li>}
+        {providers.length === 0 && <li style={{ color: "var(--cor-texto-apagado)" }}>Nenhum provedor configurado ainda.</li>}
         {providers.map((p) => (
           <li
             key={p.id}
-            style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: 8, marginBottom: 8 }}
+            style={{ border: "1px solid var(--cor-borda)", borderRadius: 6, padding: 8, marginBottom: 8 }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <strong>{p.nome}</strong>
@@ -118,13 +119,13 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
                   borderRadius: 4,
                   fontSize: 11,
                   color: "#fff",
-                  background: p.healthy === true ? "#16a34a" : p.healthy === false ? "#dc2626" : "#6b7280",
+                  background: p.healthy === true ? "var(--cor-sucesso)" : p.healthy === false ? "var(--cor-erro)" : "var(--cor-texto-suave)",
                 }}
               >
                 {p.healthy === true ? "saudável" : p.healthy === false ? "com falha" : "não testado"}
               </span>
             </div>
-            <div style={{ color: "#6b7280", fontSize: 11, marginBottom: 6 }}>
+            <div style={{ color: "var(--cor-texto-suave)", fontSize: 11, marginBottom: 6 }}>
               {p.tipo}
               {p.lastCheckedAt ? ` · testado em ${new Date(p.lastCheckedAt).toLocaleTimeString()}` : ""}
             </div>
@@ -149,7 +150,7 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
             </option>
           ))}
         </select>
-        <span style={{ color: "#9ca3af", fontSize: 11 }}>
+        <span style={{ color: "var(--cor-texto-apagado)", fontSize: 11 }}>
           {PROVIDER_TYPES.find((t) => t.value === form.tipo)?.hint}
         </span>
         <input placeholder="Nome (ex.: Ollama local)" value={form.nome} onChange={(e) => setForm({ ...form, nome: e.target.value })} />
@@ -159,7 +160,7 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
         {form.tipo === "openai-codex" && (
           <input placeholder="cmd — binário do CLI (ex.: codex)" value={form.cmd} onChange={(e) => setForm({ ...form, cmd: e.target.value })} />
         )}
-        {error && <span style={{ color: "#dc2626" }}>{error}</span>}
+        {error && <span style={{ color: "var(--cor-erro)" }}>{error}</span>}
         <button type="button" onClick={handleCreate} style={{ padding: 6, cursor: "pointer" }}>
           Adicionar provedor
         </button>

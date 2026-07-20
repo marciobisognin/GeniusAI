@@ -12,7 +12,7 @@ export function ProviderSelect({ value, onChange }: ProviderSelectProps) {
     <select
       value={value ?? ""}
       onChange={(e) => onChange(e.target.value || undefined)}
-      style={{ width: "100%", border: "1px solid #e5e7eb", borderRadius: 4, padding: 4, marginBottom: 4 }}
+      style={{ width: "100%", border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 4, marginBottom: 4 }}
     >
       <option value="">(sem provedor — usa o padrão do sistema)</option>
       {providers.map((p) => (
