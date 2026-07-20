@@ -112,7 +112,15 @@ export function MemoryPanel({ open, onClose }: MemoryPanelProps) {
             </div>
             <div>{r.text}</div>
             <div style={{ color: "var(--cor-texto-apagado)", fontSize: 11, marginTop: 4 }}>
-              origem: {r.sourceId} · {new Date(r.createdAt).toLocaleString()}
+              {r.procedencia ? (
+                <>
+                  da tarefa "{r.procedencia.taskDescricao}"
+                  {r.procedencia.agenteNome ? ` (${r.procedencia.agenteNome})` : ""} · aprovado em{" "}
+                  {new Date(r.procedencia.aprovadoEm).toLocaleString()}
+                </>
+              ) : (
+                <>origem: {r.sourceId} · {new Date(r.createdAt).toLocaleString()}</>
+              )}
             </div>
           </li>
         ))}

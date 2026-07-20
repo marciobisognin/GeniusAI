@@ -173,6 +173,13 @@ describe("Motor de Aprendizado + Memória Indexada (Etapa 6)", () => {
     const search = await httpJson(port, "GET", "/memory/search?q=Conferir%20NF%20contra%20empenho");
     expect(search.status).toBe(200);
     expect(search.json[0].sourceId).toBe(flows.json[0].id);
+
+    // procedência legível: não é para o painel Memória mostrar um UUID solto
+    expect(search.json[0].procedencia).toEqual({
+      taskDescricao: "Confira a NF 2041 do contrato 12/2025",
+      agenteNome: "Agente de Atesto de Nota Fiscal",
+      aprovadoEm: flows.json[0].createdAt,
+    });
   });
 
   it("rodar a mesma tarefa de novo injeta o contexto de memória da primeira execução aprovada, visível no log", async () => {
