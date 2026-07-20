@@ -8,6 +8,16 @@ export interface ExecutionStreamEvent {
   approvalId?: string;
 }
 
+/** Resposta do resolve — inclui o que o sistema aprendeu com a aprovação (Etapa 6), quando houve. */
+export interface ApprovalResolution {
+  status: "aprovado" | "rejeitado";
+  aprendizado?: {
+    taskPattern: string;
+    tags: string[];
+    skillPromovida: string | null;
+  } | null;
+}
+
 /** Cliente do Motor de Execução (Etapa 5) — dispara a corrida e consome o SSE ao vivo. */
 export const executionApi = {
   async run(canvasNodeId: string, taskDescription: string): Promise<{ runId: string; taskId: string }> {
@@ -32,7 +42,11 @@ export const executionApi = {
     return () => source.close();
   },
 
-  async resolveApproval(approvalId: string, status: "aprovado" | "rejeitado", comentario?: string): Promise<void> {
+  async resolveApproval(
+    approvalId: string,
+    status: "aprovado" | "rejeitado",
+    comentario?: string,
+  ): Promise<ApprovalResolution> {
     const res = await fetch(`${BASE_URL}/approvals/${approvalId}/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -42,5 +56,6 @@ export const executionApi = {
       const body = await res.text().catch(() => "");
       throw new Error(`POST /approvals/${approvalId}/resolve -> ${res.status}: ${body}`);
     }
+    return res.json();
   },
 };

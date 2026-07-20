@@ -36,7 +36,7 @@ const NEXT_STATUS: Record<ExecutionNodeStatus, ExecutionNodeStatus> = {
  * botão manual de simulação para prototipagem livre no canvas.
  */
 export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
-  const { canvasNode, onUpdate, onDelete } = data;
+  const { canvasNode, onUpdate, onDelete, onNotify } = data;
   const status = canvasNode.status ?? "aguardando";
   const isRealRun = Boolean(canvasNode.refId);
   const approvalId = canvasNode.content || undefined;
@@ -49,7 +49,14 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
 
   async function decidir(decisao: "aprovado" | "rejeitado") {
     if (!approvalId) return;
-    await executionApi.resolveApproval(approvalId, decisao);
+    const resolution = await executionApi.resolveApproval(approvalId, decisao);
+    // O aprendizado da Etapa 6 acontecia em silêncio — este é o momento de contar ao usuário.
+    if (resolution.aprendizado) {
+      onNotify?.("aprendizado", `Aprendizado registrado: "${resolution.aprendizado.taskPattern}"`);
+      if (resolution.aprendizado.skillPromovida) {
+        onNotify?.("aprendizado", `Nova skill promovida por uso real: "${resolution.aprendizado.skillPromovida}"`);
+      }
+    }
   }
 
   return (

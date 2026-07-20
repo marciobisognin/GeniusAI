@@ -119,12 +119,22 @@ aprendizado reutilizável — sem esperar nenhum comando extra:
 | 4. Promoção de Skill | Se o mesmo padrão se repete (mesmo agente, mesma tag) três vezes ou mais, uma `Skill` formal nasce sozinha na Biblioteca, com `origem: "gerada"`. |
 | 5. Próxima execução | Antes de rodar uma tarefa nova, o motor busca os trechos mais relevantes na memória e injeta como contexto — visível no log como `Memória: N trecho(s) relevante(s)... injetado(s)`. |
 
+O aprendizado não acontece mais em silêncio: ao aprovar, um aviso no canto
+do canvas conta o que foi registrado ("✦ Aprendizado registrado: ...") — e
+quando um padrão se repete o suficiente, o aviso de skill promovida também
+aparece na hora.
+
 Para ver isso ao vivo: rode a mesma tarefa duas vezes seguidas (aprovando a
 primeira). Na segunda vez, o `ExecutionNode` mostra a linha de "Memória:"
 logo no início — o sistema literalmente ficou melhor depois da primeira
 aprovação. O painel **Memória** (botão no topo do canvas) deixa buscar por
 significado em qualquer momento, mostrando de qual execução/aprovação cada
 resultado veio.
+
+> **Primeiro contato:** com o canvas vazio, o centro da tela mostra os três
+> primeiros passos (provedor → biblioteca → arrastar e executar) com botões
+> que abrem os painéis certos — o guia some sozinho quando o primeiro nó
+> nasce.
 
 ### Etapa 7 — Integração ponta a ponta (comprovada)
 

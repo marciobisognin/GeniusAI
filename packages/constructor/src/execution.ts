@@ -223,12 +223,24 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
 
       // Etapa 6: toda aprovação positiva vira aprendizado — best-effort, uma
       // falha aqui (ex.: provedor indisponível) não pode derrubar a aprovação já concluída.
+      // O que foi aprendido volta na resposta, para o canvas poder CONTAR ao
+      // usuário que o sistema aprendeu (em vez de aprender em silêncio).
       if (body.status === "aprovado" && run.providerId) {
         const providerConfig = repos.providers.getById(run.providerId);
         if (providerConfig) {
           try {
             const adapter = createAdapter(providerConfig);
-            await recordApprovedRun(run.id, repos, memory, adapter);
+            const learning = await recordApprovedRun(run.id, repos, memory, adapter);
+            if (learning) {
+              return {
+                ...updated,
+                aprendizado: {
+                  taskPattern: learning.flow.taskPattern,
+                  tags: learning.flow.tags,
+                  skillPromovida: learning.promotedSkill?.nome ?? null,
+                },
+              };
+            }
           } catch {
             // silencioso de propósito — o aprendizado é um extra, não pode quebrar a aprovação humana.
           }

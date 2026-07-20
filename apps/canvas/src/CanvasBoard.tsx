@@ -27,6 +27,8 @@ import { ProvidersContext } from "./providers/ProvidersContext.js";
 import { ProvidersPanel } from "./providers/ProvidersPanel.js";
 import { LIBRARY_DRAG_MIME, LibraryPanel, type LibraryDragPayload } from "./library/LibraryPanel.js";
 import { MemoryPanel } from "./memory/MemoryPanel.js";
+import { EmptyStateGuide } from "./ui/EmptyStateGuide.js";
+import { ToastHost, useToasts, type ToastKind } from "./ui/Toasts.js";
 
 function debounce<Args extends unknown[]>(fn: (...args: Args) => void, ms: number) {
   let timer: ReturnType<typeof setTimeout> | undefined;
@@ -41,6 +43,7 @@ function toFlowNode(
   onUpdate: (id: string, patch: Partial<CanvasNode>) => void,
   onDelete: (id: string) => void,
   onExecute?: (id: string, taskDescription: string) => void,
+  onNotify?: (kind: ToastKind, text: string) => void,
 ): CanvasFlowNode {
   return {
     id: canvasNode.id,
@@ -54,6 +57,7 @@ function toFlowNode(
         onExecute && (canvasNode.kind === "agent" || canvasNode.kind === "squad")
           ? (taskDescription: string) => onExecute(canvasNode.id, taskDescription)
           : undefined,
+      onNotify,
     },
   };
 }
@@ -67,8 +71,13 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
+  const [libraryCount, setLibraryCount] = useState(0);
+  const { toasts, notify, dismiss } = useToasts();
   const reloadProviders = useCallback(() => {
     void providersApi.list().then(setProviders);
+  }, []);
+  const reloadLibraryCount = useCallback(() => {
+    void apiClient.list("agents").then((agents) => setLibraryCount(agents.length));
   }, []);
   const { setCenter, getNode, screenToFlowPosition } = useReactFlow<CanvasFlowNode>();
   const persistPositionDebounced = useRef(
@@ -152,7 +161,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         try {
           ({ runId } = await executionApi.run(sourceNodeId, taskDescription));
         } catch (err) {
-          window.alert(`Não foi possível iniciar a execução: ${(err as Error).message}`);
+          notify("erro", `Não foi possível iniciar a execução: ${(err as Error).message}`);
           return;
         }
 
@@ -172,7 +181,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         };
         setNodes((current) => [
           ...current,
-          toFlowNode(executionCanvasNode, handleUpdateNode, handleDeleteNode, handleExecute),
+          toFlowNode(executionCanvasNode, handleUpdateNode, handleDeleteNode, handleExecute, notify),
         ]);
         void canvasApi.createNode(executionCanvasNode).catch(() => setStatus("offline"));
 
@@ -186,7 +195,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         activeStreams.current.set(runId, close);
       })();
     },
-    [getNode, setNodes, setEdges, handleUpdateNode, handleDeleteNode, applyExecutionEvent],
+    [getNode, setNodes, setEdges, handleUpdateNode, handleDeleteNode, applyExecutionEvent, notify],
   );
 
   useEffect(() => {
@@ -196,7 +205,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         await apiClient.health();
         const [canvasNodes, canvasEdges] = await Promise.all([canvasApi.listNodes(), canvasApi.listEdges()]);
         if (cancelled) return;
-        setNodes(canvasNodes.map((n) => toFlowNode(n, handleUpdateNode, handleDeleteNode, handleExecute)));
+        setNodes(canvasNodes.map((n) => toFlowNode(n, handleUpdateNode, handleDeleteNode, handleExecute, notify)));
         setEdges(canvasEdges.map((e) => ({ id: e.id, source: e.source, target: e.target })));
         setStatus("conectado");
 
@@ -220,7 +229,13 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
 
   useEffect(() => {
     reloadProviders();
-  }, [reloadProviders]);
+    reloadLibraryCount();
+  }, [reloadProviders, reloadLibraryCount]);
+
+  // Fechar a Biblioteca é o momento natural de reconferir se o passo 2 do primeiro contato foi cumprido.
+  useEffect(() => {
+    if (!libraryOpen) reloadLibraryCount();
+  }, [libraryOpen, reloadLibraryCount]);
 
   const onNodeDragStop = useCallback(
     (_event: unknown, node: CanvasFlowNode) => {
@@ -260,10 +275,10 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         createdAt: new Date().toISOString(),
         ...(kind === "execution" ? { status: "aguardando" as const } : {}),
       };
-      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute)]);
+      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute, notify)]);
       void canvasApi.createNode(canvasNode).catch(() => setStatus("offline"));
     },
-    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute],
+    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute, notify],
   );
 
   /** Instancia um nó real ligado a um Agent/Squad do banco (refId) — não uma cópia solta. */
@@ -280,10 +295,10 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         position,
         createdAt: new Date().toISOString(),
       };
-      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute)]);
+      setNodes((current) => [...current, toFlowNode(canvasNode, handleUpdateNode, handleDeleteNode, handleExecute, notify)]);
       void canvasApi.createNode(canvasNode).catch(() => setStatus("offline"));
     },
-    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute],
+    [setNodes, handleUpdateNode, handleDeleteNode, handleExecute, notify],
   );
 
   const onDragOver = useCallback((e: React.DragEvent) => {
@@ -411,9 +426,19 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         onFocusNode={focusNode}
       />
 
+      {status === "conectado" && nodes.length === 0 && (
+        <EmptyStateGuide
+          onOpenProviders={() => setProvidersOpen(true)}
+          onOpenLibrary={() => setLibraryOpen(true)}
+          hasProvider={providers.length > 0}
+          hasLibrary={libraryCount > 0}
+        />
+      )}
+
       <ProvidersPanel open={providersOpen} onClose={() => setProvidersOpen(false)} onChanged={reloadProviders} />
       <LibraryPanel open={libraryOpen} onClose={() => setLibraryOpen(false)} />
       <MemoryPanel open={memoryOpen} onClose={() => setMemoryOpen(false)} />
+      <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
