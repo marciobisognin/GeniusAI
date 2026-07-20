@@ -20,6 +20,12 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 
 ## Genius Allspark Canvas
 
+> **Quer só ver funcionando?** O
+> [Guia de Início Rápido](docs/GUIA-DE-INICIO-RAPIDO.md) tem um vídeo de
+> 30 segundos, screenshots passo a passo e o comando de uma linha
+> (`npx github:marciobisognin/GeniusAI`) para rodar tudo sem precisar ler
+> o resto desta seção.
+
 O monorepo `packages/*` + `apps/*` na raiz é o código do Canvas em si,
 seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md) —
 **as sete etapas do guia estão completas**, incluindo a Etapa 7 (prova de
@@ -35,7 +41,18 @@ integração ponta a ponta, veja a seção dedicada mais abaixo):
 | [`packages/constructor`](packages/constructor/) | 0/1/2/3/4/5/6 | Super Construtor v0: banco SQLite real, CRUD para as treze entidades do canon, `POST /providers/:id/health-check`, `POST /library/import`, "reaproveitar ou criar" (`/agents/match`, `/squads/match` — porte fiel do algoritmo de `so-ia/src/lib/org/matching.ts`), Packs (exportar/importar Company, mais a pasta `packs/` observada), o Motor de Execução (`POST /execution/run`, SSE em `GET /execution/runs/:id/events`, `POST /approvals/:id/resolve`) e o Motor de Aprendizado (toda aprovação gera um `LearningFlow` automaticamente, `GET /memory/search`) |
 | [`apps/canvas`](apps/canvas/) | 1/2/3/4/5/6 | O Motor do Canvas Infinito, os painéis "Provedores", "Biblioteca" e **"Memória"** (busca semântica com procedência), a tela **Super Construtor** (montar Company → Squad → Agent com formulários guiados que sugerem reaproveitar antes de criar, mais o wizard de Mind-Clone) e o botão **▶ Executar** em qualquer AgentNode/SquadNode, com o `ExecutionNode` mostrando os passos reais ao vivo (SSE) — incluindo quando o contexto de memória de execuções aprovadas anteriores é injetado — até concluir ou pedir aprovação humana |
 
-Rodar localmente:
+Rodar localmente — o jeito mais rápido, via `npx` (instala, compila e liga
+os dois servidores sozinho; veja o
+[Guia de Início Rápido](docs/GUIA-DE-INICIO-RAPIDO.md) para o passo a
+passo visual):
+
+```bash
+npx github:marciobisognin/GeniusAI    # direto do GitHub, sem clonar
+# ou, já com o repositório clonado:
+npx .
+```
+
+Ou manualmente, passo a passo:
 
 ```bash
 npm install

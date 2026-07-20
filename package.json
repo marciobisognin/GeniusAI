@@ -3,6 +3,9 @@
   "private": true,
   "version": "0.1.0",
   "description": "Monorepo do Genius Allspark Canvas — packages/* (lógica compartilhada) e apps/* (aplicações).",
+  "bin": {
+    "genius-allspark": "./bin/genius-allspark.mjs"
+  },
   "workspaces": [
     "packages/*",
     "apps/*"
