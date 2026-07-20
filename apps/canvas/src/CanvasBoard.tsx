@@ -27,6 +27,7 @@ import { ProvidersContext } from "./providers/ProvidersContext.js";
 import { ProvidersPanel } from "./providers/ProvidersPanel.js";
 import { LIBRARY_DRAG_MIME, LibraryPanel, type LibraryDragPayload } from "./library/LibraryPanel.js";
 import { MemoryPanel } from "./memory/MemoryPanel.js";
+import { encodeApprovalContent } from "./nodes/approvalContent.js";
 import { EmptyStateGuide } from "./ui/EmptyStateGuide.js";
 import { ToastHost, useToasts, type ToastKind } from "./ui/Toasts.js";
 
@@ -139,7 +140,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
           else if (event.type === "task.failed") patch.status = "erro";
           else if (event.type === "task.awaiting_approval") {
             patch.status = "aguardando_aprovacao";
-            patch.content = event.approvalId ?? cn.content;
+            patch.content = encodeApprovalContent({ approvalId: event.approvalId, autonomia: event.autonomia });
           } else patch.status = "executando";
           void canvasApi.updateNode(executionNodeId, patch).catch(() => setStatus("offline"));
           return { ...n, data: { ...n.data, canvasNode: { ...cn, ...patch } } };

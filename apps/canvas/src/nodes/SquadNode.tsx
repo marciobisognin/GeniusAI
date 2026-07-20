@@ -9,7 +9,7 @@ const SQUAD_PURPLE = "var(--cor-squad)";
 export function SquadNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete, onExecute } = data;
   return (
-    <NodeShell accentColor={SQUAD_PURPLE} kindLabel="Squad" title={canvasNode.title} onDelete={onDelete}>
+    <NodeShell accentColor={SQUAD_PURPLE} kindLabel="Squad" icon="▦" title={canvasNode.title} onDelete={onDelete}>
       <input
         value={canvasNode.title}
         placeholder="Nome do squad"

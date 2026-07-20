@@ -154,6 +154,8 @@ export const RunStep = z.object({
   message: z.string(),
   /** Presente só em `task.awaiting_approval` — precisa sobreviver ao replay do SSE para quem conecta depois do evento ao vivo. */
   approvalId: z.string().optional(),
+  /** Presente só em `task.awaiting_approval` — autonomia do Agent/líder que causou a pausa, para o canvas explicar o porquê ao humano. */
+  autonomia: z.string().optional(),
 });
 export type RunStep = z.infer<typeof RunStep>;
 

@@ -9,7 +9,7 @@ const AGENT_BLUE = "var(--cor-agente)";
 export function AgentNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete, onExecute } = data;
   return (
-    <NodeShell accentColor={AGENT_BLUE} kindLabel="Agente" title={canvasNode.title} onDelete={onDelete}>
+    <NodeShell accentColor={AGENT_BLUE} kindLabel="Agente" icon="◆" title={canvasNode.title} onDelete={onDelete}>
       <input
         value={canvasNode.title}
         placeholder="Nome do agente"

@@ -16,8 +16,10 @@ export interface ExecutionEvent {
   runId: string;
   message: string;
   ts: string;
-  /** Presente só em `task.awaiting_approval` — id do registro de Approval criado. */
+  /** Presente só em `task.awaiting_approval` — id do registro de Approval criado (preenchido por `packages/constructor`). */
   approvalId?: string;
+  /** Presente só em `task.awaiting_approval` — autonomia do Agent/líder que causou a pausa (preenchido por `packages/constructor`), para o canvas explicar o porquê. */
+  autonomia?: string;
 }
 
 export function nowIso(): string {
