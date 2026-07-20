@@ -109,13 +109,16 @@ async function collectUntilApproval(port: number, runId: string): Promise<any[]>
   return collectSseEvents(port, runId, 4, 2000);
 }
 
-async function runAndApprove(port: number, taskDescription: string): Promise<{ runId: string; approvalId: string }> {
+async function runAndApprove(
+  port: number,
+  taskDescription: string,
+): Promise<{ runId: string; approvalId: string; resolveBody: any }> {
   const run = await httpJson(port, "POST", "/execution/run", { canvasNodeId: "cn1", taskDescription });
   const { runId } = run.json;
   const events = await collectUntilApproval(port, runId);
   const approvalId = events.find((e) => e.type === "task.awaiting_approval")!.approvalId;
-  await httpJson(port, "POST", `/approvals/${approvalId}/resolve`, { status: "aprovado" });
-  return { runId, approvalId };
+  const resolved = await httpJson(port, "POST", `/approvals/${approvalId}/resolve`, { status: "aprovado" });
+  return { runId, approvalId, resolveBody: resolved.json };
 }
 
 describe("Motor de Aprendizado + Memória Indexada (Etapa 6)", () => {
@@ -147,10 +150,15 @@ describe("Motor de Aprendizado + Memória Indexada (Etapa 6)", () => {
 
   const GENERALIZATION = "PADRAO: Conferir NF contra empenho\nPASSOS: Localizar NF e empenho, comparar valores, registrar atesto\nTAGS: conferencia-nf";
 
-  it("aprovar um run gera um LearningFlow real e o indexa na memória vetorial", async () => {
+  it("aprovar um run gera um LearningFlow real, indexa na memória e CONTA o que aprendeu na resposta do resolve", async () => {
     await setupAgent("Atesto conferido: NF 2041 confere com o empenho 12/2025.", GENERALIZATION);
 
-    await runAndApprove(port, "Confira a NF 2041 do contrato 12/2025");
+    const { resolveBody } = await runAndApprove(port, "Confira a NF 2041 do contrato 12/2025");
+
+    // o canvas usa isto para notificar o usuário — aprender em silêncio era o problema
+    expect(resolveBody.aprendizado).toBeDefined();
+    expect(resolveBody.aprendizado.taskPattern).toBe("Conferir NF contra empenho");
+    expect(resolveBody.aprendizado.skillPromovida).toBeNull();
 
     const flows = await httpJson(port, "GET", "/learning-flows");
     expect(flows.json).toHaveLength(1);
@@ -205,7 +213,8 @@ describe("Motor de Aprendizado + Memória Indexada (Etapa 6)", () => {
     skills = await httpJson(port, "GET", "/skills");
     expect(skills.json).toHaveLength(0);
 
-    await runAndApprove(port, "Confira a NF 2043 do contrato 14/2025");
+    const { resolveBody } = await runAndApprove(port, "Confira a NF 2043 do contrato 14/2025");
+    expect(resolveBody.aprendizado.skillPromovida).toBe("conferencia-nf"); // a promoção também é contada na resposta
     skills = await httpJson(port, "GET", "/skills");
     expect(skills.json).toHaveLength(1);
     expect(skills.json[0].nome).toBe("conferencia-nf");

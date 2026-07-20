@@ -31,6 +31,12 @@ function resolveOriginAgent(run: Run, repos: LearningRepos): Agent | undefined {
   return undefined;
 }
 
+export interface RecordedLearning {
+  flow: LearningFlow;
+  /** Presente só quando esta aprovação cruzou o limiar e promoveu uma Skill nova. */
+  promotedSkill: Skill | null;
+}
+
 /**
  * Gatilho da Etapa 6: chamado quando uma `Approval` vira "aprovado" (Etapa
  * 5). Generaliza a execução num `LearningFlow`, indexa o resultado na
@@ -42,7 +48,7 @@ export async function recordApprovedRun(
   repos: LearningRepos,
   memory: LearningMemory,
   adapter: LLMProviderAdapter,
-): Promise<LearningFlow | null> {
+): Promise<RecordedLearning | null> {
   const run = repos.runs.getById(runId);
   if (!run) return null;
   const task = repos.tasks.getById(run.taskId);
@@ -85,7 +91,7 @@ export async function recordApprovedRun(
   });
   if (proposedSkill) repos.skills.insert(proposedSkill);
 
-  return flow;
+  return { flow, promotedSkill: proposedSkill };
 }
 
 /** Formata os resultados da busca semântica como contexto pronto para injetar no prompt de sistema. */

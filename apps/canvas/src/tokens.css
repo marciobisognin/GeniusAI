@@ -1,0 +1,46 @@
+/*
+ * Tokens de design do Genius Allspark Canvas — fonte única para cor,
+ * tipografia e espaçamento. Componentes novos usam apenas var(--...);
+ * os antigos migram gradualmente (Bloco 2 do plano de design).
+ */
+:root {
+  /* Superfícies e texto */
+  --cor-fundo: #ffffff;
+  --cor-fundo-suave: #f9fafb;
+  --cor-borda: #e5e7eb;
+  --cor-texto: #111827;
+  --cor-texto-suave: #6b7280;
+  --cor-texto-apagado: #9ca3af;
+
+  /* Identidade por tipo de nó */
+  --cor-agente: #2563eb;
+  --cor-squad: #7c3aed;
+  --cor-nota: #6b7280;
+
+  /* Estados de execução e feedback */
+  --cor-sucesso: #16a34a;
+  --cor-erro: #dc2626;
+  --cor-aprovacao: #d97706;
+  --cor-executando: #2563eb;
+  --cor-aguardando: #6b7280;
+  --cor-aprendizado: #7c3aed;
+
+  /* Tipografia */
+  --fonte-ui: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fonte-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --texto-corpo: 13px;
+  --texto-pequeno: 11px;
+  --texto-titulo: 15px;
+
+  /* Grid de 8pt */
+  --espaco-1: 4px;
+  --espaco-2: 8px;
+  --espaco-3: 12px;
+  --espaco-4: 16px;
+
+  /* Cantos e sombras */
+  --raio: 8px;
+  --raio-pequeno: 4px;
+  --sombra-flutuante: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --sombra-suave: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
