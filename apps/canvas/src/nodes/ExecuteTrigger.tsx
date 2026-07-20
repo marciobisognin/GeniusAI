@@ -25,7 +25,7 @@ export function ExecuteTrigger({ onExecute }: ExecuteTriggerProps) {
         onKeyDown={(e) => {
           if (e.key === "Enter") submit();
         }}
-        style={{ flex: 1, border: "1px solid #e5e7eb", borderRadius: 4, padding: 4, fontSize: 12 }}
+        style={{ flex: 1, border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 4, fontSize: 12 }}
       />
       <button
         type="button"
@@ -34,10 +34,10 @@ export function ExecuteTrigger({ onExecute }: ExecuteTriggerProps) {
         onClick={submit}
         disabled={!task.trim()}
         style={{
-          border: "1px solid #e5e7eb",
+          border: "1px solid var(--cor-borda)",
           borderRadius: 4,
           padding: "4px 8px",
-          background: task.trim() ? "#16a34a" : "#e5e7eb",
+          background: task.trim() ? "var(--cor-sucesso)" : "var(--cor-borda)",
           color: "#fff",
           cursor: task.trim() ? "pointer" : "default",
         }}

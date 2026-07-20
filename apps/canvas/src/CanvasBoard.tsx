@@ -18,7 +18,7 @@ import "@xyflow/react/dist/style.css";
 import type { CanvasNode, CanvasNodeKind, ProviderConfig } from "@genius/canon";
 import { canvasApi } from "./api/canvasApi.js";
 import { apiClient } from "./api/client.js";
-import { executionApi, type ExecutionStreamEvent } from "./api/executionApi.js";
+import { executionApi, friendlyExecutionError, type ExecutionStreamEvent } from "./api/executionApi.js";
 import { providersApi } from "./api/providersApi.js";
 import { applyDagreLayout } from "./layout/dagreLayout.js";
 import { nodeTypes, type CanvasFlowNode } from "./nodes/index.js";
@@ -161,7 +161,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         try {
           ({ runId } = await executionApi.run(sourceNodeId, taskDescription));
         } catch (err) {
-          notify("erro", `Não foi possível iniciar a execução: ${(err as Error).message}`);
+          notify("erro", friendlyExecutionError(err));
           return;
         }
 
@@ -361,7 +361,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
           display: "flex",
           gap: 8,
           alignItems: "center",
-          fontFamily: "system-ui, sans-serif",
+          fontFamily: "var(--fonte-ui)",
           fontSize: 13,
         }}
       >
@@ -370,7 +370,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
           style={{
             padding: "2px 8px",
             borderRadius: 4,
-            background: status === "conectado" ? "#16a34a" : status === "offline" ? "#dc2626" : "#6b7280",
+            background: status === "conectado" ? "var(--cor-sucesso)" : status === "offline" ? "var(--cor-erro)" : "var(--cor-texto-suave)",
             color: "#fff",
           }}
         >

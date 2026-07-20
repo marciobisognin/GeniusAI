@@ -22,9 +22,9 @@ export function NodeShell({ accentColor, kindLabel, title, onDelete, children }:
         borderRadius: 8,
         border: `1px solid ${accentColor}`,
         borderLeft: `4px solid ${accentColor}`,
-        background: "var(--canvas-node-bg, #ffffff)",
+        background: "var(--cor-fundo)",
         boxShadow: "0 1px 2px rgba(0,0,0,0.08)",
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--fonte-ui)",
         fontSize: 13,
       }}
     >
@@ -36,7 +36,7 @@ export function NodeShell({ accentColor, kindLabel, title, onDelete, children }:
           justifyContent: "space-between",
           alignItems: "center",
           padding: "6px 8px",
-          borderBottom: "1px solid #e5e7eb",
+          borderBottom: "1px solid var(--cor-borda)",
         }}
       >
         <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -50,7 +50,7 @@ export function NodeShell({ accentColor, kindLabel, title, onDelete, children }:
             border: "none",
             background: "transparent",
             cursor: "pointer",
-            color: "#9ca3af",
+            color: "var(--cor-texto-apagado)",
             fontSize: 14,
             lineHeight: 1,
           }}

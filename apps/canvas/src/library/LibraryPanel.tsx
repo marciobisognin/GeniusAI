@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Agent, Squad } from "@genius/canon";
 import { libraryApi, type LibraryImportResult } from "../api/libraryApi.js";
+import { humanizeApiError } from "../api/client.js";
 
 export const LIBRARY_DRAG_MIME = "application/allspark-library-item";
 
@@ -41,7 +42,7 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
       setLastImport(result);
       await reload();
     } catch (err) {
-      setError(String(err));
+      setError(humanizeApiError(err));
     } finally {
       setImporting(false);
     }
@@ -70,11 +71,11 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
         left: 0,
         bottom: 0,
         width: 380,
-        background: "#fff",
-        borderRight: "1px solid #e5e7eb",
+        background: "var(--cor-fundo)",
+        borderRight: "1px solid var(--cor-borda)",
         boxShadow: "4px 0 12px rgba(0,0,0,0.08)",
         zIndex: 900,
-        fontFamily: "system-ui, sans-serif",
+        fontFamily: "var(--fonte-ui)",
         fontSize: 13,
         overflowY: "auto",
         padding: 16,
@@ -91,21 +92,21 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
         {importing ? "Importando..." : "Importar da Biblioteca (so-ia · foresight · civilizations)"}
       </button>
       {lastImport && (
-        <div style={{ color: "#6b7280", fontSize: 11, marginBottom: 8 }}>
+        <div style={{ color: "var(--cor-texto-suave)", fontSize: 11, marginBottom: 8 }}>
           {lastImport.agentesNovos.length} agente(s) novo(s), {lastImport.agentesExistentes.length} já existia(m) ·{" "}
           {lastImport.squadsNovos.length} squad(s) novo(s), {lastImport.squadsExistentes.length} já existia(m)
         </div>
       )}
-      {error && <div style={{ color: "#dc2626", marginBottom: 8 }}>{error}</div>}
+      {error && <div style={{ color: "var(--cor-erro)", marginBottom: 8 }}>{error}</div>}
 
       <input
         placeholder="Buscar por nome ou skill..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        style={{ width: "100%", padding: 6, marginBottom: 12, border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ width: "100%", padding: 6, marginBottom: 12, border: "1px solid var(--cor-borda)", borderRadius: 4 }}
       />
 
-      <strong style={{ fontSize: 12, color: "#6b7280" }}>SQUADS ({filteredSquads.length})</strong>
+      <strong style={{ fontSize: 12, color: "var(--cor-texto-suave)" }}>SQUADS ({filteredSquads.length})</strong>
       <ul style={{ listStyle: "none", margin: "6px 0 16px", padding: 0 }}>
         {filteredSquads.map((s) => (
           <li
@@ -113,23 +114,23 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
             draggable
             onDragStart={(e) => onDragStart(e, { kind: "squad", id: s.id, nome: s.nome })}
             style={{
-              border: "1px solid #e5e7eb",
-              borderLeft: "4px solid #7c3aed",
+              border: "1px solid var(--cor-borda)",
+              borderLeft: "4px solid var(--cor-squad)",
               borderRadius: 6,
               padding: 8,
               marginBottom: 6,
               cursor: "grab",
-              background: "#faf5ff",
+              background: "var(--cor-squad-fundo)",
             }}
           >
             <div style={{ fontWeight: 600 }}>{s.nome}</div>
-            <div style={{ color: "#6b7280", fontSize: 11 }}>{s.area ?? "sem área"} · origem: {s.origem}</div>
+            <div style={{ color: "var(--cor-texto-suave)", fontSize: 11 }}>{s.area ?? "sem área"} · origem: {s.origem}</div>
           </li>
         ))}
-        {filteredSquads.length === 0 && <li style={{ color: "#9ca3af" }}>Nenhum squad — clique em "Importar" acima.</li>}
+        {filteredSquads.length === 0 && <li style={{ color: "var(--cor-texto-apagado)" }}>Nenhum squad — clique em "Importar" acima.</li>}
       </ul>
 
-      <strong style={{ fontSize: 12, color: "#6b7280" }}>AGENTES ({filteredAgents.length})</strong>
+      <strong style={{ fontSize: 12, color: "var(--cor-texto-suave)" }}>AGENTES ({filteredAgents.length})</strong>
       <ul style={{ listStyle: "none", margin: "6px 0", padding: 0 }}>
         {filteredAgents.map((a) => (
           <li
@@ -137,25 +138,25 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
             draggable
             onDragStart={(e) => onDragStart(e, { kind: "agent", id: a.id, nome: a.nome })}
             style={{
-              border: "1px solid #e5e7eb",
-              borderLeft: "4px solid #2563eb",
+              border: "1px solid var(--cor-borda)",
+              borderLeft: "4px solid var(--cor-agente)",
               borderRadius: 6,
               padding: 8,
               marginBottom: 6,
               cursor: "grab",
-              background: "#eff6ff",
+              background: "var(--cor-selecao-fundo)",
             }}
           >
             <div style={{ fontWeight: 600 }}>{a.nome}</div>
-            <div style={{ color: "#6b7280", fontSize: 11 }}>
+            <div style={{ color: "var(--cor-texto-suave)", fontSize: 11 }}>
               {a.area ?? "sem área"} · {a.autonomia} · {a.origem}
             </div>
             {a.skills.length > 0 && (
-              <div style={{ color: "#9ca3af", fontSize: 11, marginTop: 2 }}>{a.skills.slice(0, 3).join(", ")}</div>
+              <div style={{ color: "var(--cor-texto-apagado)", fontSize: 11, marginTop: 2 }}>{a.skills.slice(0, 3).join(", ")}</div>
             )}
           </li>
         ))}
-        {filteredAgents.length === 0 && <li style={{ color: "#9ca3af" }}>Nenhum agente — clique em "Importar" acima.</li>}
+        {filteredAgents.length === 0 && <li style={{ color: "var(--cor-texto-apagado)" }}>Nenhum agente — clique em "Importar" acima.</li>}
       </ul>
     </div>
   );

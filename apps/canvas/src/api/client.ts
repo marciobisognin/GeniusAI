@@ -14,6 +14,26 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await res.json()) as T;
 }
 
+/**
+ * Converte um erro de API em texto legível para o usuário: extrai o
+ * `detail` do JSON do servidor quando houver, em vez de mostrar
+ * `POST /x -> 400: {"error":...}` cru na interface.
+ */
+export function humanizeApiError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err);
+  const jsonStart = raw.indexOf("{");
+  if (jsonStart >= 0) {
+    try {
+      const body = JSON.parse(raw.slice(jsonStart)) as { detail?: string; error?: string };
+      if (body.detail) return body.detail;
+      if (body.error) return `Erro do servidor: ${body.error}`;
+    } catch {
+      // corpo não era JSON — cai para o texto bruto abaixo
+    }
+  }
+  return raw;
+}
+
 /** Cliente REST fino para o Super Construtor (`@genius/constructor`). */
 export const apiClient = {
   list: <T>(path: string) => request<T[]>(`/${path}`),

@@ -64,25 +64,25 @@ export function MatchForm<T extends { id: string; nome: string }>({
   }
 
   return (
-    <div style={{ border: "1px dashed #d1d5db", borderRadius: 6, padding: 8, marginTop: 8 }}>
+    <div style={{ border: "1px dashed var(--cor-borda-forte)", borderRadius: 6, padding: 8, marginTop: 8 }}>
       <strong style={{ fontSize: 12 }}>{label}</strong>
       <input
         placeholder={placeholderTitulo}
         value={titulo}
         onChange={(e) => setTitulo(e.target.value)}
-        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid var(--cor-borda)", borderRadius: 4 }}
       />
       <input
         placeholder="Área (opcional)"
         value={area}
         onChange={(e) => setArea(e.target.value)}
-        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid var(--cor-borda)", borderRadius: 4 }}
       />
       <input
         placeholder="Responsabilidades, separadas por vírgula"
         value={responsabilidades}
         onChange={(e) => setResponsabilidades(e.target.value)}
-        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid #e5e7eb", borderRadius: 4 }}
+        style={{ width: "100%", padding: 4, margin: "4px 0", border: "1px solid var(--cor-borda)", borderRadius: 4 }}
       />
       <button type="button" onClick={buscar} disabled={busy || !titulo.trim()} style={{ padding: "4px 8px", cursor: "pointer" }}>
         Buscar compatível
@@ -91,7 +91,7 @@ export function MatchForm<T extends { id: string; nome: string }>({
       {result && (
         <div style={{ marginTop: 8, fontSize: 12 }}>
           {result.candidate ? (
-            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 4, padding: 6 }}>
+            <div style={{ background: "var(--cor-sucesso-fundo)", border: "1px solid var(--cor-sucesso-borda)", borderRadius: 4, padding: 6 }}>
               <div>
                 Encontrado: <strong>{result.candidate.nome}</strong> ({Math.round(result.score * 100)}% de aderência)
               </div>
@@ -110,7 +110,7 @@ export function MatchForm<T extends { id: string; nome: string }>({
               </button>
             </div>
           ) : (
-            <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 4, padding: 6 }}>
+            <div style={{ background: "var(--cor-aviso-fundo)", border: "1px solid var(--cor-aviso-borda)", borderRadius: 4, padding: 6 }}>
               <div>Nada compatível encontrado. Será criado: "{result.draft.nome}"</div>
               <button type="button" onClick={confirmarCriacao} disabled={busy} style={{ marginTop: 4, padding: "2px 8px", cursor: "pointer" }}>
                 Criar "{result.draft.nome}"

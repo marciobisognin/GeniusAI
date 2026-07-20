@@ -38,6 +38,15 @@
   --espaco-3: 12px;
   --espaco-4: 16px;
 
+  /* Fundos de destaque (caixas de feedback e seleção) */
+  --cor-selecao-fundo: #eff6ff;
+  --cor-squad-fundo: #faf5ff;
+  --cor-sucesso-fundo: #f0fdf4;
+  --cor-sucesso-borda: #bbf7d0;
+  --cor-aviso-fundo: #fffbeb;
+  --cor-aviso-borda: #fde68a;
+  --cor-borda-forte: #d1d5db;
+
   /* Cantos e sombras */
   --raio: 8px;
   --raio-pequeno: 4px;

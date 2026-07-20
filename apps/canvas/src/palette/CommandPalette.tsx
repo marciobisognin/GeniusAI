@@ -72,11 +72,11 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
         onClick={(e) => e.stopPropagation()}
         style={{
           width: 480,
-          background: "#fff",
+          background: "var(--cor-fundo)",
           borderRadius: 8,
           boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
           overflow: "hidden",
-          fontFamily: "system-ui, sans-serif",
+          fontFamily: "var(--fonte-ui)",
         }}
       >
         <input
@@ -91,10 +91,10 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
               onClose();
             }
           }}
-          style={{ width: "100%", boxSizing: "border-box", padding: 12, border: "none", borderBottom: "1px solid #e5e7eb", fontSize: 14 }}
+          style={{ width: "100%", boxSizing: "border-box", padding: 12, border: "none", borderBottom: "1px solid var(--cor-borda)", fontSize: 14 }}
         />
         <ul style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 320, overflowY: "auto" }}>
-          {actions.length === 0 && <li style={{ padding: 12, color: "#9ca3af" }}>Nada encontrado.</li>}
+          {actions.length === 0 && <li style={{ padding: 12, color: "var(--cor-texto-apagado)" }}>Nada encontrado.</li>}
           {actions.map((action) => (
             <li key={action.id}>
               <button
@@ -115,7 +115,7 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
                 }}
               >
                 <span>{action.label}</span>
-                {action.hint && <span style={{ color: "#9ca3af", fontSize: 12 }}>{action.hint}</span>}
+                {action.hint && <span style={{ color: "var(--cor-texto-apagado)", fontSize: 12 }}>{action.hint}</span>}
               </button>
             </li>
           ))}

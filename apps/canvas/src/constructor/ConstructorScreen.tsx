@@ -97,7 +97,7 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
   }
 
   return (
-    <div style={{ width: "100vw", height: "100vh", overflowY: "auto", fontFamily: "system-ui, sans-serif", fontSize: 13, padding: 16 }}>
+    <div style={{ width: "100vw", height: "100vh", overflowY: "auto", fontFamily: "var(--fonte-ui)", fontSize: 13, padding: 16 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <h1 style={{ fontSize: 18 }}>Super Construtor</h1>
         <button type="button" onClick={onBackToCanvas} style={{ padding: "6px 12px", cursor: "pointer" }}>
@@ -120,12 +120,12 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
                     padding: 6,
                     marginBottom: 4,
                     cursor: "pointer",
-                    background: c.id === selectedCompanyId ? "#eff6ff" : "#fff",
-                    border: "1px solid #e5e7eb",
+                    background: c.id === selectedCompanyId ? "var(--cor-selecao-fundo)" : "#fff",
+                    border: "1px solid var(--cor-borda)",
                     borderRadius: 4,
                   }}
                 >
-                  {c.nome} <span style={{ color: "#9ca3af" }}>({c.squadIds.length} squad(s))</span>
+                  {c.nome} <span style={{ color: "var(--cor-texto-apagado)" }}>({c.squadIds.length} squad(s))</span>
                 </button>
               </li>
             ))}
@@ -134,7 +134,7 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
             placeholder="Nova Company"
             value={novaCompanyNome}
             onChange={(e) => setNovaCompanyNome(e.target.value)}
-            style={{ width: "100%", padding: 6, border: "1px solid #e5e7eb", borderRadius: 4 }}
+            style={{ width: "100%", padding: 6, border: "1px solid var(--cor-borda)", borderRadius: 4 }}
           />
           <button type="button" onClick={criarCompany} style={{ width: "100%", padding: 6, marginTop: 4, cursor: "pointer" }}>
             Criar Company
@@ -144,7 +144,7 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
         </div>
 
         <div style={{ flex: 1 }}>
-          {!selectedCompany && <p style={{ color: "#9ca3af" }}>Selecione ou crie uma Company para começar.</p>}
+          {!selectedCompany && <p style={{ color: "var(--cor-texto-apagado)" }}>Selecione ou crie uma Company para começar.</p>}
           {selectedCompany && (
             <div>
               <h2 style={{ fontSize: 16 }}>{selectedCompany.nome}</h2>
@@ -156,7 +156,7 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
               </div>
               {packJson && (
                 <div style={{ marginBottom: 12 }}>
-                  <pre style={{ background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 4, padding: 8, maxHeight: 160, overflow: "auto" }}>
+                  <pre style={{ background: "var(--cor-fundo-suave)", border: "1px solid var(--cor-borda)", borderRadius: 4, padding: 8, maxHeight: 160, overflow: "auto" }}>
                     {packJson}
                   </pre>
                   <div style={{ display: "flex", gap: 6, alignItems: "center", marginTop: 4 }}>
@@ -192,7 +192,7 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
                             Importar "{p.nome}" ({p.filename})
                           </button>
                         ) : (
-                          <span style={{ color: "#dc2626" }}>{p.filename}: inválido</span>
+                          <span style={{ color: "var(--cor-erro)" }}>{p.filename}: inválido</span>
                         )}
                       </li>
                     ))}
@@ -201,13 +201,13 @@ export function ConstructorScreen({ onBackToCanvas }: ConstructorScreenProps) {
               )}
 
               {importFeedback && (
-                <div style={{ color: "#16a34a", fontSize: 12, marginBottom: 12 }}>{importFeedback}</div>
+                <div style={{ color: "var(--cor-sucesso)", fontSize: 12, marginBottom: 12 }}>{importFeedback}</div>
               )}
 
               <strong>Squads</strong>
               {squadsOfCompany.map((squad) => (
-                <div key={squad.id} style={{ border: "1px solid #e5e7eb", borderRadius: 6, padding: 8, marginTop: 6 }}>
-                  <strong>{squad.nome}</strong> <span style={{ color: "#9ca3af", fontSize: 11 }}>({squad.origem})</span>
+                <div key={squad.id} style={{ border: "1px solid var(--cor-borda)", borderRadius: 6, padding: 8, marginTop: 6 }}>
+                  <strong>{squad.nome}</strong> <span style={{ color: "var(--cor-texto-apagado)", fontSize: 11 }}>({squad.origem})</span>
                   <ul style={{ margin: "4px 0", paddingLeft: 16 }}>
                     {squad.agentIds.map((id) => {
                       const agent = agents.find((a) => a.id === id);
