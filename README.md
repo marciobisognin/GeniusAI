@@ -18,10 +18,12 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 > O [PRD de Execução](docs/PRD-genius-allspark-execucao.md) mantém a visão em
 > fases mais amplas como contexto complementar.
 
-## Genius Allspark Canvas — em construção
+## Genius Allspark Canvas
 
 O monorepo `packages/*` + `apps/*` na raiz é o código do Canvas em si,
-seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md):
+seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md) —
+**as sete etapas do guia estão completas**, incluindo a Etapa 7 (prova de
+integração ponta a ponta, veja a seção dedicada mais abaixo):
 
 | Pacote | Etapa | O que é |
 |---|---|---|
@@ -106,6 +108,30 @@ logo no início — o sistema literalmente ficou melhor depois da primeira
 aprovação. O painel **Memória** (botão no topo do canvas) deixa buscar por
 significado em qualquer momento, mostrando de qual execução/aprovação cada
 resultado veio.
+
+### Etapa 7 — Integração ponta a ponta (comprovada)
+
+A Etapa 7 não adiciona código novo: ela **prova que as seis etapas
+anteriores formam um sistema, não seis protótipos soltos** — rodando o
+roteiro de aceitação do [Guia de Construção](docs/PRD-genius-allspark-construcao.md#etapa-7--integração-ponta-a-ponta)
+do início ao fim, num navegador real, contra servidores reais, num banco
+zerado, sem nenhuma intervenção manual no banco de dados.
+
+| # | Passo do roteiro | Resultado |
+|---|---|---|
+| 1 | Abrir o canvas vazio | ✅ banco novo, 0 nós |
+| 2 | Configurar um provedor Ollama local **e** um provedor cloud no Hub | ✅ os dois cadastrados e "Testar conexão" confirmou os dois saudáveis (chamada real ao adapter) |
+| 3 | Importar a Biblioteca | ✅ agentes do so-ia e do foresight disponíveis |
+| 4 | Pelo Super Construtor, montar uma Company nova com um Squad reaproveitando um agente da Biblioteca e criando um Mind-Clone novo | ✅ "Squad de Orçamento e Finanças" reaproveitado, "Agente de Atesto de Nota Fiscal" reaproveitado dentro dele, Mind-Clone "Maria Consultora" criado |
+| 5 | Arrastar o Squad para o canvas, rodar uma tarefa real | ✅ squad decompôs a tarefa entre os membros e o líder consolidou, chamando o provedor de verdade |
+| 6 | Aprovar o resultado | ✅ execução pausou em "Aguardando aprovação" (líder A2) e concluiu ao vivo após aprovar |
+| 7 | Ver o Learning Flow gerado e indexado na Memória | ✅ `LearningFlow` real gerado; painel Memória encontrou-o por busca semântica |
+| 8 | Rodar uma segunda tarefa parecida e confirmar que o contexto de memória da primeira aparece | ✅ log da segunda execução mostrou "Memória: 1 trecho(s)..." antes de chamar o provedor |
+| 9 | Exportar a Company como Pack; importar em ambiente limpo; confirmar equivalência | ✅ Pack exportado contém squad+agente; reimportado numa Company "Ambiente Limpo" nova, com o mesmo squad/agente vinculados |
+
+**16/16 verificações passaram, zero erros de console/página.** Os nove
+passos do roteiro rodaram em sequência, sem intervenção manual no banco —
+pelo critério do próprio guia, o Genius Allspark Canvas existe de fato.
 
 ## Projetos
 
