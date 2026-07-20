@@ -99,11 +99,39 @@ export function formatMemoryContext(results: MemorySearchResult[]): string {
   return results.map((r) => `- ${r.text}`).join("\n");
 }
 
-export function registerLearningRoutes(app: FastifyInstance, memory: LearningMemory) {
+export interface MemoryProvenance {
+  /** A tarefa em linguagem natural que originou este trecho — não o UUID do LearningFlow. */
+  taskDescricao: string;
+  /** Agente/líder responsável pela execução de origem. */
+  agenteNome: string | undefined;
+  /** Data em que o aprendizado foi registrado (a aprovação humana). */
+  aprovadoEm: string;
+}
+
+/** Resolve um `sourceId` (id do LearningFlow) para algo que um humano lê — não um UUID solto. */
+function resolveProcedencia(sourceId: string, sourceType: string, repos: LearningRepos): MemoryProvenance | null {
+  if (sourceType !== "learning-flow") return null;
+  const flow = repos.learningFlows.getById(sourceId);
+  if (!flow) return null;
+  const run = repos.runs.getById(flow.sourceRunId);
+  const task = run ? repos.tasks.getById(run.taskId) : undefined;
+  const agent = repos.agents.getById(flow.agentOrSkillOrigin);
+  return {
+    taskDescricao: task?.descricao ?? flow.taskPattern,
+    agenteNome: agent?.nome,
+    aprovadoEm: flow.createdAt,
+  };
+}
+
+export function registerLearningRoutes(app: FastifyInstance, memory: LearningMemory, repos: LearningRepos) {
   app.get("/memory/search", async (request, reply) => {
     const { q, k } = request.query as { q?: string; k?: string };
     if (!q) return reply.code(400).send({ error: "missing_query", detail: "informe ?q=" });
     const topK = Number(k) > 0 ? Number(k) : 5;
-    return memory.search(q, topK);
+    const results = await memory.search(q, topK);
+    return results.map((r) => ({
+      ...r,
+      procedencia: resolveProcedencia(r.sourceId, r.sourceType, repos),
+    }));
   });
 }

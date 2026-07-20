@@ -122,7 +122,9 @@ aprendizado reutilizável — sem esperar nenhum comando extra:
 O aprendizado não acontece mais em silêncio: ao aprovar, um aviso no canto
 do canvas conta o que foi registrado ("✦ Aprendizado registrado: ...") — e
 quando um padrão se repete o suficiente, o aviso de skill promovida também
-aparece na hora.
+aparece na hora. No painel Memória, cada resultado mostra de qual tarefa e
+agente ele veio (não um UUID solto) — "da tarefa '...' (Agente de Atesto de
+Nota Fiscal) · aprovado em ...".
 
 Para ver isso ao vivo: rode a mesma tarefa duas vezes seguidas (aprovando a
 primeira). Na segunda vez, o `ExecutionNode` mostra a linha de "Memória:"

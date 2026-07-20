@@ -1,5 +1,11 @@
 const BASE_URL = import.meta.env.VITE_CONSTRUCTOR_URL ?? "http://127.0.0.1:4001";
 
+export interface MemoryProvenance {
+  taskDescricao: string;
+  agenteNome?: string;
+  aprovadoEm: string;
+}
+
 export interface MemorySearchResult {
   id: string;
   score: number;
@@ -7,6 +13,8 @@ export interface MemorySearchResult {
   sourceType: string;
   sourceId: string;
   createdAt: string;
+  /** Procedência já resolvida pelo servidor — não é para o cliente adivinhar o que um UUID significa. */
+  procedencia: MemoryProvenance | null;
 }
 
 /** Cliente da Memória Indexada (Etapa 6) — busca por significado, não por palavra-chave. */

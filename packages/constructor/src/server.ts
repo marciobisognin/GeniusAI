@@ -241,7 +241,19 @@ export function buildServer(options: BuildServerOptions = {}): ConstructorServer
     },
     memory,
   );
-  registerLearningRoutes(app, memory);
+  registerLearningRoutes(
+    app,
+    memory,
+    {
+      tasks: repos.tasks,
+      runs: repos.runs,
+      agents: repos.agents,
+      squads: repos.squads,
+      learningFlows: repos.learningFlows,
+      memoryChunks: repos.memoryChunks,
+      skills: repos.skills,
+    },
+  );
 
   return { app, repos };
 }
