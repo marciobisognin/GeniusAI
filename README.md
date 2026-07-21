@@ -21,10 +21,12 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 ## Genius Allspark Canvas
 
 > **Quer só ver funcionando?** O
-> [Guia de Início Rápido](docs/GUIA-DE-INICIO-RAPIDO.md) tem um vídeo de
-> 30 segundos, screenshots passo a passo e o comando de uma linha
-> (`npx github:marciobisognin/GeniusAI`) para rodar tudo sem precisar ler
-> o resto desta seção.
+> [Guia de Início Rápido](docs/GUIA-DE-INICIO-RAPIDO.md) tem um GIF de
+> 9 segundos que já toca sozinho, screenshots passo a passo e o comando de
+> uma linha (`npx github:marciobisognin/GeniusAI`) para rodar tudo sem
+> precisar ler o resto desta seção. E se você já estiver com o Canvas
+> aberto e esquecer o próximo passo, o botão **?** no canto superior
+> direito abre esse mesmo passo a passo sem sair da tela.
 
 O monorepo `packages/*` + `apps/*` na raiz é o código do Canvas em si,
 seguindo o [Guia de Construção](docs/PRD-genius-allspark-construcao.md) —

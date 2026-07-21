@@ -29,6 +29,7 @@ import { LIBRARY_DRAG_MIME, LibraryPanel, type LibraryDragPayload } from "./libr
 import { MemoryPanel } from "./memory/MemoryPanel.js";
 import { encodeApprovalContent } from "./nodes/approvalContent.js";
 import { EmptyStateGuide } from "./ui/EmptyStateGuide.js";
+import { HelpPanel } from "./ui/HelpPanel.js";
 import { ToastHost, useToasts, type ToastKind } from "./ui/Toasts.js";
 
 function debounce<Args extends unknown[]>(fn: (...args: Args) => void, ms: number) {
@@ -71,6 +72,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
   const [providersOpen, setProvidersOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const [libraryCount, setLibraryCount] = useState(0);
   const { toasts, notify, dismiss } = useToasts();
@@ -395,6 +397,21 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
         <button type="button" onClick={onOpenConstructor} style={{ padding: "4px 8px", cursor: "pointer" }}>
           Super Construtor
         </button>
+        <button
+          type="button"
+          onClick={() => setHelpOpen(true)}
+          aria-label="Ajuda — passo a passo"
+          title="Ajuda — passo a passo"
+          style={{
+            padding: "4px 10px",
+            cursor: "pointer",
+            borderRadius: "50%",
+            border: "1px solid var(--cor-borda)",
+            fontWeight: 700,
+          }}
+        >
+          ?
+        </button>
       </div>
 
       <ProvidersContext.Provider value={providers}>
@@ -439,6 +456,7 @@ function CanvasBoardInner({ onOpenConstructor }: CanvasBoardProps) {
       <ProvidersPanel open={providersOpen} onClose={() => setProvidersOpen(false)} onChanged={reloadProviders} />
       <LibraryPanel open={libraryOpen} onClose={() => setLibraryOpen(false)} />
       <MemoryPanel open={memoryOpen} onClose={() => setMemoryOpen(false)} />
+      <HelpPanel open={helpOpen} onClose={() => setHelpOpen(false)} />
       <ToastHost toasts={toasts} onDismiss={dismiss} />
     </div>
   );
