@@ -13,16 +13,14 @@ local, ChatGPT, Claude...) e roda tarefas reais — com aprovação humana
 quando o agente não tem autonomia total, e memória que aprende a cada
 aprovação.
 
-## Vídeo — 30 segundos, do zero até o resultado
+## Vídeo — 9 segundos, do zero até o resultado
 
-<video src="assets/inicio-rapido/demo-inicio-rapido.webm" controls width="720">
-  Seu visualizador de Markdown não reproduz vídeo embutido — assista/baixe direto:
-  <a href="assets/inicio-rapido/demo-inicio-rapido.webm">demo-inicio-rapido.webm</a>.
-</video>
+![Demonstração do Genius Allspark Canvas: do canvas vazio até a tarefa aprovada e concluída](assets/inicio-rapido/demo-inicio-rapido.gif)
 
-> Se o player acima não aparecer (alguns visualizadores de Markdown não
-> embutem vídeo), o arquivo está em
-> [`assets/inicio-rapido/demo-inicio-rapido.webm`](assets/inicio-rapido/demo-inicio-rapido.webm) — clique para assistir direto no GitHub.
+O GIF acima toca sozinho (é assim que o GitHub e a maioria dos
+visualizadores de Markdown embutem imagens animadas). Para a versão em
+vídeo completa, com controles de play/pause e melhor qualidade, veja
+[`assets/inicio-rapido/demo-inicio-rapido.webm`](assets/inicio-rapido/demo-inicio-rapido.webm).
 
 Gravado com um agente real (`Agente de Atesto de Nota Fiscal`, importado
 do so-ia) e um provedor Ollama real — não é uma simulação encenada.
