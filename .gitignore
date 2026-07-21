@@ -6,6 +6,7 @@ dist/
 *.sqlite3
 *.sqlite3-wal
 *.sqlite3-shm
+genius-allspark-memory/
 packs/*
 !packs/.gitkeep
 !packs/README.md
