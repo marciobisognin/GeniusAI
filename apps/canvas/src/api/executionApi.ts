@@ -6,6 +6,8 @@ export interface ExecutionStreamEvent {
   message: string;
   ts: string;
   approvalId?: string;
+  /** Autonomia do Agent/líder responsável — só em task.awaiting_approval, para o canvas explicar o porquê da pausa. */
+  autonomia?: string;
 }
 
 /** Resposta do resolve — inclui o que o sistema aprendeu com a aprovação (Etapa 6), quando houve. */

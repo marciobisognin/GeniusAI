@@ -26,9 +26,13 @@ const CREATE_ACTIONS: Array<{ kind: CanvasNodeKind; label: string }> = [
 /** Paleta de comandos (⌘K/Ctrl+K) — alcançar qualquer nó ou criar um novo pelo teclado. */
 export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onFocusNode }: CommandPaletteProps) {
   const [query, setQuery] = useState("");
+  const [selected, setSelected] = useState(0);
 
   useEffect(() => {
-    if (open) setQuery("");
+    if (open) {
+      setQuery("");
+      setSelected(0);
+    }
   }, [open]);
 
   const actions: PaletteAction[] = useMemo(() => {
@@ -82,12 +86,22 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
         <input
           autoFocus
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setSelected(0);
+          }}
           placeholder="Criar nó ou buscar por nome..."
           onKeyDown={(e) => {
-            if (e.key === "Escape") onClose();
-            if (e.key === "Enter" && actions[0]) {
-              actions[0].run();
+            if (e.key === "Escape") {
+              onClose();
+            } else if (e.key === "ArrowDown") {
+              e.preventDefault();
+              setSelected((i) => Math.min(i + 1, actions.length - 1));
+            } else if (e.key === "ArrowUp") {
+              e.preventDefault();
+              setSelected((i) => Math.max(i - 1, 0));
+            } else if (e.key === "Enter" && actions[selected]) {
+              actions[selected].run();
               onClose();
             }
           }}
@@ -95,7 +109,7 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
         />
         <ul style={{ listStyle: "none", margin: 0, padding: 0, maxHeight: 320, overflowY: "auto" }}>
           {actions.length === 0 && <li style={{ padding: 12, color: "var(--cor-texto-apagado)" }}>Nada encontrado.</li>}
-          {actions.map((action) => (
+          {actions.map((action, i) => (
             <li key={action.id}>
               <button
                 type="button"
@@ -103,12 +117,13 @@ export function CommandPalette({ open, onClose, existingNodes, onCreateNode, onF
                   action.run();
                   onClose();
                 }}
+                onMouseEnter={() => setSelected(i)}
                 style={{
                   width: "100%",
                   textAlign: "left",
                   padding: "8px 12px",
                   border: "none",
-                  background: "transparent",
+                  background: i === selected ? "var(--cor-selecao-fundo)" : "transparent",
                   cursor: "pointer",
                   display: "flex",
                   justifyContent: "space-between",

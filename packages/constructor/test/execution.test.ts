@@ -145,11 +145,18 @@ describe("Motor de Execução (Etapa 5) — POST /execution/run, SSE, POST /appr
     expect(firstBatch.map((e) => e.type)).toEqual(["task.step", "task.tool_call", "task.awaiting_approval"]);
     const approvalId = firstBatch.at(-1)!.approvalId;
     expect(approvalId).toBeTruthy();
+    // o canvas usa isto pra explicar o "porquê" da pausa, sem inventar jargão sem contexto
+    expect(firstBatch.at(-1)!.autonomia).toBe("A2");
 
     const runRow = await httpJson(port, "GET", `/runs/${runId}`);
     expect(runRow.json.status).toBe("requer_aprovacao");
+    expect(runRow.json.steps.at(-1).autonomia).toBe("A2"); // sobrevive à persistência, não só ao evento ao vivo
     const approvalRow = await httpJson(port, "GET", `/approvals/${approvalId}`);
     expect(approvalRow.json.status).toBe("pendente");
+
+    // reconecta o SSE (simula alguém que chega depois do evento ao vivo) — replay também traz a autonomia
+    const replay = await collectSseEvents(port, runId, 3);
+    expect(replay.at(-1)!.autonomia).toBe("A2");
 
     // Conecta ANTES de aprovar, para provar que o evento final chega ao vivo (replay dos 3 + 1 em tempo real), não só via reconexão.
     const streamPromise = collectSseEvents(port, runId, 4);

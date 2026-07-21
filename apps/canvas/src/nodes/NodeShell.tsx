@@ -4,6 +4,8 @@ import { Handle, Position } from "@xyflow/react";
 export interface NodeShellProps {
   accentColor: string;
   kindLabel: string;
+  /** Glyph tipográfico que identifica o tipo do nó mesmo de longe/no minimapa, sem depender só da cor. */
+  icon: string;
   title: string;
   onDelete: () => void;
   children?: ReactNode;
@@ -11,9 +13,9 @@ export interface NodeShellProps {
 
 /**
  * Casca visual comum aos quatro tipos de nó — grid de 8pt, borda discreta,
- * cor nunca é o único canal de estado (o rótulo do tipo sempre acompanha a cor).
+ * cor nunca é o único canal de estado (o rótulo do tipo e o ícone sempre acompanham a cor).
  */
-export function NodeShell({ accentColor, kindLabel, title, onDelete, children }: NodeShellProps) {
+export function NodeShell({ accentColor, kindLabel, icon, title, onDelete, children }: NodeShellProps) {
   return (
     <div
       style={{
@@ -39,7 +41,8 @@ export function NodeShell({ accentColor, kindLabel, title, onDelete, children }:
           borderBottom: "1px solid var(--cor-borda)",
         }}
       >
-        <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis" }}>
+        <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 4 }}>
+          <span aria-hidden style={{ color: accentColor }}>{icon}</span>
           {title || kindLabel}
         </span>
         <button

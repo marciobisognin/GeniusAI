@@ -33,11 +33,21 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
   function persistStep(runId: string, event: ExecutionEvent) {
     const run = repos.runs.getById(runId);
     if (!run) return;
-    const step: RunStep = { ts: event.ts, type: event.type, message: event.message, approvalId: event.approvalId };
+    const step: RunStep = {
+      ts: event.ts,
+      type: event.type,
+      message: event.message,
+      approvalId: event.approvalId,
+      autonomia: event.autonomia,
+    };
     repos.runs.update(runId, { steps: [...run.steps, step] });
   }
 
   async function executeInBackground(run: Run, task: Task, kind: "agent" | "squad", adapter: ReturnType<typeof createAdapter>) {
+    // Preenchido antes de chamar runAgentTurn/runSquadTurn — é o Agent (ou líder do Squad) cuja
+    // autonomia decide se a execução pausa; o onEvent usa isto para o canvas explicar o "porquê".
+    let autonomiaResponsavel: string | undefined;
+
     const onEvent = (event: ExecutionEvent) => {
       let finalEvent = event;
       if (event.type === "task.awaiting_approval") {
@@ -47,7 +57,7 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
           status: "pendente",
           createdAt: nowIso(),
         });
-        finalEvent = { ...event, approvalId: approval.id };
+        finalEvent = { ...event, approvalId: approval.id, autonomia: autonomiaResponsavel };
       }
       persistStep(run.id, finalEvent);
       emitter.emit(run.id, finalEvent);
@@ -69,11 +79,13 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
       let result: { requiresApproval: boolean };
       if (kind === "agent") {
         const agent = repos.agents.getById(run.agentId!)!;
+        autonomiaResponsavel = agent.autonomia;
         result = await runAgentTurn({ agent, adapter, taskDescription: task.descricao, runId: run.id, onEvent, memoryContext });
       } else {
         const squad = repos.squads.getById(run.squadId!)!;
         const members = squad.agentIds.map((id) => repos.agents.getById(id)).filter((a): a is Agent => Boolean(a));
         const leader = (squad.liderAgentId && repos.agents.getById(squad.liderAgentId)) || members[0];
+        autonomiaResponsavel = leader.autonomia;
         result = await runSquadTurn({
           squad,
           members,
@@ -174,7 +186,7 @@ export function registerExecutionRoutes(app: FastifyInstance, repos: ExecutionRe
 
     for (const step of run.steps) {
       reply.raw.write(
-        `data: ${JSON.stringify({ type: step.type, runId: id, message: step.message, ts: step.ts, approvalId: step.approvalId })}\n\n`,
+        `data: ${JSON.stringify({ type: step.type, runId: id, message: step.message, ts: step.ts, approvalId: step.approvalId, autonomia: step.autonomia })}\n\n`,
       );
     }
 

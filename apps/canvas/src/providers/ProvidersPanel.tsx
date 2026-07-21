@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ProviderConfig, ProviderType } from "@genius/canon";
 import { providersApi } from "../api/providersApi.js";
 import { humanizeApiError } from "../api/client.js";
+import { useDialogKeyboard } from "../ui/useDialogKeyboard.js";
 
 export interface ProvidersPanelProps {
   open: boolean;
@@ -75,11 +76,15 @@ export function ProvidersPanel({ open, onClose, onChanged }: ProvidersPanelProps
     onChanged();
   }
 
+  const dialogRef = useDialogKeyboard(open, onClose);
+
   if (!open) return null;
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
+      tabIndex={-1}
       aria-label="Hub de Provedores LLM"
       style={{
         position: "fixed",

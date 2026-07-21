@@ -7,7 +7,7 @@ const NOTE_GRAY = "var(--cor-texto-suave)";
 export function NoteNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete } = data;
   return (
-    <NodeShell accentColor={NOTE_GRAY} kindLabel="Nota" title={canvasNode.title} onDelete={onDelete}>
+    <NodeShell accentColor={NOTE_GRAY} kindLabel="Nota" icon="▤" title={canvasNode.title} onDelete={onDelete}>
       <input
         value={canvasNode.title}
         placeholder="Título"

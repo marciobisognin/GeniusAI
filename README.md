@@ -81,9 +81,10 @@ comandos para criar um nó ou buscar um existente pelo nome.
      Squad, com o líder consolidando) e chama o provedor configurado;
    - conclui direto se a autonomia (do Agent, ou do líder do Squad) for
      **A3+**;
-   - pausa em **"Aguardando aprovação"** se for **A0–A2** — os botões
-     "Aprovar"/"Rejeitar" aparecem no próprio nó, e a decisão humana
-     chega ao vivo pelo mesmo SSE.
+   - pausa em **"Aguardando aprovação"** se for **A0–A2** — o próprio nó
+     explica o porquê ("Este agente tem autonomia A2 — atos vinculados
+     exigem aprovação humana") antes dos botões "Aprovar"/"Rejeitar", e a
+     decisão humana chega ao vivo pelo mesmo SSE.
 
 ```mermaid
 sequenceDiagram

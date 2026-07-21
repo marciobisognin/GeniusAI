@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { NodeProps } from "@xyflow/react";
 import type { ExecutionNodeStatus } from "@genius/canon";
 import { executionApi } from "../api/executionApi.js";
+import { decodeApprovalContent } from "./approvalContent.js";
 import { NodeShell } from "./NodeShell.js";
 import type { CanvasFlowNode } from "./types.js";
 
@@ -53,7 +54,7 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
   const { canvasNode, onUpdate, onDelete, onNotify } = data;
   const status = canvasNode.status ?? "aguardando";
   const isRealRun = Boolean(canvasNode.refId);
-  const approvalId = canvasNode.content || undefined;
+  const { approvalId, autonomia: autonomiaResponsavel } = decodeApprovalContent(canvasNode.content);
   const [passosAbertos, setPassosAbertos] = useState(false);
   const [resultadoExpandido, setResultadoExpandido] = useState(false);
 
@@ -83,6 +84,7 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
     <NodeShell
       accentColor={STATUS_COLOR[status]}
       kindLabel={`Execução — ${STATUS_LABEL[status]}`}
+      icon="▶"
       title={canvasNode.title}
       onDelete={onDelete}
     >
@@ -172,21 +174,28 @@ export function ExecutionNode({ data }: NodeProps<CanvasFlowNode>) {
 
       {isRealRun ? (
         status === "aguardando_aprovacao" && approvalId ? (
-          <div style={{ display: "flex", gap: 4 }}>
-            <button
-              type="button"
-              onClick={() => decidir("aprovado")}
-              style={{ flex: 1, border: "1px solid var(--cor-sucesso)", borderRadius: 4, padding: 4, background: "var(--cor-sucesso)", color: "#fff", cursor: "pointer" }}
-            >
-              Aprovar
-            </button>
-            <button
-              type="button"
-              onClick={() => decidir("rejeitado")}
-              style={{ flex: 1, border: "1px solid var(--cor-erro)", borderRadius: 4, padding: 4, background: "var(--cor-fundo)", color: "var(--cor-erro)", cursor: "pointer" }}
-            >
-              Rejeitar
-            </button>
+          <div>
+            {autonomiaResponsavel && (
+              <p style={{ fontSize: 11, color: "var(--cor-texto-suave)", margin: "0 0 4px" }}>
+                Este agente tem autonomia {autonomiaResponsavel} — atos vinculados exigem aprovação humana.
+              </p>
+            )}
+            <div style={{ display: "flex", gap: 4 }}>
+              <button
+                type="button"
+                onClick={() => decidir("aprovado")}
+                style={{ flex: 1, border: "1px solid var(--cor-sucesso)", borderRadius: 4, padding: 4, background: "var(--cor-sucesso)", color: "#fff", cursor: "pointer" }}
+              >
+                Aprovar
+              </button>
+              <button
+                type="button"
+                onClick={() => decidir("rejeitado")}
+                style={{ flex: 1, border: "1px solid var(--cor-erro)", borderRadius: 4, padding: 4, background: "var(--cor-fundo)", color: "var(--cor-erro)", cursor: "pointer" }}
+              >
+                Rejeitar
+              </button>
+            </div>
           </div>
         ) : null
       ) : (

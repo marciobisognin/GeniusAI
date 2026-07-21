@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Agent, Squad } from "@genius/canon";
 import { libraryApi, type LibraryImportResult } from "../api/libraryApi.js";
 import { humanizeApiError } from "../api/client.js";
+import { useDialogKeyboard } from "../ui/useDialogKeyboard.js";
 
 export const LIBRARY_DRAG_MIME = "application/allspark-library-item";
 
@@ -54,6 +55,8 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
   );
   const filteredSquads = squads.filter((s) => !q || s.nome.toLowerCase().includes(q));
 
+  const dialogRef = useDialogKeyboard(open, onClose);
+
   if (!open) return null;
 
   function onDragStart(e: React.DragEvent, payload: LibraryDragPayload) {
@@ -63,7 +66,9 @@ export function LibraryPanel({ open, onClose }: LibraryPanelProps) {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
+      tabIndex={-1}
       aria-label="Biblioteca de Agentes & Squads"
       style={{
         position: "fixed",
