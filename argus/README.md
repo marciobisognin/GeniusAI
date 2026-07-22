@@ -159,11 +159,18 @@ Tools: `get_recent_events`, `search_events_by_region`, `run_rag_query`.
 - **RAG:** responde só com base nos eventos recuperados do pgvector, citando
   `source_url`; sem cobertura ⇒ `"sem dados suficientes"`.
 - **Fonte social (Mastodon):** confiança limitada a 0.4 e `is_inference=true`.
+- **Link + resumo em pt-BR (sempre):** independentemente da fonte ou do idioma
+  original, todo evento carrega o **link de acesso** (`source_url`, garantido no
+  Estágio 3 por `ensure_source_url`, com fallback para o link do `raw_data`) e um
+  **resumo traduzido para português do Brasil** (o Estágio 3 instrui a LLM a
+  sempre produzir `summary` em pt-BR). O idioma original fica registrado em
+  `source_language`, e o dashboard exibe "(traduzido de …)" quando não é `pt`.
+  Popup do mapa e feed lateral mostram o resumo pt-BR e o link em toda entrada.
 
 ## Testes
 
 ```bash
-pytest -q                      # 39 testes com fakes (sem serviços externos)
+pytest -q                      # 41 testes com fakes (sem serviços externos)
 ARGUS_PG_TESTS=1 pytest -q     # + integração PostGIS/pgvector (requer docker compose)
 ```
 

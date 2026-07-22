@@ -32,20 +32,38 @@ TENSION_ZONES: list[dict[str, Any]] = [
 _SEVERITY_ORDER = ["low", "medium", "high", "critical"]
 
 ENRICH_PROMPT = """Voce e um analista GEOINT. Analise o evento abaixo e responda SOMENTE com JSON:
-{{"summary": "resumo objetivo em ate 3 frases",
+{{"summary": "resumo objetivo em ate 3 frases, SEMPRE em portugues do Brasil",
  "category": "conflito|diplomacia|naval|aereo|humanitario|geofisico",
  "severity": "low|medium|high|critical",
  "confidence": 0.0-1.0,
  "is_inference": true|false,
  "actors": ["atores estatais/nao-estatais envolvidos"]}}
 
-`is_inference` = true quando a classificacao depende de interpretacao sua e nao
-de fato explicito no texto. Nao invente fatos.
+REGRAS:
+- O campo `summary` DEVE estar sempre em portugues do Brasil (pt-BR),
+  independentemente do idioma original da noticia. Se a fonte estiver em outro
+  idioma (ingles, etc.), TRADUZA o resumo para pt-BR. Nunca devolva o resumo no
+  idioma original.
+- `is_inference` = true quando a classificacao depende de interpretacao sua e nao
+  de fato explicito no texto. Nao invente fatos.
 
 Titulo: {title}
 Texto: {summary}
-Fonte: {source_name} ({language})
+Fonte: {source_name} (idioma original: {language})
 """
+
+
+def ensure_source_url(item: dict) -> str:
+    """Garante que todo evento carregue o link de acesso a fonte.
+
+    Todos os collectors ja definem `source_url`; este e um cinto de seguranca:
+    se vier vazio, tenta recuperar o link do `raw_data` da fonte.
+    """
+    url = (item.get("source_url") or "").strip()
+    if url:
+        return url
+    raw = item.get("raw_data") or {}
+    return (raw.get("url") or raw.get("link") or "").strip()
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -133,9 +151,11 @@ class Stage3LLMEnrich:
         event_time = item.get("event_time")
         if isinstance(event_time, str):
             event_time = dt.datetime.fromisoformat(event_time)
+        source_url = ensure_source_url(item)          # link de acesso sempre presente
+        source_language = (item.get("language") or "en")[:8]  # idioma original (procedencia)
         event_id = await repo.create_event(
             title=item.get("title", "")[:2000],
-            summary=enrichment.summary,
+            summary=enrichment.summary,               # resumo sempre em pt-BR (traduzido)
             category=enrichment.category,
             severity=severity,
             confidence=confidence,
@@ -148,7 +168,8 @@ class Stage3LLMEnrich:
             region=in_tension_zone(item.get("lat"), item.get("lon")),
             actors={"actors": enrichment.actors},
             source_name=item.get("source_name"),
-            source_url=item.get("source_url"),
+            source_url=source_url,
+            source_language=source_language,
             content_hash=item["content_hash"],
             raw_data=item.get("raw_data"),
             embedding=embedding,
@@ -160,7 +181,7 @@ class Stage3LLMEnrich:
         triaged = {
             "event_id": event_id,
             "title": item.get("title"),
-            "summary": enrichment.summary,
+            "summary": enrichment.summary,            # pt-BR
             "category": enrichment.category,
             "severity": severity,
             "confidence": confidence,
@@ -169,7 +190,8 @@ class Stage3LLMEnrich:
             "lon": item.get("lon"),
             "country": item.get("country"),
             "source_name": item.get("source_name"),
-            "source_url": item.get("source_url"),
+            "source_url": source_url,                 # link sempre presente
+            "source_language": source_language,
             "corroborating_sources": corroborating,
         }
         await publish_to_stream(self.redis, STREAM_TRIAGED, triaged)

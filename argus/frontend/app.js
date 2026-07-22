@@ -105,8 +105,10 @@ map.on("load", async () => {
       .setHTML(
         `<strong>${escapeHtml(p.title)}</strong>${badge}<br/>` +
         `<span class="sev ${p.severity}">${p.severity}</span> · ${p.category ?? "?"}<br/>` +
-        `${escapeHtml(p.source_name ?? "")} ` +
-        (p.source_url ? `<a href="${encodeURI(p.source_url)}" target="_blank" rel="noopener">fonte ↗</a>` : "")
+        // Resumo sempre em pt-BR (traduzido do idioma original)
+        (p.summary ? `<p class="popup-summary">${escapeHtml(p.summary)}${translationNote(p)}</p>` : "") +
+        `<span class="popup-source">${escapeHtml(p.source_name ?? "")}</span> ` +
+        sourceLink(p)
       )
       .addTo(map);
   });
@@ -127,6 +129,23 @@ map.on("load", async () => {
 function escapeHtml(s) {
   return String(s ?? "").replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+const LANG_NAMES = { en: "inglês", pt: "português", es: "espanhol", fr: "francês",
+  ar: "árabe", ru: "russo", de: "alemão", zh: "chinês", uk: "ucraniano" };
+
+// Nota "(traduzido de X)" quando o idioma original nao e pt — o resumo e sempre pt-BR.
+function translationNote(p) {
+  const lang = (p.source_language || "").slice(0, 2).toLowerCase();
+  if (!lang || lang === "pt") return "";
+  return ` <em class="translated">(traduzido de ${LANG_NAMES[lang] || lang})</em>`;
+}
+
+// Link de acesso a fonte — sempre exibido (cai para o nome da fonte se faltar URL).
+function sourceLink(p) {
+  return p.source_url
+    ? `<a href="${encodeURI(p.source_url)}" target="_blank" rel="noopener">🔗 link da fonte ↗</a>`
+    : `<span class="no-link">sem link disponível</span>`;
 }
 
 async function refreshEvents() {
@@ -194,10 +213,12 @@ function feedLine(ev) {
   const badge = ev.is_inference ? "≈inferência" : "fato";
   const corro = ev.corroborating_sources != null
     ? ` · ${ev.corroborating_sources} fonte(s)` : "";
-  const link = ev.source_url
-    ? ` <a href="${encodeURI(ev.source_url)}" target="_blank" rel="noopener">↗</a>` : "";
+  // Resumo sempre em pt-BR (traduzido) + link de acesso sempre exibido.
+  const summary = ev.summary
+    ? `<span class="feed-summary">${escapeHtml(ev.summary)}${translationNote(ev)}</span>` : "";
   return `<span class="sev ${ev.severity}">${escapeHtml(ev.severity ?? "?")}</span> ` +
-    `${escapeHtml(ev.title ?? "")} <em>(${badge}${corro})</em>${link}`;
+    `${escapeHtml(ev.title ?? "")} <em>(${badge}${corro})</em><br/>` +
+    `${summary}<span class="feed-link">${sourceLink(ev)}</span>`;
 }
 
 function prependFeedItem(listId, html) {

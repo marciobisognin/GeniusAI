@@ -40,13 +40,15 @@ async def map_geojson(
                 "properties": {
                     "id": event.id,
                     "title": event.title,
+                    "summary": event.summary,          # resumo em pt-BR (traduzido)
                     "category": event.category,
                     "severity": event.severity,
                     "confidence": event.confidence,
                     "is_inference": event.is_inference,
                     "event_time": event.event_time.isoformat() if event.event_time else None,
                     "source_name": event.source_name,
-                    "source_url": event.source_url,
+                    "source_url": event.source_url,    # link de acesso (sempre presente)
+                    "source_language": event.source_language,  # idioma original
                     "geo_confidence": event.geo_confidence,
                 },
             }

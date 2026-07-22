@@ -107,6 +107,14 @@ aside {
   display: inline-block; font-size: 0.68rem; padding: 0 0.4rem;
   border-radius: 999px; background: var(--line); margin-left: 0.3rem;
 }
+.popup-summary { margin: 0.4rem 0; line-height: 1.35; }
+.popup-source { color: var(--muted); }
+
+/* Resumo pt-BR e link de acesso no feed lateral */
+.feed-summary { display: block; color: var(--text); margin: 0.15rem 0; opacity: 0.92; }
+.feed-link a, .popup-summary + .popup-source + a { white-space: nowrap; }
+.translated { color: var(--muted); font-size: 0.72rem; }
+.no-link { color: var(--muted); font-size: 0.72rem; font-style: italic; }
 
 @media (max-width: 800px) {
   main { flex-direction: column; }
