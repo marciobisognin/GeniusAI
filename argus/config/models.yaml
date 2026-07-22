@@ -1,0 +1,42 @@
+# Precos por modelo (USD por 1M tokens) — versionados aqui, nunca hardcoded.
+# O LLMRouter le este arquivo para calcular custo em audit_logs.
+models:
+  ollama/llama3.1:8b:
+    provider: ollama
+    input_per_mtok: 0.0
+    output_per_mtok: 0.0
+    context_window: 128000
+  ollama/nomic-embed-text:
+    provider: ollama
+    input_per_mtok: 0.0
+    output_per_mtok: 0.0
+    dimensions: 768
+  openrouter/meta-llama/llama-3.1-8b-instruct:free:
+    provider: openrouter
+    input_per_mtok: 0.0
+    output_per_mtok: 0.0
+    context_window: 128000
+  anthropic/claude-haiku-4-5-20251001:
+    provider: anthropic
+    input_per_mtok: 1.0
+    output_per_mtok: 5.0
+    context_window: 200000
+  openai/text-embedding-3-small:
+    provider: openai
+    input_per_mtok: 0.02
+    output_per_mtok: 0.0
+    dimensions: 768   # sempre solicitar dimensions=768 (compatibilidade com a coluna VECTOR)
+
+profiles:
+  LOCAL_ONLY:
+    chat: [ollama/llama3.1:8b]
+    embed: [ollama/nomic-embed-text]
+  HYBRID:
+    chat: [ollama/llama3.1:8b, openrouter/meta-llama/llama-3.1-8b-instruct:free]
+    embed: [ollama/nomic-embed-text, openai/text-embedding-3-small]
+  CLOUD_PREFERRED:
+    chat:
+      - openrouter/meta-llama/llama-3.1-8b-instruct:free
+      - anthropic/claude-haiku-4-5-20251001
+      - ollama/llama3.1:8b
+    embed: [openai/text-embedding-3-small, ollama/nomic-embed-text]

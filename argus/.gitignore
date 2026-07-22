@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+data/reports/*.md
+data/gazetteer/*.txt
+data/gazetteer/*.zip
+data/gazetteer/*.sqlite
+docker/volumes/

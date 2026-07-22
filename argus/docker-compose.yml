@@ -1,0 +1,120 @@
+services:
+  postgres:
+    build: ./docker/postgres
+    environment:
+      POSTGRES_USER: argus
+      POSTGRES_PASSWORD: argus
+      POSTGRES_DB: argus
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U argus -d argus"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]  # persiste os Streams
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollamadata:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    # GPU (opcional): descomente se houver NVIDIA Container Toolkit
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  nominatim:
+    image: mediagis/nominatim:4.4
+    environment:
+      # Extrato regional (menor que o planeta); troque conforme a regiao de interesse.
+      PBF_URL: https://download.geofabrik.de/europe/monaco-latest.osm.pbf
+      IMPORT_WIKIPEDIA: "false"
+    ports:
+      - "8080:8080"
+    volumes:
+      - nominatimdata:/var/lib/postgresql/14/main
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 300s
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    environment:
+      DATABASE_URL: postgresql+asyncpg://argus:argus@postgres:5432/argus
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      NOMINATIM_URL: http://nominatim:8080
+      LLM_PROFILE: ${LLM_PROFILE:-LOCAL_ONLY}
+      AISSTREAM_API_KEY: ${AISSTREAM_API_KEY:-}
+      FIRMS_MAP_KEY: ${FIRMS_MAP_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      MASTODON_INSTANCE: ${MASTODON_INSTANCE:-https://mastodon.social}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request;urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+
+  worker:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    command: ["python", "-m", "backend.app.queue.workers"]
+    environment:
+      DATABASE_URL: postgresql+asyncpg://argus:argus@postgres:5432/argus
+      REDIS_URL: redis://redis:6379/0
+      OLLAMA_BASE_URL: http://ollama:11434
+      NOMINATIM_URL: http://nominatim:8080
+      LLM_PROFILE: ${LLM_PROFILE:-LOCAL_ONLY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  redisdata:
+  ollamadata:
+  nominatimdata:
