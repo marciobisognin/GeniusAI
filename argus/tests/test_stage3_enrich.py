@@ -49,6 +49,7 @@ async def test_full_stage3_writes_event_and_publishes(fake_redis, router):
         "title": "Naval movement near Strait of Hormuz",
         "summary": "vessels observed",
         "content_hash": "a" * 64,
+        "language": "en",
         "lat": 26.6, "lon": 56.5, "geo_confidence": 0.9,
         "source_name": "Reuters", "source_url": "https://example.org/x",
     }
@@ -61,10 +62,17 @@ async def test_full_stage3_writes_event_and_publishes(fake_redis, router):
     # em zona de tensao (Hormuz), critical se mantem mesmo sem 2a fonte
     assert event["severity"] == "critical"
     assert event["region"] is not None
+    # link de acesso sempre presente + idioma original registrado (resumo e pt-BR)
+    assert event["source_url"] == "https://example.org/x"
+    assert event["source_language"] == "en"
+    assert event["summary"]  # resumo pt-BR vindo do enriquecimento
 
     stream = fake_redis.streams[STREAM_TRIAGED]
     payload = json.loads(stream[0][1]["payload"])
     assert payload["event_id"] == 1 and payload["severity"] == "critical"
+    assert payload["source_url"] == "https://example.org/x"
+    assert payload["source_language"] == "en"
+    assert payload["summary"] == "Movimento naval no estreito."
 
 
 async def test_low_trust_source_reduces_confidence(fake_redis, router):
@@ -95,3 +103,45 @@ async def test_critical_without_corroboration_outside_zone_downgrades(fake_redis
         "lat": -30.0, "lon": -60.0,
     })
     assert repo.created[0]["severity"] == "high"
+
+
+async def test_source_url_falls_back_to_raw_data(fake_redis, router):
+    """Se o collector nao setou source_url, recupera o link do raw_data (link sempre)."""
+    repo = FakeRepo()
+
+    async def repo_factory():
+        return repo
+
+    stage = Stage3LLMEnrich(fake_redis, router=router, events_repo_factory=repo_factory)
+    await stage.process({
+        "title": "evento sem url direta", "summary": "x", "content_hash": "d" * 64,
+        "language": "en", "source_name": "GDELT",
+        "raw_data": {"url": "https://fonte.example/artigo"},
+    })
+    assert repo.created[0]["source_url"] == "https://fonte.example/artigo"
+
+
+async def test_prompt_requires_pt_br_summary(fake_redis):
+    """O prompt enviado a LLM exige resumo em pt-BR e informa o idioma original."""
+    captured = {}
+
+    class CapturingProvider(ScriptedProvider):
+        async def complete(self, prompt, json_schema=None):
+            captured["prompt"] = prompt
+            return await super().complete(prompt, json_schema)
+
+    router = LLMRouter(
+        providers={"ollama": CapturingProvider("ollama", response=ENRICH_JSON)},
+        profile=LLMProfile.LOCAL_ONLY,
+    )
+
+    async def repo_factory():
+        return FakeRepo()
+
+    stage = Stage3LLMEnrich(fake_redis, router=router, events_repo_factory=repo_factory)
+    await stage.process({
+        "title": "Naval buildup", "summary": "warships", "content_hash": "e" * 64,
+        "language": "en", "source_name": "Reuters", "source_url": "https://r.example/1",
+    })
+    assert "portugues do Brasil" in captured["prompt"]
+    assert "idioma original: en" in captured["prompt"]

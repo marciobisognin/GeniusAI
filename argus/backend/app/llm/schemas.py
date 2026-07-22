@@ -27,7 +27,9 @@ class EventEnrichment(BaseModel):
     """Saida estruturada do Estagio 3."""
     model_config = ConfigDict(extra="forbid")
 
-    summary: str
+    summary: str = Field(
+        description="Resumo objetivo SEMPRE em portugues do Brasil (traduzido do idioma original)."
+    )
     category: Category
     severity: Severity
     confidence: float = Field(ge=0.0, le=1.0)

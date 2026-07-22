@@ -29,7 +29,8 @@ def event_to_dict(event: Event, lat: float | None = None, lon: float | None = No
         "region": event.region,
         "actors": event.actors,
         "source_name": event.source_name,
-        "source_url": event.source_url,
+        "source_url": event.source_url,          # link de acesso (sempre presente)
+        "source_language": event.source_language,  # idioma original; summary e pt-BR
         "lat": lat,
         "lon": lon,
     }
