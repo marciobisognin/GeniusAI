@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#0b1120" />
+  <title>ARGUS — Monitoramento Geopolítico Global</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link href="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <link href="styles.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.5.0/dist/maplibre-gl.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header role="banner">
+    <h1><span aria-hidden="true">🛰️</span> ARGUS</h1>
+    <div class="header-controls">
+      <label for="time-slider">Janela: <span id="time-label">72h</span></label>
+      <input id="time-slider" type="range" min="1" max="72" value="72" step="1"
+             aria-label="Janela de tempo em horas" />
+      <label class="toggle"><input id="toggle-heatmap" type="checkbox" /> Heatmap</label>
+      <label class="toggle"><input id="toggle-tracks" type="checkbox" checked /> Trilhas AIS/ADS-B</label>
+      <span id="ws-status" class="badge" role="status" aria-live="polite">conectando…</span>
+    </div>
+  </header>
+
+  <main>
+    <div id="map" role="application" aria-label="Mapa de eventos geopolíticos"></div>
+
+    <aside role="complementary" aria-label="Painel lateral">
+      <section aria-labelledby="alerts-title">
+        <h2 id="alerts-title">⚠ Alertas críticos</h2>
+        <ul id="alerts-list" class="feed" tabindex="0"></ul>
+      </section>
+
+      <section aria-labelledby="feed-title">
+        <h2 id="feed-title">Feed recente</h2>
+        <ul id="events-list" class="feed" tabindex="0"></ul>
+      </section>
+
+      <section aria-labelledby="llm-title">
+        <h2 id="llm-title">Motor de LLM</h2>
+        <label for="llm-profile">Perfil</label>
+        <select id="llm-profile" aria-describedby="llm-cost">
+          <option value="LOCAL_ONLY">LOCAL_ONLY (Ollama)</option>
+          <option value="HYBRID">HYBRID (local + nuvem)</option>
+          <option value="CLOUD_PREFERRED">CLOUD_PREFERRED</option>
+        </select>
+        <p id="llm-cost">Custo hoje: <strong id="cost-today">$0.00</strong>
+           · Chamadas: <span id="calls-today">0</span></p>
+      </section>
+
+      <section aria-labelledby="legend-title">
+        <h2 id="legend-title">Legenda</h2>
+        <ul class="legend">
+          <li><span class="dot critical"></span> critical</li>
+          <li><span class="dot high"></span> high</li>
+          <li><span class="dot medium"></span> medium</li>
+          <li><span class="dot low"></span> low</li>
+          <li><span class="dot inference"></span> inferência (opaco = fato)</li>
+        </ul>
+      </section>
+    </aside>
+  </main>
+</body>
+</html>

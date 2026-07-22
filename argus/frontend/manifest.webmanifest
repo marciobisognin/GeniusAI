@@ -1,0 +1,10 @@
+{
+  "name": "ARGUS — Monitoramento Geopolítico Global",
+  "short_name": "ARGUS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b1120",
+  "theme_color": "#0b1120",
+  "description": "GEOINT/OSINT local-first: eventos geopolíticos em tempo quase real.",
+  "icons": []
+}

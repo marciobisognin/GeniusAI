@@ -1,0 +1,46 @@
+name	lat	lon	country	feature_class	population
+Strait of Hormuz	26.6	56.5	Iran	H	0
+Strait of Malacca	4.0	100.0	Malaysia	H	0
+Bosporus	41.1	29.05	Turkey	H	0
+Suez Canal	30.45	32.35	Egypt	H	0
+Panama Canal	9.08	-79.68	Panama	H	0
+Persian Gulf	26.8	51.5	Iran	H	0
+Gulf of Aden	12.5	47.5	Yemen	H	0
+Black Sea	43.4	34.3	Turkey	H	0
+Red Sea	20.0	38.5	Egypt	H	0
+South China Sea	13.0	113.5	China	H	0
+Taiwan Strait	24.5	119.5	Taiwan	H	0
+Bab-el-Mandeb	12.58	43.33	Yemen	H	0
+Kerch Strait	45.25	36.6	Ukraine	H	0
+Golan Heights	32.98	35.75	Syria	T	0
+Kyiv	50.45	30.52	Ukraine	P	2952000
+Moscow	55.75	37.62	Russia	P	12500000
+Tehran	35.69	51.42	Iran	P	8846000
+Washington	38.9	-77.04	United States	P	705000
+Beijing	39.9	116.4	China	P	21540000
+Taipei	25.03	121.57	Taiwan	P	2646000
+Jerusalem	31.77	35.21	Israel	P	936000
+Gaza	31.5	34.47	Palestine	P	590000
+Damascus	33.51	36.29	Syria	P	2079000
+Baghdad	33.34	44.4	Iraq	P	7665000
+Kabul	34.53	69.17	Afghanistan	P	4222000
+Seoul	37.57	126.98	South Korea	P	9776000
+Pyongyang	39.03	125.75	North Korea	P	2870000
+Brasília	-15.79	-47.88	Brazil	P	3055000
+Brasilia	-15.79	-47.88	Brazil	P	3055000
+São Paulo	-23.55	-46.63	Brazil	P	12325000
+Sao Paulo	-23.55	-46.63	Brazil	P	12325000
+London	51.51	-0.13	United Kingdom	P	8982000
+Paris	48.86	2.35	France	P	2161000
+Berlin	52.52	13.4	Germany	P	3645000
+Warsaw	52.23	21.01	Poland	P	1790000
+Odesa	46.48	30.72	Ukraine	P	1015000
+Sevastopol	44.62	33.53	Ukraine	P	340000
+Tripoli	32.89	13.19	Libya	P	1150000
+Khartoum	15.5	32.56	Sudan	P	5274000
+Sanaa	15.35	44.21	Yemen	P	1937000
+Manila	14.6	120.98	Philippines	P	1780000
+Islamabad	33.69	73.04	Pakistan	P	1015000
+New Delhi	28.61	77.21	India	P	257000
+Caracas	10.49	-66.88	Venezuela	P	1943000
+Port Sudan	19.62	37.22	Sudan	P	490000

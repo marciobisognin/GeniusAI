@@ -1,0 +1,74 @@
+# Catalogo de fontes: tudo aberto/publico. `language` controla o filtro de
+# palavras-chave (Estagio 1) e o modelo spaCy (Estagio 2).
+rss:
+  - name: Reuters World
+    url: https://feeds.reuters.com/reuters/worldNews
+    language: en
+    interval_minutes: 10
+  - name: AP Top News
+    url: https://feeds.apnews.com/rss/apf-topnews
+    language: en
+    interval_minutes: 10
+  - name: Defense News
+    url: https://www.defensenews.com/arc/outboundfeeds/rss/
+    language: en
+    interval_minutes: 10
+  - name: Agencia Brasil Internacional
+    url: https://agenciabrasil.ebc.com.br/rss/internacional/feed.xml
+    language: pt
+    interval_minutes: 10
+
+gdelt:
+  doc_url: https://api.gdeltproject.org/api/v2/doc/doc
+  geo_url: https://api.gdeltproject.org/api/v2/geo/geo
+  interval_minutes: 15
+  query: "(military OR conflict OR missile OR sanctions OR treaty)"
+
+ucdp:
+  url: https://ucdpapi.pcr.uu.se/api/gedevents/25.1
+  interval_minutes: 60
+  page_size: 100
+
+reliefweb:
+  url: https://api.reliefweb.int/v1/reports
+  appname: argus-osint
+  interval_minutes: 15
+
+gdacs:
+  url: https://www.gdacs.org/xml/rss.xml
+  interval_minutes: 15
+
+usgs:
+  url: https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/significant_week.geojson
+  interval_minutes: 15
+
+firms:
+  url: https://firms.modaps.eosdis.nasa.gov/api/area/csv
+  source: VIIRS_SNPP_NRT
+  interval_minutes: 60
+
+adsb:
+  base_url: https://api.adsb.lol/v2
+  rate_limit_rps: 1
+  zones:
+    - name: Eastern Mediterranean
+      lat: 34.5
+      lon: 33.0
+      radius_nm: 250
+    - name: Persian Gulf
+      lat: 26.5
+      lon: 52.5
+      radius_nm: 250
+
+ais:
+  url: wss://stream.aisstream.io/v0/stream
+  bounding_boxes:
+    - name: Strait of Hormuz
+      box: [[25.0, 54.0], [28.0, 58.0]]
+    - name: Black Sea
+      box: [[41.0, 27.5], [47.5, 42.0]]
+
+mastodon:
+  hashtags: [geopolitics, osint, ukraine, conflict]
+  interval_minutes: 10
+  limit: 40
