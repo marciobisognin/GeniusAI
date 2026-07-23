@@ -115,6 +115,8 @@ aside {
 .feed-link a, .popup-summary + .popup-source + a { white-space: nowrap; }
 .translated { color: var(--muted); font-size: 0.72rem; }
 .no-link { color: var(--muted); font-size: 0.72rem; font-style: italic; }
+/* Titulo original (idioma de origem), exibido pequeno abaixo do titulo pt-BR */
+.original-title { color: var(--muted); font-size: 0.72rem; font-style: italic; }
 
 @media (max-width: 800px) {
   main { flex-direction: column; }

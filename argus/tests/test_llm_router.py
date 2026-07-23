@@ -9,7 +9,7 @@ from backend.app.llm.schemas import EventEnrichment
 from tests.conftest import ScriptedProvider
 
 VALID_JSON = (
-    '{"summary": "resumo", "category": "naval", "severity": "high",'
+    '{"title": "titulo", "summary": "resumo", "category": "naval", "severity": "high",'
     ' "confidence": 0.8, "is_inference": false, "actors": ["IRGC"]}'
 )
 

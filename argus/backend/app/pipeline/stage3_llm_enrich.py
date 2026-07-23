@@ -32,7 +32,8 @@ TENSION_ZONES: list[dict[str, Any]] = [
 _SEVERITY_ORDER = ["low", "medium", "high", "critical"]
 
 ENRICH_PROMPT = """Voce e um analista GEOINT. Analise o evento abaixo e responda SOMENTE com JSON:
-{{"summary": "resumo objetivo em ate 3 frases, SEMPRE em portugues do Brasil",
+{{"title": "titulo traduzido, SEMPRE em portugues do Brasil",
+ "summary": "resumo objetivo em ate 3 frases, SEMPRE em portugues do Brasil",
  "category": "conflito|diplomacia|naval|aereo|humanitario|geofisico",
  "severity": "low|medium|high|critical",
  "confidence": 0.0-1.0,
@@ -40,14 +41,15 @@ ENRICH_PROMPT = """Voce e um analista GEOINT. Analise o evento abaixo e responda
  "actors": ["atores estatais/nao-estatais envolvidos"]}}
 
 REGRAS:
-- O campo `summary` DEVE estar sempre em portugues do Brasil (pt-BR),
-  independentemente do idioma original da noticia. Se a fonte estiver em outro
-  idioma (ingles, etc.), TRADUZA o resumo para pt-BR. Nunca devolva o resumo no
-  idioma original.
+- Os campos `title` e `summary` DEVEM estar sempre em portugues do Brasil
+  (pt-BR), independentemente do idioma original da noticia. Se a fonte estiver
+  em outro idioma (ingles, etc.), TRADUZA o titulo e o resumo para pt-BR. Nunca
+  devolva title/summary no idioma original. Preserve nomes proprios, siglas e
+  numeros; nao invente informacao ao traduzir.
 - `is_inference` = true quando a classificacao depende de interpretacao sua e nao
   de fato explicito no texto. Nao invente fatos.
 
-Titulo: {title}
+Titulo original: {title}
 Texto: {summary}
 Fonte: {source_name} (idioma original: {language})
 """
@@ -135,7 +137,7 @@ class Stage3LLMEnrich:
         enrichment = parse_structured(result.text, EventEnrichment)
 
         embedding = await self.router.embed(
-            f"{item.get('title', '')}\n{enrichment.summary}"
+            f"{enrichment.title}\n{enrichment.summary}"  # embedding 100% em pt-BR
         )
 
         repo = await self._repo()
@@ -153,8 +155,10 @@ class Stage3LLMEnrich:
             event_time = dt.datetime.fromisoformat(event_time)
         source_url = ensure_source_url(item)          # link de acesso sempre presente
         source_language = (item.get("language") or "en")[:8]  # idioma original (procedencia)
+        original_title = item.get("title", "")[:2000]
         event_id = await repo.create_event(
-            title=item.get("title", "")[:2000],
+            title=enrichment.title[:2000],            # titulo sempre em pt-BR (traduzido)
+            original_title=original_title,            # titulo no idioma original (procedencia)
             summary=enrichment.summary,               # resumo sempre em pt-BR (traduzido)
             category=enrichment.category,
             severity=severity,
@@ -180,7 +184,8 @@ class Stage3LLMEnrich:
 
         triaged = {
             "event_id": event_id,
-            "title": item.get("title"),
+            "title": enrichment.title,                 # pt-BR
+            "original_title": original_title,          # idioma original (procedencia)
             "summary": enrichment.summary,            # pt-BR
             "category": enrichment.category,
             "severity": severity,

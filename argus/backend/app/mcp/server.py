@@ -15,7 +15,8 @@ mcp = FastMCP("argus-geoint")
 def _event_to_dict(event: Any) -> dict[str, Any]:
     return {
         "id": event.id,
-        "title": event.title,
+        "title": event.title,                    # traduzido para pt-BR (sempre)
+        "original_title": event.original_title,  # idioma original (procedencia)
         "summary": event.summary,
         "category": event.category,
         "severity": event.severity,

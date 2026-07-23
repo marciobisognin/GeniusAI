@@ -11,7 +11,8 @@ from backend.app.queue.redis_queue import STREAM_TRIAGED
 from tests.conftest import ScriptedProvider
 
 ENRICH_JSON = (
-    '{"summary": "Movimento naval no estreito.", "category": "naval",'
+    '{"title": "Movimentacao naval no Estreito de Hormuz",'
+    ' "summary": "Movimento naval no estreito.", "category": "naval",'
     ' "severity": "critical", "confidence": 0.9, "is_inference": false,'
     ' "actors": ["Iran Navy"]}'
 )
@@ -66,6 +67,9 @@ async def test_full_stage3_writes_event_and_publishes(fake_redis, router):
     assert event["source_url"] == "https://example.org/x"
     assert event["source_language"] == "en"
     assert event["summary"]  # resumo pt-BR vindo do enriquecimento
+    # titulo traduzido para pt-BR + titulo original preservado (procedencia)
+    assert event["title"] == "Movimentacao naval no Estreito de Hormuz"
+    assert event["original_title"] == "Naval movement near Strait of Hormuz"
 
     stream = fake_redis.streams[STREAM_TRIAGED]
     payload = json.loads(stream[0][1]["payload"])
@@ -73,6 +77,8 @@ async def test_full_stage3_writes_event_and_publishes(fake_redis, router):
     assert payload["source_url"] == "https://example.org/x"
     assert payload["source_language"] == "en"
     assert payload["summary"] == "Movimento naval no estreito."
+    assert payload["title"] == "Movimentacao naval no Estreito de Hormuz"
+    assert payload["original_title"] == "Naval movement near Strait of Hormuz"
 
 
 async def test_low_trust_source_reduces_confidence(fake_redis, router):
@@ -121,8 +127,8 @@ async def test_source_url_falls_back_to_raw_data(fake_redis, router):
     assert repo.created[0]["source_url"] == "https://fonte.example/artigo"
 
 
-async def test_prompt_requires_pt_br_summary(fake_redis):
-    """O prompt enviado a LLM exige resumo em pt-BR e informa o idioma original."""
+async def test_prompt_requires_pt_br_title_and_summary(fake_redis):
+    """O prompt enviado a LLM exige titulo+resumo em pt-BR e informa o idioma original."""
     captured = {}
 
     class CapturingProvider(ScriptedProvider):
@@ -145,3 +151,4 @@ async def test_prompt_requires_pt_br_summary(fake_redis):
     })
     assert "portugues do Brasil" in captured["prompt"]
     assert "idioma original: en" in captured["prompt"]
+    assert "Titulo original: Naval buildup" in captured["prompt"]

@@ -103,7 +103,9 @@ map.on("load", async () => {
     new maplibregl.Popup()
       .setLngLat(e.features[0].geometry.coordinates)
       .setHTML(
+        // Titulo sempre em pt-BR (traduzido); original exibido pequeno abaixo.
         `<strong>${escapeHtml(p.title)}</strong>${badge}<br/>` +
+        originalTitleNote(p) +
         `<span class="sev ${p.severity}">${p.severity}</span> · ${p.category ?? "?"}<br/>` +
         // Resumo sempre em pt-BR (traduzido do idioma original)
         (p.summary ? `<p class="popup-summary">${escapeHtml(p.summary)}${translationNote(p)}</p>` : "") +
@@ -139,6 +141,12 @@ function translationNote(p) {
   const lang = (p.source_language || "").slice(0, 2).toLowerCase();
   if (!lang || lang === "pt") return "";
   return ` <em class="translated">(traduzido de ${LANG_NAMES[lang] || lang})</em>`;
+}
+
+// Titulo original (idioma de origem) como referencia pequena abaixo do titulo pt-BR.
+function originalTitleNote(p) {
+  if (!p.original_title || p.original_title === p.title) return "";
+  return `<span class="original-title">${escapeHtml(p.original_title)}</span><br/>`;
 }
 
 // Link de acesso a fonte — sempre exibido (cai para o nome da fonte se faltar URL).
@@ -218,6 +226,7 @@ function feedLine(ev) {
     ? `<span class="feed-summary">${escapeHtml(ev.summary)}${translationNote(ev)}</span>` : "";
   return `<span class="sev ${ev.severity}">${escapeHtml(ev.severity ?? "?")}</span> ` +
     `${escapeHtml(ev.title ?? "")} <em>(${badge}${corro})</em><br/>` +
+    originalTitleNote(ev) +
     `${summary}<span class="feed-link">${sourceLink(ev)}</span>`;
 }
 
