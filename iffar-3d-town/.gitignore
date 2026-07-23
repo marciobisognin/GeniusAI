@@ -12,8 +12,11 @@ dist
 dist-ssr
 *.local
 .env
+.env.*
+!.env.example
 .nirvana/
 outputs/
+tickets/
 
 # Editor directories and files
 .vscode/*
