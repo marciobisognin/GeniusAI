@@ -39,7 +39,8 @@ async def map_geojson(
                 "geometry": json.loads(geometry_json),
                 "properties": {
                     "id": event.id,
-                    "title": event.title,
+                    "title": event.title,              # traduzido para pt-BR (sempre)
+                    "original_title": event.original_title,  # idioma original (procedencia)
                     "summary": event.summary,          # resumo em pt-BR (traduzido)
                     "category": event.category,
                     "severity": event.severity,

@@ -159,13 +159,17 @@ Tools: `get_recent_events`, `search_events_by_region`, `run_rag_query`.
 - **RAG:** responde só com base nos eventos recuperados do pgvector, citando
   `source_url`; sem cobertura ⇒ `"sem dados suficientes"`.
 - **Fonte social (Mastodon):** confiança limitada a 0.4 e `is_inference=true`.
-- **Link + resumo em pt-BR (sempre):** independentemente da fonte ou do idioma
-  original, todo evento carrega o **link de acesso** (`source_url`, garantido no
-  Estágio 3 por `ensure_source_url`, com fallback para o link do `raw_data`) e um
-  **resumo traduzido para português do Brasil** (o Estágio 3 instrui a LLM a
-  sempre produzir `summary` em pt-BR). O idioma original fica registrado em
-  `source_language`, e o dashboard exibe "(traduzido de …)" quando não é `pt`.
-  Popup do mapa e feed lateral mostram o resumo pt-BR e o link em toda entrada.
+- **Link + título e resumo em pt-BR (sempre):** independentemente da fonte ou
+  do idioma original, todo evento carrega o **link de acesso** (`source_url`,
+  garantido no Estágio 3 por `ensure_source_url`, com fallback para o link do
+  `raw_data`) e **título + resumo traduzidos para português do Brasil** (o
+  Estágio 3 instrui a LLM a sempre produzir `title`/`summary` em pt-BR). O
+  título e o idioma originais ficam preservados em `original_title` e
+  `source_language` (procedência), e o dashboard exibe o título original
+  pequeno abaixo do traduzido e "(traduzido de …)" junto ao resumo quando o
+  idioma não é `pt`. Popup do mapa e feed lateral mostram tudo isso, sempre
+  com o link. Briefings diários e respostas do RAG citam os eventos já em
+  pt-BR automaticamente, por usarem o `title`/`summary` traduzidos.
 
 ## Testes
 

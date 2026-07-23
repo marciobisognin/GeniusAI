@@ -46,7 +46,8 @@ class Event(Base):
     __tablename__ = "events"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text)
+    title: Mapped[str] = mapped_column(Text)  # traduzido para pt-BR (sempre)
+    original_title: Mapped[str | None] = mapped_column(Text)  # titulo no idioma original (procedencia)
     summary: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(30))  # conflito|diplomacia|naval|aereo|humanitario|geofisico
     severity: Mapped[str | None] = mapped_column(String(10))  # low|medium|high|critical

@@ -27,6 +27,9 @@ class EventEnrichment(BaseModel):
     """Saida estruturada do Estagio 3."""
     model_config = ConfigDict(extra="forbid")
 
+    title: str = Field(
+        description="Titulo traduzido para portugues do Brasil (mesmo quando ja estiver em pt)."
+    )
     summary: str = Field(
         description="Resumo objetivo SEMPRE em portugues do Brasil (traduzido do idioma original)."
     )

@@ -17,7 +17,8 @@ router = APIRouter()
 def event_to_dict(event: Event, lat: float | None = None, lon: float | None = None) -> dict[str, Any]:
     return {
         "id": event.id,
-        "title": event.title,
+        "title": event.title,                       # traduzido para pt-BR (sempre)
+        "original_title": event.original_title,      # titulo no idioma original (procedencia)
         "summary": event.summary,
         "category": event.category,
         "severity": event.severity,
