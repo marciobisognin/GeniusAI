@@ -1188,12 +1188,12 @@ export default function App() {
                       <div className="bg-[#120f11] p-2.5 rounded-xl border border-[#2d262a] hover:border-amber-500/40 transition-colors group">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-bold text-stone-200 group-hover:text-amber-400 truncate">
-                            MINUTA PDI DE ENSINO
+                            MINUTA DE PPC DE CURSO
                           </span>
                           <button
                             onClick={() =>
                               handleExecutePrompt(
-                                "Elaborar minuta pedagógica do novo PDI para a Pró-Reitoria de Ensino.",
+                                "Elaborar minuta do PPC (projeto pedagógico de curso) para revisão curricular na Pró-Reitoria de Ensino.",
                               )
                             }
                             className="text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded hover:bg-amber-500 hover:text-stone-950 transition-colors shrink-0"
@@ -1204,6 +1204,30 @@ export default function App() {
                         <p className="text-[10px] text-stone-400">
                           Encaminhado à Pró-Reitoria de Ensino para revisão de
                           matrizes curriculares.
+                        </p>
+                      </div>
+
+                      <div className="bg-[#120f11] p-2.5 rounded-xl border border-amber-500/30 hover:border-amber-500/60 transition-colors group">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs font-bold text-amber-300 truncate">
+                            NOVO PDI INSTITUCIONAL
+                          </span>
+                          <button
+                            onClick={() =>
+                              handleExecutePrompt(
+                                "Elaborar o novo Plano de Desenvolvimento Institucional (PDI) do IFFar, alinhado às tendências de inteligência artificial, ensino híbrido, inclusão digital e sustentabilidade.",
+                              )
+                            }
+                            className="text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded hover:bg-amber-500 hover:text-stone-950 transition-colors shrink-0"
+                          >
+                            RODAR
+                          </button>
+                        </div>
+                        <p className="text-[10px] text-stone-400">
+                          Encaminhado à Pró-Reitoria de Desenvolvimento
+                          Institucional (Art. 21) → Diretoria de Planejamento e
+                          Desenvolvimento Institucional → Coordenação de
+                          Avaliação Institucional.
                         </p>
                       </div>
                     </div>
