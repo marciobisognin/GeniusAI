@@ -74,12 +74,20 @@ rules:
     cadeia_campus: ["Diretoria de Administração", "Coordenação de Infraestrutura"]
     base_legal: ["Anexo I, Arts. 90, 91"]
 
-  - tema: ensino-cursos-pdi
-    keywords: ["ensino", "curso", "pdi", "ppc", "pedagogic", "curriculo", "graduacao"]
+  - tema: ensino-cursos-ppc
+    keywords: ["ensino", "curso", "ppc", "pedagogic", "curriculo", "graduacao"]
     prioridade: 6
     cadeia_sistemica: ["1.1.16", "1.1.16.3"]
     cadeia_campus: ["Diretoria de Ensino", "Coordenação Geral de Ensino", "Coordenações de Curso"]
     base_legal: ["Anexo I, Arts. 64, 96, 101, 103"]
+
+  - tema: pdi-institucional
+    keywords: ["pdi", "plano de desenvolvimento institucional", "planejamento institucional",
+               "avaliacao institucional"]
+    prioridade: 15
+    cadeia_sistemica: ["1.1.14", "1.1.14.3", "1.1.14.3.1"]
+    cadeia_campus: ["Diretoria de Planejamento e Desenvolvimento Institucional", "Coordenação de Avaliação Institucional"]
+    base_legal: ["Anexo I, Arts. 28, 29, 83, 120"]
 
   - tema: registros-academicos
     keywords: ["matricula", "diploma", "historico escolar", "registro academico"]

@@ -18,6 +18,8 @@
   <a href="#-visão-geral">Visão geral</a> •
   <a href="#-início-rápido">Início rápido</a> •
   <a href="#-como-usar">Como usar</a> •
+  <a href="#-organograma-completo-do-iffar">Organograma</a> •
+  <a href="#-demonstração-elaborando-o-novo-pdi">Demo em vídeo</a> •
   <a href="#-camada-de-dados-institucional">Dados institucionais</a> •
   <a href="#-arquitetura">Arquitetura</a> •
   <a href="#-uso-com-llms-e-agentes-de-codificação">LLMs de codificação</a> •
@@ -65,6 +67,163 @@ Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois 
 
 ---
 
+## 🎓 Missão, visão e a Portaria 876/2026
+
+> Missão, visão e valores citados verbatim da página institucional oficial do IFFar — [iffarroupilha.edu.br/missao-pdi](https://www.iffarroupilha.edu.br/missao-pdi).
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+**🎯 Missão**
+
+> "Promover a educação profissional, científica e tecnológica, pública e gratuita, por meio do ensino, pesquisa e extensão, com foco na formação integral do cidadão e no desenvolvimento sustentável."
+
+</td>
+<td width="33%" valign="top">
+
+**🔭 Visão**
+
+> "Ser excelência na formação de técnicos de nível médio, professores para a educação básica e demais profissionais de nível superior, por meio da pesquisa, da extensão e da inovação."
+
+</td>
+<td width="33%" valign="top">
+
+**💎 Valores**
+
+Ética • Solidariedade • Responsabilidade Social, Ambiental e Econômica • Comprometimento • Transparência • Respeito • Gestão Democrática • Inovação
+
+</td>
+</tr>
+</table>
+
+### Por que a Portaria 876/2026 importa
+
+A **Portaria Eletrônica nº 876/2026 - GRE** (03/07/2026, processo 23873.000543/2026-09) atualiza a estrutura administrativa e o quadro de funções comissionadas do IFFar, revogando a Portaria 398/2026. Ela formaliza a expansão institucional em curso: os campi **Uruguaiana**, **São Luiz Gonzaga** e **Santiago** ganham diretorias e funções comissionadas próprias, e o **Campus Caçapava do Sul** — recém-autorizado pelo MEC — aparece com sua Diretoria vinculada diretamente ao Gabinete da Reitoria (1.1.4.1), refletindo o estágio inicial de estruturação de um campus novo.
+
+É essa mesma portaria — não uma versão simplificada ou hipotética — que alimenta `businesses/iffar/org-chart.yaml`, `competencias.yaml` e `routing.yaml`: cada unidade, cargo e regra de roteamento deste protótipo é rastreável a um artigo real do Anexo I.
+
+---
+
+## 🏛️ Organograma completo do IFFar
+
+A estrutura abaixo é a mesma servida dinamicamente por `GET /api/org-chart` — o diagrama documenta o nível Reitoria + Pró-Reitorias + 13 campi; a árvore completa (453 unidades, até coordenações e setores) está em `businesses/iffar/org-chart.yaml` e pode ser explorada clicando em qualquer campus na cena 3D.
+
+```mermaid
+flowchart TD
+    REI["🎓 Reitoria<br/>Reitor(a) — CD-0001"]
+
+    REI --> PROAD["📊 PROAD<br/>Administração"]
+    REI --> PRDI["📊 PRDI<br/>Desenv. Institucional"]
+    REI --> PROEN["📊 PROEN<br/>Ensino"]
+    REI --> PRPPGI["📊 PRPPGI<br/>Pesquisa, Pós-Grad. e Inovação"]
+    REI --> PROEX["📊 PROEX<br/>Extensão"]
+
+    REI -.-> AUDIT["🔍 Auditoria Interna"]
+    REI -.-> OUVID["📣 Ouvidoria Geral"]
+    REI -.-> PROC["⚖️ Procuradoria Federal"]
+
+    subgraph CAMPI["🏫 13 campi (Gabinete do(a) Diretor(a) Geral)"]
+        direction LR
+        C1["Alegrete"]
+        C2["Frederico<br/>Westphalen"]
+        C3["Jaguari"]
+        C4["Júlio de<br/>Castilhos"]
+        C5["Panambi"]
+        C6["Santa Rosa"]
+        C7["Santiago"]
+        C8["Santo<br/>Augusto"]
+        C9["Santo<br/>Ângelo"]
+        C10["São Borja"]
+        C11["São Luiz<br/>Gonzaga"]
+        C12["São Vicente<br/>do Sul"]
+        C13["Uruguaiana"]
+    end
+
+    REI ==> CAMPI
+
+    style REI fill:#8b5cf6,color:#120f11,stroke:#c4b5fd
+    style PROAD fill:#22c55e,color:#120f11
+    style PRDI fill:#0ea5e9,color:#120f11
+    style PROEN fill:#f97316,color:#120f11
+    style PRPPGI fill:#ec4899,color:#120f11
+    style PROEX fill:#eab308,color:#120f11
+```
+
+<img src="./src/assets/organograma-completo.svg" alt="Organograma do IFFar: Reitoria no topo, ligada a cinco Pró-Reitorias (Administração, Desenvolvimento Institucional, Ensino, Pesquisa/Pós-Graduação/Inovação e Extensão) e aos 13 campi (Alegrete, Frederico Westphalen, Jaguari, Júlio de Castilhos, Panambi, Santa Rosa, Santiago, Santo Augusto, Santo Ângelo, São Borja, São Luiz Gonzaga, São Vicente do Sul e Uruguaiana)." width="100%" />
+
+### Responsabilidades por cargo (Anexo I da Portaria 876/2026)
+
+Resumos abaixo são o primeiro inciso real de cada artigo — extraídos e disponíveis por completo em `businesses/iffar/competencias.yaml` (campo `resumo`, com `total_incisos` indicando quantos itens cada artigo tem).
+
+| Cargo | Unidade | Base legal | Resumo da competência |
+| ----- | ------- | :--------: | ---------------------- |
+| 🎓 Reitor(a) | Gabinete da Reitoria | Art. 14 | "Organizar, assistir, coordenar, fomentar e articular a ação política e administrativa da Reitoria, prestando assistência técnico-administrativa ao(à) Reitor(a)." |
+| 🗂️ Chefe de Gabinete | Chefia do Gabinete | Art. 15 | "Assistir o(a) Reitor(a) no seu relacionamento institucional e administrativo em suas representações política e social." |
+| 📊 Pró-Reitor(a) de Administração | PROAD | Art. 38 | "Planejar, desenvolver, controlar e avaliar [...] a administração orçamentária, financeira e patrimonial [...], os projetos de infraestrutura, as licitações e os contratos." |
+| 📊 Pró-Reitor(a) de Desenv. Institucional | PRDI | Art. 21 | "Promover a integração entre a Reitoria e os campi" e coordenar planejamento estratégico e avaliação institucional — inclui a elaboração do **PDI**. |
+| 📊 Pró-Reitor(a) de Ensino | PROEN | Art. 61 | "Planejar, desenvolver, controlar e avaliar a execução das políticas de ensino homologadas pelo Conselho Superior." |
+| 📊 Pró-Reitor(a) de Pesquisa, Pós-Grad. e Inovação | PRPPGI | Art. 71 | "Propor, planejar, desenvolver, articular, controlar e avaliar a execução das políticas de Pesquisa, Pós-Graduação e Inovação." |
+| 📊 Pró-Reitor(a) de Extensão | PROEX | Art. 76 | "Planejar, desenvolver, controlar e avaliar as políticas de extensão, de integração e de intercâmbio da instituição com o setor produtivo e a sociedade." |
+| 🏫 Diretor(a) Geral (campus) | Gabinete do(a) Diretor(a) Geral | Art. 82 | "Administrar, coordenar e superintender todas as atividades do campus, assessorado por diretorias, coordenações e assessorias." |
+| 🔍 Auditoria Interna | Auditoria Interna | Art. 3 | "Acompanhar o cumprimento das metas do Plano Plurianual" e examinar a prestação de contas — órgão de **controle**, não executa contratos/licitações. |
+
+> [!NOTE]
+> Essa distinção entre Auditoria Interna (controle) e PROAD (execução de compras/licitações/contratos) é exatamente o que o motor de roteamento (`routing.yaml`) respeita — ver a nota na seção [Rotas demonstradas](#-visão-geral).
+
+---
+
+## 🏫 Estrutura interna de um campus
+
+Todo campus segue o mesmo desenho geral (Colegiado + Gabinete do(a) Diretor(a) Geral + 3-4 diretorias), com pequenas variações — os campi menores usam a estrutura reduzida dos Arts. 114-120 (diretorias combinadas). Abaixo, o Campus Frederico Westphalen como referência (estrutura completa, sem combinação):
+
+```mermaid
+flowchart TD
+    DG["🏫 Gabinete do(a) Diretor(a) Geral<br/>CD-0002"]
+
+    DG --> DPDI["Diretoria de Planejamento<br/>e Desenv. Institucional"]
+    DG --> DA["Diretoria de<br/>Administração"]
+    DG --> DE["Diretoria de<br/>Ensino"]
+    DG --> DPEP["Diretoria de Pesquisa,<br/>Extensão e Produção"]
+
+    DPDI --> CGP["Coord. Gestão de Pessoas"]
+    DPDI --> CTI["Coord. Tecnologia da Informação"]
+
+    DA --> CAP["Coord. Almoxarifado<br/>e Patrimônio"]
+    DA --> CLC["Coord. Licitações<br/>e Contratos"]
+    DA --> COF["Coord. Orçamento<br/>e Finanças"]
+
+    DE --> CGE["Coord. Geral de Ensino"]
+    CGE --> CC["Coordenações de Curso"]
+
+    DPEP --> CE["Coord. Extensão"]
+    DPEP --> CPPI["Coord. Pesquisa, Pós-Grad.<br/>e Inovação"]
+
+    style DG fill:#f59e0b,color:#120f11
+```
+
+### Como uma decisão flui entre níveis hierárquicos
+
+```mermaid
+sequenceDiagram
+    actor U as Usuário
+    participant REI as Reitoria
+    participant PR as Pró-Reitoria competente
+    participant GDG as Gabinete do DG (campus)
+    participant COORD as Diretoria/Coordenação executora
+
+    U->>REI: Briefing em linguagem natural
+    REI->>PR: Roteamento por competência (Anexo I)
+    PR->>GDG: Encaminhamento ao campus citado
+    GDG->>COORD: Delegação à unidade executora
+    COORD-->>GDG: Parecer técnico
+    GDG-->>PR: Devolução
+    PR-->>REI: Consolidação
+    REI-->>U: Artefato final
+```
+
+---
+
 ## 🎯 O que você consegue fazer
 
 | Experiência                                  | O que acontece na prática                                                                                 |
@@ -85,13 +244,15 @@ flowchart LR
     R --> M{{Motor de roteamento<br/>routing.yaml}}
 
     M -->|licitações · contratos · fiscalização| PROAD[Pró-Reitoria de Administração]
-    M -->|ensino · PDI · cursos| PROEN[Pró-Reitoria de Ensino]
+    M -->|ensino · PPC · cursos| PROEN[Pró-Reitoria de Ensino]
+    M -->|PDI · planejamento institucional| PRDI[Pró-Reitoria de Desenv. Institucional]
     M -->|extensão · comunidade| PROEX[Pró-Reitoria de Extensão]
     M -->|auditoria · CGU · TCU| AUDIT[Auditoria Interna]
     M -->|sem tema reconhecido| GAB[Chefia de Gabinete — Art. 15]
 
     PROAD --> C{Campus citado?}
     PROEN --> C
+    PRDI --> C
     PROEX --> C
     C -->|sim| CX[Diretoria/Coordenação do campus]
     C -->|não| CONS[Fluxo permanece sistêmico]
@@ -258,6 +419,26 @@ Essa verificação reduz exposições acidentais, mas **não substitui autentica
 
 > [!NOTE]
 > `GET /api/routing` expõe as regras usadas pelo motor de classificação — é a mesma fonte que embasa o tooltip institucional e o rodapé "por que esta demanda foi para esta unidade".
+
+---
+
+## 🎬 Demonstração: elaborando o novo PDI
+
+O GIF abaixo é uma gravação real da interface (não uma montagem) processando o playbook **"Novo PDI Institucional"**: um briefing pedindo a elaboração do novo Plano de Desenvolvimento Institucional do IFFar, alinhado a tendências como IA, ensino híbrido, inclusão digital e sustentabilidade.
+
+<img src="./src/assets/demo-pdi.gif" alt="Gravação da interface do IFFar 3D Town processando o briefing 'Elaborar o novo PDI institucional, alinhado a IA, ensino híbrido, inclusão digital e sustentabilidade' — a câmera segue a cadeia real Reitoria → Pró-Reitoria de Desenvolvimento Institucional → Diretoria de Planejamento e Desenvolvimento Institucional → Coordenação de Avaliação Institucional, até abrir o artefato final." width="100%" />
+
+O motor de roteamento reconhece "PDI" como tema institucional (Art. 21 do Anexo I — não confundir com o PPC de um curso específico, que é atribuição da Pró-Reitoria de Ensino) e monta a cadeia real:
+
+```
+Reitoria
+  → Pró-Reitoria de Desenvolvimento Institucional (PRDI)
+    → Diretoria de Planejamento e Desenvolvimento Institucional
+      → Coordenação de Avaliação Institucional
+        ⇄ parecer devolvido pela mesma cadeia até o artefato final
+```
+
+Sem `NIRVANA_ENGINE_PATH` configurado, quem gera o artefato é o `tools/stub-engine.ts` (ver [Início rápido](#-início-rápido)) — por isso o parecer no GIF se identifica como simulação. Apontando `NIRVANA_ENGINE_PATH` para uma instalação real do Nirvana OS, o mesmo fluxo dispara a elaboração de verdade.
 
 ---
 

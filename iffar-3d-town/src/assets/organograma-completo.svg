@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 620" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="1500" height="620" fill="#120f11"/>
+<text x="750.0" y="40" text-anchor="middle" fill="#f59e0b" font-size="26" font-weight="bold">IFFar — Organograma (Portaria Eletrônica nº 876/2026 - GRE)</text>
+<rect x="620.0" y="65" width="260" height="60" rx="12" fill="#8b5cf6" stroke="#c4b5fd" stroke-width="2"/>
+<text x="750.0" y="89" text-anchor="middle" fill="#120f11" font-size="15" font-weight="bold">🎓 Reitoria</text>
+<text x="750.0" y="109" text-anchor="middle" fill="#120f11" font-size="12">Reitor(a) — CD-0001</text>
+<line x1="750.0" y1="125" x2="150.0" y2="190" stroke="#382e34" stroke-width="2"/>
+<rect x="40.0" y="190" width="220" height="56" rx="10" fill="#22c55e" opacity="0.92"/>
+<text x="150.0" y="212" text-anchor="middle" fill="#120f11" font-size="13" font-weight="bold">📊 PROAD</text>
+<text x="150.0" y="230" text-anchor="middle" fill="#120f11" font-size="10">Administração</text>
+<line x1="750.0" y1="125" x2="450.0" y2="190" stroke="#382e34" stroke-width="2"/>
+<rect x="340.0" y="190" width="220" height="56" rx="10" fill="#0ea5e9" opacity="0.92"/>
+<text x="450.0" y="212" text-anchor="middle" fill="#120f11" font-size="13" font-weight="bold">📊 PRDI</text>
+<text x="450.0" y="230" text-anchor="middle" fill="#120f11" font-size="10">Desenvolvimento Institucional</text>
+<line x1="750.0" y1="125" x2="750.0" y2="190" stroke="#382e34" stroke-width="2"/>
+<rect x="640.0" y="190" width="220" height="56" rx="10" fill="#f97316" opacity="0.92"/>
+<text x="750.0" y="212" text-anchor="middle" fill="#120f11" font-size="13" font-weight="bold">📊 PROEN</text>
+<text x="750.0" y="230" text-anchor="middle" fill="#120f11" font-size="10">Ensino</text>
+<line x1="750.0" y1="125" x2="1050.0" y2="190" stroke="#382e34" stroke-width="2"/>
+<rect x="940.0" y="190" width="220" height="56" rx="10" fill="#eab308" opacity="0.92"/>
+<text x="1050.0" y="212" text-anchor="middle" fill="#120f11" font-size="13" font-weight="bold">📊 PROEX</text>
+<text x="1050.0" y="230" text-anchor="middle" fill="#120f11" font-size="10">Extensão</text>
+<line x1="750.0" y1="125" x2="1350.0" y2="190" stroke="#382e34" stroke-width="2"/>
+<rect x="1240.0" y="190" width="220" height="56" rx="10" fill="#ec4899" opacity="0.92"/>
+<text x="1350.0" y="212" text-anchor="middle" fill="#120f11" font-size="13" font-weight="bold">📊 PRPPGI</text>
+<text x="1350.0" y="230" text-anchor="middle" fill="#120f11" font-size="10">Pesquisa, Pós-Grad. e Inovação</text>
+<line x1="750.0" y1="246" x2="117.5" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="20.0" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="117.5" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="117.5" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Alegrete</text>
+<line x1="750.0" y1="246" x2="328.33333333333337" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="230.83333333333334" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="328.33333333333337" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="328.33333333333337" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Frederico Westphalen</text>
+<line x1="750.0" y1="246" x2="539.1666666666667" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="441.6666666666667" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="539.1666666666667" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="539.1666666666667" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Jaguari</text>
+<line x1="750.0" y1="246" x2="750.0" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="652.5" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="750.0" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="750.0" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Júlio de Castilhos</text>
+<line x1="750.0" y1="246" x2="960.8333333333334" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="863.3333333333334" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="960.8333333333334" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="960.8333333333334" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Panambi</text>
+<line x1="750.0" y1="246" x2="1171.6666666666667" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="1074.1666666666667" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="1171.6666666666667" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="1171.6666666666667" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Santa Rosa</text>
+<line x1="750.0" y1="246" x2="1382.5" y2="330" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="1285.0" y="330" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="1382.5" y="358" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="1382.5" y="378" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Santiago</text>
+<line x1="750.0" y1="246" x2="117.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="20.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="117.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="117.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Santo Augusto</text>
+<line x1="750.0" y1="246" x2="370.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="273.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="370.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="370.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Santo Ângelo</text>
+<line x1="750.0" y1="246" x2="623.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="526.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="623.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="623.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">São Borja</text>
+<line x1="750.0" y1="246" x2="876.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="779.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="876.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="876.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">São Luiz Gonzaga</text>
+<line x1="750.0" y1="246" x2="1129.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="1032.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="1129.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="1129.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">São Vicente do Sul</text>
+<line x1="750.0" y1="246" x2="1382.5" y2="430" stroke="#382e34" stroke-width="1.5" opacity="0.7"/>
+<rect x="1285.0" y="430" width="195" height="70" rx="10" fill="#1c171a" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="1382.5" y="458" text-anchor="middle" fill="#f59e0b" font-size="12">🏫</text>
+<text x="1382.5" y="478" text-anchor="middle" fill="#e7e5e4" font-size="11" font-weight="bold">Uruguaiana</text>
+<text x="40" y="545" fill="#a8a29e" font-size="12">Estrutura completa: 453 unidades organizacionais (Reitoria + 13 campi) — ver businesses/iffar/org-chart.yaml</text>
+<rect x="40" y="565" width="16" height="16" rx="3" fill="#8b5cf6"/>
+<text x="62" y="578" fill="#e7e5e4" font-size="12">Reitoria</text>
+<rect x="150" y="565" width="16" height="16" rx="3" fill="#22c55e"/>
+<text x="172" y="578" fill="#e7e5e4" font-size="12">Pró-Reitorias</text>
+<rect x="290" y="565" width="16" height="16" rx="3" fill="#1c171a" stroke="#f59e0b"/>
+<text x="312" y="578" fill="#e7e5e4" font-size="12">Campi (13)</text>
+</svg>
