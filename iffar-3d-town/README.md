@@ -43,9 +43,9 @@ O projeto combina uma experiência visual em **React + Three.js** com um bridge 
 <tr>
 <td width="33%" valign="top">
 
-### 🏙️ Espaço 3D dinâmico
+### 🗺️ Mapa real do Rio Grande do Sul
 
-A cena é gerada a partir de `GET /api/org-chart`: Reitoria, Pró-Reitorias e os 13 campi. Clique em um campus para expandir suas diretorias.
+A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE). Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo — e corta de cenário quando a cadeia muda de campus.
 
 </td>
 <td width="33%" valign="top">
@@ -64,6 +64,8 @@ Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois 
 </td>
 </tr>
 </table>
+
+<img src="./src/assets/mapa-rs-overview.png" alt="Visão geral da cena 3D: mapa do Rio Grande do Sul com o contorno oficial do estado e 14 prédios verdes de telhado vermelho posicionados na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
 
 ---
 
