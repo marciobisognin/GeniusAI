@@ -4,12 +4,12 @@
 
 # IFFar 3D Town
 
-### Uma simulação visual 3D do Instituto Federal Farroupilha para explorar agentes, responsabilidades e fluxos institucionais.
+### Um escritório virtual 2D (estilo Gather Town) sobre o mapa do Rio Grande do Sul, para explorar agentes, responsabilidades e fluxos institucionais do Instituto Federal Farroupilha.
 
 <p>
   <img src="https://img.shields.io/badge/status-protótipo_demonstrativo-F59E0B?style=for-the-badge" alt="Status: protótipo demonstrativo" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=111827" alt="React 19" />
-  <img src="https://img.shields.io/badge/Three.js-r185-111827?style=for-the-badge&logo=threedotjs" alt="Three.js r185" />
+  <img src="https://img.shields.io/badge/SVG%20%2B%20CSS-2D-111827?style=for-the-badge" alt="Mapa e escritório em SVG + CSS 2D" />
   <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 8" />
   <img src="https://img.shields.io/badge/Bun-bridge-FBF0DF?style=for-the-badge&logo=bun&logoColor=111827" alt="Bridge em Bun" />
 </p>
@@ -32,9 +32,9 @@
 
 ## ✨ Visão geral
 
-O **IFFar 3D Town** transforma o organograma real do Instituto Federal Farroupilha — extraído da **Portaria Eletrônica nº 876/2026 - GRE** — em uma central tridimensional demonstrativa. A cena é montada **dinamicamente** a partir de `businesses/iffar/org-chart.yaml`: nenhuma unidade é fixa no frontend. Uma demanda em linguagem natural é classificada por um motor de regras declarativo (`routing.yaml`) que segue as competências reais do Anexo I da portaria, e a interface reproduz visualmente a cadeia de handoffs entre Reitoria, setor responsável e campus.
+O **IFFar 3D Town** transforma o organograma real do Instituto Federal Farroupilha — extraído da **Portaria Eletrônica nº 876/2026 - GRE** — em um escritório virtual demonstrativo, no espírito de um [virtual office](https://www.gather.town/pt/virtual-office): um mapa 2D com a Reitoria e os 13 campi como prédios estilizados, e uma câmera que "entra" no escritório certo — com as pessoas e a função de cada uma — assim que uma tarefa é despachada. A cena é montada **dinamicamente** a partir de `businesses/iffar/org-chart.yaml`: nenhuma unidade é fixa no frontend. Uma demanda em linguagem natural é classificada por um motor de regras declarativo (`routing.yaml`) que segue as competências reais do Anexo I da portaria, e a interface reproduz visualmente a cadeia de handoffs entre Reitoria, setor responsável e campus.
 
-O projeto combina uma experiência visual em **React + Three.js** com um bridge local em **Bun**. Esse bridge conecta a interface ao **Nirvana OS**, dispara o fluxo institucional e devolve os artefatos produzidos para leitura dentro da própria aplicação.
+O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridge local em **Bun**. Esse bridge conecta a interface ao **Nirvana OS**, dispara o fluxo institucional e devolve os artefatos produzidos para leitura dentro da própria aplicação.
 
 > [!IMPORTANT]
 > O organograma e o motor de roteamento já vêm prontos para uso (Opção A). Para executar orquestrações **reais** via Nirvana OS (Opção B), aponte o `.env` para uma instalação existente do Nirvana OS e para os diretórios de execução do negócio `iffar`.
@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + Three.js** com um bridge 
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE). Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo — e corta de cenário quando a cadeia muda de campus.
+A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — estilo [Gather Town](https://www.gather.town/pt/virtual-office) — com um corte de cenário sempre que a cadeia muda de campus.
 
 </td>
 <td width="33%" valign="top">
@@ -65,7 +65,7 @@ Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois 
 </tr>
 </table>
 
-<img src="./src/assets/mapa-rs-overview.png" alt="Visão geral da cena 3D: mapa do Rio Grande do Sul com o contorno oficial do estado e 14 prédios verdes de telhado vermelho posicionados na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
+<img src="./src/assets/mapa-rs-overview.png" alt="Mapa 2D do Rio Grande do Sul com o contorno oficial do estado e 14 prédios verdes de telhado vermelho, desenhados de cima, posicionados na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
 
 ---
 
@@ -109,7 +109,7 @@ A **Portaria Eletrônica nº 876/2026 - GRE** (03/07/2026, processo 23873.000543
 
 ## 🏛️ Organograma completo do IFFar
 
-A estrutura abaixo é a mesma servida dinamicamente por `GET /api/org-chart` — o diagrama documenta o nível Reitoria + Pró-Reitorias + 13 campi; a árvore completa (453 unidades, até coordenações e setores) está em `businesses/iffar/org-chart.yaml` e pode ser explorada clicando em qualquer campus na cena 3D.
+A estrutura abaixo é a mesma servida dinamicamente por `GET /api/org-chart` — o diagrama documenta o nível Reitoria + Pró-Reitorias + 13 campi; a árvore completa (453 unidades, até coordenações e setores) está em `businesses/iffar/org-chart.yaml` e pode ser explorada clicando em qualquer prédio do mapa.
 
 ```mermaid
 flowchart TD
@@ -230,7 +230,7 @@ sequenceDiagram
 
 | Experiência                                  | O que acontece na prática                                                                                 |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Explorar a sede virtual**                    | Navegue pelo ambiente 3D montado a partir do organograma real; filtre por campus no cabeçalho.               |
+| **Explorar a sede virtual**                    | Navegue pelo mapa do RS e pelos escritórios montados a partir do organograma real; filtre por campus no cabeçalho. |
 | **Enviar uma demanda em linguagem natural**    | Digite um briefing ou use um playbook pronto para iniciar uma execução.                                      |
 | **Observar o handoff entre agentes**           | A câmera reproduz a cadeia devolvida pelo bridge, derivada da hierarquia real do organograma.                |
 | **Aplicar rotas por competência**              | O tema da demanda (contratos, ensino, extensão, auditoria, TI, gestão de pessoas...) segue a Uorg competente conforme o Anexo I. |
@@ -290,7 +290,7 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 ## ⚡ Início rápido
 
-A cena 3D é montada a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em ambas as opções abaixo. A diferença entre elas é só se você quer orquestrações reais via Nirvana OS ou não.
+O mapa e os escritórios são montados a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em ambas as opções abaixo. A diferença entre elas é só se você quer orquestrações reais via Nirvana OS ou não.
 
 ### Opção A — explorar organograma e roteamento, sem o Nirvana OS
 
@@ -373,9 +373,9 @@ Resultado esperado:
 │ Cabeçalho: status, filtros e identificação da central           │
 ├───────────────────────────────────────────┬─────────────────────┤
 │                                           │ PLAYBOOKS           │
-│          Ambiente 3D do IFFar             │ INBOX               │
+│     Mapa do RS + escritórios do IFFar     │ INBOX               │
 │                                           │ HISTORY             │
-│   câmera + agentes + áreas de trabalho    │ prompt personalizado│
+│   câmera + avatares + mesas de trabalho   │ prompt personalizado│
 │                                           │ artefatos gerados   │
 └───────────────────────────────────────────┴─────────────────────┘
 ```
@@ -428,7 +428,7 @@ Essa verificação reduz exposições acidentais, mas **não substitui autentica
 
 O GIF abaixo é uma gravação real da interface (não uma montagem) processando o playbook **"Novo PDI Institucional"**: um briefing pedindo a elaboração do novo Plano de Desenvolvimento Institucional do IFFar, alinhado a tendências como IA, ensino híbrido, inclusão digital e sustentabilidade.
 
-<img src="./src/assets/demo-pdi.gif" alt="Gravação da interface do IFFar 3D Town processando o briefing 'Elaborar o novo PDI institucional, alinhado a IA, ensino híbrido, inclusão digital e sustentabilidade' — a câmera segue a cadeia real Reitoria → Pró-Reitoria de Desenvolvimento Institucional → Diretoria de Planejamento e Desenvolvimento Institucional → Coordenação de Avaliação Institucional, até abrir o artefato final." width="100%" />
+<img src="./src/assets/demo-pdi.gif" alt="Gravação da interface do IFFar 3D Town processando o briefing 'Elaborar o novo PDI institucional, alinhado a IA, ensino híbrido, inclusão digital e sustentabilidade' — a câmera entra no mapa do RS, faz o zoom de drone até a Reitoria e revela o escritório por dentro, seguindo a cadeia real Reitoria → Pró-Reitoria de Desenvolvimento Institucional → Diretoria de Planejamento e Desenvolvimento Institucional → Coordenação de Avaliação Institucional, até abrir o artefato final." width="100%" />
 
 O motor de roteamento reconhece "PDI" como tema institucional (Art. 21 do Anexo I — não confundir com o PPC de um curso específico, que é atribuição da Pró-Reitoria de Ensino) e monta a cadeia real:
 
@@ -526,9 +526,7 @@ flowchart TD
 
 - React 19
 - TypeScript 6
-- Three.js
-- React Three Fiber
-- Drei
+- SVG + CSS 2D (mapa e escritório)
 - Tailwind CSS 4
 - Lucide React
 
@@ -575,10 +573,10 @@ flowchart TD
 
 ```text
 iffar-3d-town/
-├── public/                 # modelo 3D e assets públicos
+├── public/                 # assets públicos
 ├── src/
 │   ├── assets/             # identidade visual
-│   ├── App.tsx             # cena, interface, estados e integração HTTP
+│   ├── App.tsx             # mapa, escritório, interface, estados e integração HTTP
 │   ├── App.css             # estilos específicos da aplicação
 │   ├── index.css           # estilos globais e Tailwind
 │   └── main.tsx            # entrada do React
@@ -660,7 +658,7 @@ Tarefa:
 [DESCREVA A ALTERAÇÃO]
 
 Restrições:
-- Preserve React + TypeScript + Three.js + Bun.
+- Preserve React + TypeScript + Bun (mapa/escritório em SVG + CSS 2D, sem engine 3D).
 - Não exponha segredos nem caminhos locais reais.
 - Não versione .env, node_modules, dist, tickets ou outputs.
 - Mantenha o bridge limitado a 127.0.0.1 por padrão.
@@ -734,7 +732,7 @@ Prompt inicial:
 
 ```text
 Faça uma leitura do projeto sem editar arquivos. Explique a arquitetura em cinco blocos:
-interface, cena 3D, roteamento, bridge e artefatos. Depois proponha um plano para [TAREFA].
+interface, mapa/escritório, roteamento, bridge e artefatos. Depois proponha um plano para [TAREFA].
 ```
 
 Após revisar o plano, autorize a implementação e exija os três gates:
@@ -983,13 +981,6 @@ Use Node.js `^20.19.0` ou `>=22.12.0`, conforme exigido pelo Vite 8 utilizado no
 
 </details>
 
-<details>
-<summary><strong>O build alerta sobre chunk maior que 500 kB</strong></summary>
-
-É um aviso de otimização, não uma falha. A cena 3D concentra bibliotecas grandes no bundle principal. Uma evolução futura pode aplicar code splitting e carregamento sob demanda.
-
-</details>
-
 ---
 
 ## 🗺️ Próximas evoluções possíveis
@@ -997,7 +988,6 @@ Use Node.js `^20.19.0` ou `>=22.12.0`, conforme exigido pelo Vite 8 utilizado no
 - timeline por eventos reais (`events.jsonl` + SSE ou WebSocket) em vez de temporizadores após o fim do processo;
 - persistência de Inbox/History entre recarregamentos (hoje é por sessão do navegador);
 - testes automatizados para o motor de classificação e para a extração do PDF;
-- code splitting da cena 3D;
 - autenticação para cenários além do uso local;
 - telemetria de handoffs e tempo de execução;
 - captura de screenshots e demonstração em vídeo no README.
@@ -1016,7 +1006,7 @@ Use Node.js `^20.19.0` ou `>=22.12.0`, conforme exigido pelo Vite 8 utilizado no
 
 <div align="center">
 
-### Uma leitura visual e didática de como responsabilidades institucionais podem ser representadas em uma experiência 3D.
+### Uma leitura visual e didática de como responsabilidades institucionais podem ser representadas em um escritório virtual.
 
 **Projeto:** [GeniusAI](https://github.com/marciobisognin/GeniusAI)<br>
 **Autor:** Marcio Bisognin<br>
