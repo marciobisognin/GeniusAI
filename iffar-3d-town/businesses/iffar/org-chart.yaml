@@ -1,0 +1,2483 @@
+meta:
+  fonte: Portaria Eletrônica nº 876/2026 - GRE
+  data: '2026-07-03'
+  revoga: Portaria Eletrônica nº 398/2026
+  processo: 23873.000543/2026-09
+  extraido_em: '2026-07-24'
+  gerado_por: tools/extrair_organograma.py (não editar à mão)
+units:
+- id: '1.1'
+  slug: 1-1-reitoria
+  nome: Reitoria
+  parent: null
+- id: 1.1.1
+  slug: 1-1-1-conselho-superior
+  nome: Conselho Superior
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.2
+  slug: 1-1-2-auditoria-interna
+  nome: Auditoria Interna
+  parent: '1.1'
+  cargo: CHEFE
+  funcao: CD-0004
+- id: 1.1.3
+  slug: 1-1-3-colegio-de-dirigentes
+  nome: Colégio de Dirigentes
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.4
+  slug: 1-1-4-gabinete-do-a-reitor-a
+  nome: Gabinete Do(a) Reitor(a)
+  parent: '1.1'
+  cargo: REITOR(A)
+  funcao: CD-0001
+- id: 1.1.4.1
+  slug: 1-1-4-1-diretoria-do-campus-cacapava-do-sul
+  nome: Diretoria do Campus Caçapava do Sul
+  parent: 1.1.4
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.1.4.2
+  slug: 1-1-4-2-assessoria
+  nome: Assessoria
+  parent: 1.1.4
+  cargo: ASSESSOR(A)
+  funcao: FG-0002
+- id: 1.1.4.3
+  slug: 1-1-4-3-chefia-do-gabinete-do-a-reitor-a
+  nome: Chefia do Gabinete Do(a) Reitor(a)
+  parent: 1.1.4
+  cargo: CHEFE
+  funcao: CD-0003
+- id: 1.1.4.4
+  slug: 1-1-4-4-diretoria-de-governanca-riscos-e-controles
+  nome: Diretoria de Governança, Riscos e Controles
+  parent: 1.1.4
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.4.5
+  slug: 1-1-4-5-assessoria
+  nome: Assessoria
+  parent: 1.1.4
+  cargo: ASSESSOR(A)
+  funcao: FG-0004
+- id: 1.1.4.6
+  slug: 1-1-4-6-assessoria
+  nome: Assessoria
+  parent: 1.1.4
+  cargo: ASSESSOR(A)
+  funcao: FG-0002
+- id: 1.1.4.7
+  slug: 1-1-4-7-assessoria
+  nome: Assessoria
+  parent: 1.1.4
+  cargo: ASSESSOR(A)
+  funcao: FG-0003
+- id: 1.1.4.8
+  slug: 1-1-4-8-secretaria-de-comunicacao
+  nome: Secretaria de Comunicação
+  parent: 1.1.4
+  cargo: SECRETÁRIO(A)
+  funcao: FG-0001
+- id: 1.1.4.9
+  slug: 1-1-4-9-secretaria-executiva
+  nome: Secretaria Executiva
+  parent: 1.1.4
+  cargo: SECRETÁRIO(A)
+  funcao: FG-0001
+- id: 1.1.5
+  slug: 1-1-5-unidade-correcional-instituida
+  nome: Unidade Correcional Instituída
+  parent: '1.1'
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.6
+  slug: 1-1-6-comissao-de-etica
+  nome: Comissão de Ética
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.7
+  slug: 1-1-7-comissao-interna-de-supervisao-do-plano-de-carreira-dos-servidores-tecnico-administrativos-em-educacao
+  nome: Comissão Interna de Supervisão do Plano de Carreira dos Servidores Técnico-Administrativos em
+    Educação
+  parent: '1.1'
+  cargo: COORDENADOR(A)
+- id: 1.1.8
+  slug: 1-1-8-comissao-permanente-de-pessoal-docente
+  nome: Comissão Permanente de Pessoal Docente
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.9
+  slug: 1-1-9-comissao-propria-de-avaliacao
+  nome: Comissão Própria de Avaliação
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.10
+  slug: 1-1-10-comite-de-tecnologia-da-informacao
+  nome: Comitê de Tecnologia da Informação
+  parent: '1.1'
+  cargo: PRESIDENTE
+- id: 1.1.10.1
+  slug: 1-1-10-1-comite-gestor-de-seguranca-da-informacao
+  nome: Comitê Gestor de Segurança da Informação
+  parent: 1.1.10
+  cargo: PRESIDENTE
+- id: 1.1.11
+  slug: 1-1-11-ouvidoria-geral
+  nome: Ouvidoria Geral
+  parent: '1.1'
+  cargo: OUVIDOR(A)
+- id: 1.1.12
+  slug: 1-1-12-servico-de-informacao-ao-cidadao
+  nome: Serviço de Informação Ao Cidadão
+  parent: '1.1'
+  cargo: CHEFE
+- id: 1.1.13
+  slug: 1-1-13-procuradoria-federal
+  nome: Procuradoria Federal
+  parent: '1.1'
+  cargo: PROCURADOR(A)
+  funcao: CD-0003
+- id: 1.1.14
+  slug: 1-1-14-pro-reitoria-de-desenvolvimento-institucional
+  nome: Pró-Reitoria de Desenvolvimento Institucional
+  parent: '1.1'
+  cargo: PRÓ-REITOR(A)
+  funcao: CD-0002
+- id: 1.1.14.1
+  slug: 1-1-14-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.1.14
+- id: 1.1.14.2
+  slug: 1-1-14-2-diretoria-de-gestao-de-pessoas
+  nome: Diretoria de Gestão de Pessoas
+  parent: 1.1.14
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.14.2.1
+  slug: 1-1-14-2-1-coordenacao-de-administracao-de-pessoal
+  nome: Coordenação de Administração de Pessoal
+  parent: 1.1.14.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.14.2.2
+  slug: 1-1-14-2-2-coordenacao-de-desenvolvimento-de-pessoas
+  nome: Coordenação de Desenvolvimento de Pessoas
+  parent: 1.1.14.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.14.2.3
+  slug: 1-1-14-2-3-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.1.14.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.14.2.4
+  slug: 1-1-14-2-4-nucleo-de-aposentadoria-e-pensoes
+  nome: Núcleo de Aposentadoria e Pensões
+  parent: 1.1.14.2
+- id: 1.1.14.2.5
+  slug: 1-1-14-2-5-nucleo-de-saude-e-seguranca-do-trabalho
+  nome: Núcleo de Saúde e Segurança do Trabalho
+  parent: 1.1.14.2
+- id: 1.1.14.3
+  slug: 1-1-14-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: 1.1.14
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.1.14.3.1
+  slug: 1-1-14-3-1-coordenacao-de-avaliacao-institucional
+  nome: Coordenação de Avaliação Institucional
+  parent: 1.1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.14.3.2
+  slug: 1-1-14-3-2-coordenacao-de-gestao-documental
+  nome: Coordenação de Gestão Documental
+  parent: 1.1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.14.3.2.1
+  slug: 1-1-14-3-2-1-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.1.14.3.2
+- id: 1.1.14.3.3
+  slug: 1-1-14-3-3-pesquisa-institucional
+  nome: Pesquisa Institucional
+  parent: 1.1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.14.4
+  slug: 1-1-14-4-diretoria-de-tecnologia-da-informacao
+  nome: Diretoria de Tecnologia da Informação
+  parent: 1.1.14
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.14.4.1
+  slug: 1-1-14-4-1-coordenacao-de-sistemas-de-informacao
+  nome: Coordenação de Sistemas de Informação
+  parent: 1.1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.15
+  slug: 1-1-15-pro-reitoria-de-administracao
+  nome: Pró-Reitoria de Administração
+  parent: '1.1'
+  cargo: PRÓ-REITOR(A)
+  funcao: CD-0002
+- id: 1.1.15.1
+  slug: 1-1-15-1-coordenacao-de-engenharia-e-arquitetura
+  nome: Coordenação de Engenharia e Arquitetura
+  parent: 1.1.15
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.15.2
+  slug: 1-1-15-2-diretoria-de-administracao-orcamento-e-financas
+  nome: Diretoria de Administração, Orçamento e Finanças
+  parent: 1.1.15
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.1.15.2.1
+  slug: 1-1-15-2-1-coordenacao-de-administracao-almoxarifado-e-patrimonio
+  nome: Coordenação de Administração, Almoxarifado e Patrimônio
+  parent: 1.1.15.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.15.2.1.1
+  slug: 1-1-15-2-1-1-setor-de-almoxarifado-e-patrimonio
+  nome: Setor de Almoxarifado e Patrimônio
+  parent: 1.1.15.2.1
+  cargo: CHEFE
+  funcao: FG-0003
+- id: 1.1.15.2.2
+  slug: 1-1-15-2-2-coordenacao-de-contabilidade
+  nome: Coordenação de Contabilidade
+  parent: 1.1.15.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.15.2.3
+  slug: 1-1-15-2-3-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.1.15.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.15.2.3.1
+  slug: 1-1-15-2-3-1-setor-de-prestacao-de-contas
+  nome: Setor de Prestação de Contas
+  parent: 1.1.15.2.3
+  cargo: CHEFE
+  funcao: FG-0002
+- id: 1.1.15.3
+  slug: 1-1-15-3-diretoria-de-compras-licitacoes-e-contratos
+  nome: Diretoria de Compras, Licitações e Contratos
+  parent: 1.1.15
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.15.3.1
+  slug: 1-1-15-3-1-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.1.15.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.16
+  slug: 1-1-16-pro-reitoria-de-ensino
+  nome: Pró-Reitoria de Ensino
+  parent: '1.1'
+  cargo: PRÓ-REITOR(A)
+  funcao: CD-0002
+- id: 1.1.16.1
+  slug: 1-1-16-1-diretoria-de-assistencia-estudantil
+  nome: Diretoria de Assistência Estudantil
+  parent: 1.1.16
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.16.2
+  slug: 1-1-16-2-diretoria-de-educacao-a-distancia
+  nome: Diretoria de Educação a Distância
+  parent: 1.1.16
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.16.2.1
+  slug: 1-1-16-2-1-coordenacao-de-cursos
+  nome: Coordenação de Cursos
+  parent: 1.1.16.2
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.1.16.3
+  slug: 1-1-16-3-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: 1.1.16
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.1.16.3.1
+  slug: 1-1-16-3-1-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.1.16.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.16.3.1#2
+  slug: 1-1-16-3-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.1.16.3
+- id: 1.1.16.3.2
+  slug: 1-1-16-3-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.1.16.3
+- id: 1.1.16.3.2#2
+  slug: 1-1-16-3-2-coordenacao-de-assessoria-pedagogica
+  nome: Coordenação de Assessoria Pedagógica
+  parent: 1.1.16.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.16.3.3
+  slug: 1-1-16-3-3-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.1.16.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.16.3.3.1
+  slug: 1-1-16-3-3-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.1.16.3.3
+- id: 1.1.16.3.4
+  slug: 1-1-16-3-4-coordenacao-de-programas-educacionais
+  nome: Coordenação de Programas Educacionais
+  parent: 1.1.16.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.16.3.5
+  slug: 1-1-16-3-5-coordenacao-de-registros-e-diplomas
+  nome: Coordenação de Registros e Diplomas
+  parent: 1.1.16.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.1.16.4
+  slug: 1-1-16-4-diretoria-de-graduacao
+  nome: Diretoria de Graduação
+  parent: 1.1.16
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.17
+  slug: 1-1-17-pro-reitoria-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Pró-Reitoria de Pesquisa, Pós-Graduação e Inovação
+  parent: '1.1'
+  cargo: PRÓ-REITOR(A)
+  funcao: CD-0002
+- id: 1.1.17.1
+  slug: 1-1-17-1-diretoria-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Diretoria de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.1.17
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.17.1.1
+  slug: 1-1-17-1-1-coordenacao-de-inovacao-tecnologica
+  nome: Coordenação de Inovação Tecnológica
+  parent: 1.1.17.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.17.1.2
+  slug: 1-1-17-1-2-coordenacao-de-pesquisa
+  nome: Coordenação de Pesquisa
+  parent: 1.1.17.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.17.1.3
+  slug: 1-1-17-1-3-coordenacao-de-pos-graduacao
+  nome: Coordenação de Pós-Graduação
+  parent: 1.1.17.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.17.1.3.1
+  slug: 1-1-17-1-3-1-coordenacao-de-cursos
+  nome: Coordenação de Cursos
+  parent: 1.1.17.1.3
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.1.18
+  slug: 1-1-18-pro-reitoria-de-extensao
+  nome: Pró-Reitoria de Extensão
+  parent: '1.1'
+  cargo: PRÓ-REITOR(A)
+  funcao: CD-0002
+- id: 1.1.18.1
+  slug: 1-1-18-1-diretoria-de-extensao
+  nome: Diretoria de Extensão
+  parent: 1.1.18
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.1.18.1.1
+  slug: 1-1-18-1-1-coordenacao-de-extensao-tecnologica
+  nome: Coordenação de Extensão Tecnológica
+  parent: 1.1.18.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.18.1.2
+  slug: 1-1-18-1-2-coordenacao-de-programas-sociais
+  nome: Coordenação de Programas Sociais
+  parent: 1.1.18.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.1.18.1.3
+  slug: 1-1-18-1-3-coordenacao-de-relacoes-institucionais
+  nome: Coordenação de Relações Institucionais
+  parent: 1.1.18.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: '1.2'
+  slug: 1-2-campus-alegrete
+  nome: Campus Alegrete
+  parent: '1.1'
+- id: 1.2.1
+  slug: 1-2-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.2'
+  cargo: PRESIDENTE
+- id: 1.2.2
+  slug: 1-2-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.2'
+  cargo: DIRETOR(A) GERAL
+  funcao: CD-0002
+- id: 1.2.2.1
+  slug: 1-2-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.2.2
+- id: 1.2.2.2
+  slug: 1-2-2-2-assessoria
+  nome: Assessoria
+  parent: 1.2.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0003
+- id: 1.2.2.3
+  slug: 1-2-2-3-assessoria
+  nome: Assessoria
+  parent: 1.2.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0003
+- id: 1.2.3
+  slug: 1-2-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.2'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.2.3.1
+  slug: 1-2-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.2.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.3.2
+  slug: 1-2-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.2.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.3.3
+  slug: 1-2-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.2.3
+- id: 1.2.4
+  slug: 1-2-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.2'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.2.4.1
+  slug: 1-2-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.2.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.4.2
+  slug: 1-2-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.2.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.4.3
+  slug: 1-2-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.2.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.4.3.1
+  slug: 1-2-4-3-1-setor-de-licitacoes-e-contratos
+  nome: Setor de Licitações e Contratos
+  parent: 1.2.4.3
+  cargo: CHEFE
+  funcao: FG-0003
+- id: 1.2.4.4
+  slug: 1-2-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.2.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.4.4.1
+  slug: 1-2-4-4-1-setor-de-orcamento-e-financas
+  nome: Setor de Orçamento e Finanças
+  parent: 1.2.4.4
+- id: 1.2.5
+  slug: 1-2-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.2'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.2.5.1
+  slug: 1-2-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.2.5
+- id: 1.2.5.2
+  slug: 1-2-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.2.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.5.2.1
+  slug: 1-2-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.2.5.2
+- id: 1.2.5.2.2
+  slug: 1-2-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.2.5.2
+- id: 1.2.5.3
+  slug: 1-2-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.2.5
+  cargo: COORDENADOR(A)
+  funcao: CD-0004
+- id: 1.2.5.3.1
+  slug: 1-2-5-3-1-setor-de-assistencia-estudantil
+  nome: Setor de Assistência Estudantil
+  parent: 1.2.5.3
+  cargo: CHEFE
+  funcao: FG-0004
+- id: 1.2.5.4
+  slug: 1-2-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.2.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.5.5
+  slug: 1-2-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.2.5
+  cargo: COORDENADOR(A)
+  funcao: CD-0004
+- id: 1.2.5.5.1
+  slug: 1-2-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.2.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.2.5.5.2
+  slug: 1-2-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.2.5.5
+- id: 1.2.5.6
+  slug: 1-2-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.2.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.6
+  slug: 1-2-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.2'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.2.6.1
+  slug: 1-2-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.2.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.6.1.1
+  slug: 1-2-6-1-1-setor-de-estagios
+  nome: Setor de Estágios
+  parent: 1.2.6.1
+  cargo: CHEFE
+  funcao: FG-0004
+- id: 1.2.6.2
+  slug: 1-2-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.2.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.2.6.3
+  slug: 1-2-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.2.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.2.6.3.1
+  slug: 1-2-6-3-1-setor-de-producao
+  nome: Setor de Produção
+  parent: 1.2.6.3
+  cargo: CHEFE
+  funcao: FG-0004
+- id: '1.3'
+  slug: 1-3-campus-sao-vicente-do-sul
+  nome: Campus São Vicente do Sul
+  parent: '1.1'
+- id: 1.3.1
+  slug: 1-3-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.3'
+  cargo: PRESIDENTE
+- id: 1.3.2
+  slug: 1-3-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.3'
+  cargo: DIRETOR(A) GERAL
+  funcao: CD-0002
+- id: 1.3.2.1
+  slug: 1-3-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.3.2
+- id: 1.3.2.2
+  slug: 1-3-2-2-assessorias
+  nome: Assessorias
+  parent: 1.3.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0003
+- id: 1.3.2.3
+  slug: 1-3-2-3-centro-de-referencia-sao-gabriel
+  nome: Centro de Referência São Gabriel
+  parent: 1.3.2
+  cargo: COORDENADOR(A)
+- id: 1.3.3
+  slug: 1-3-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.3'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.3.3.1
+  slug: 1-3-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.3.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.3.2
+  slug: 1-3-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.3.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.3.3
+  slug: 1-3-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.3.3
+- id: 1.3.4
+  slug: 1-3-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.3'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.3.4.1
+  slug: 1-3-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.3.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.4.2
+  slug: 1-3-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.3.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.4.3
+  slug: 1-3-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.3.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.4.3.1
+  slug: 1-3-4-3-1-setor-de-licitacoes-e-contratos
+  nome: Setor de Licitações e Contratos
+  parent: 1.3.4.3
+  cargo: CHEFE
+  funcao: FG-0003
+- id: 1.3.4.4
+  slug: 1-3-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.3.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.4.4.1
+  slug: 1-3-4-4-1-setor-de-orcamento-e-financas
+  nome: Setor de Orçamento e Finanças
+  parent: 1.3.4.4
+  cargo: CHEFE
+  funcao: FG-0003
+- id: 1.3.5
+  slug: 1-3-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.3'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.3.5.1
+  slug: 1-3-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.3.5
+- id: 1.3.5.2
+  slug: 1-3-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.3.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.5.2.1
+  slug: 1-3-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.3.5.2
+- id: 1.3.5.2.2
+  slug: 1-3-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.3.5.2
+- id: 1.3.5.3
+  slug: 1-3-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.3.5
+  cargo: COORDENADOR(A)
+  funcao: CD-0004
+- id: 1.3.5.3.1
+  slug: 1-3-5-3-1-setor-de-assistencia-estudantil
+  nome: Setor de Assistência Estudantil
+  parent: 1.3.5.3
+  cargo: CHEFE
+  funcao: FG-0004
+- id: 1.3.5.4
+  slug: 1-3-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.3.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.5.4.1
+  slug: 1-3-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.3.5.4
+- id: 1.3.5.5
+  slug: 1-3-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.3.5
+  cargo: COORDENADOR(A)
+  funcao: CD-0004
+- id: 1.3.5.5.1
+  slug: 1-3-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.3.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.3.5.5.2
+  slug: 1-3-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.3.5.5
+  cargo: CHEFE
+- id: 1.3.5.6
+  slug: 1-3-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.3.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.6
+  slug: 1-3-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.3'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.3.6.1
+  slug: 1-3-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.3.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.6.1.1
+  slug: 1-3-6-1-1-setor-de-estagios
+  nome: Setor de Estágios
+  parent: 1.3.6.1
+  cargo: CHEFE
+  funcao: FG-0004
+- id: 1.3.6.2
+  slug: 1-3-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.3.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.3.6.3
+  slug: 1-3-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.3.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.3.6.3.1
+  slug: 1-3-6-3-1-setor-de-producao
+  nome: Setor de Produção
+  parent: 1.3.6.3
+  cargo: CHEFE
+  funcao: FG-0004
+- id: '1.4'
+  slug: 1-4-campus-julio-de-castilhos
+  nome: Campus Júlio de Castilhos
+  parent: '1.1'
+- id: 1.4.1
+  slug: 1-4-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.4'
+  cargo: PRESIDENTE
+- id: 1.4.2
+  slug: 1-4-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.4'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.4.2.1
+  slug: 1-4-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.4.2
+- id: 1.4.2.2
+  slug: 1-4-2-2-assessoria
+  nome: Assessoria
+  parent: 1.4.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0005
+- id: 1.4.3
+  slug: 1-4-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.4'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.4.3.1
+  slug: 1-4-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.4.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.3.2
+  slug: 1-4-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.4.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.3.3
+  slug: 1-4-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.4.3
+- id: 1.4.4
+  slug: 1-4-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.4'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.4.4.1
+  slug: 1-4-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.4.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.4.2
+  slug: 1-4-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.4.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.4.3
+  slug: 1-4-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.4.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.4.4
+  slug: 1-4-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.4.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.4.5
+  slug: 1-4-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.4'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.4.5.1
+  slug: 1-4-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.4.5
+- id: 1.4.5.2
+  slug: 1-4-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.4.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.5.2.1
+  slug: 1-4-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.4.5.2
+- id: 1.4.5.2.2
+  slug: 1-4-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.4.5.2
+- id: 1.4.5.3
+  slug: 1-4-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.4.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.4.5.4
+  slug: 1-4-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.4.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.4.5.4.1
+  slug: 1-4-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.4.5.4
+- id: 1.4.5.5
+  slug: 1-4-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.4.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.4.5.5.1
+  slug: 1-4-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.4.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.4.5.5.2
+  slug: 1-4-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.4.5.5
+- id: 1.4.5.6
+  slug: 1-4-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.4.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.6
+  slug: 1-4-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.4'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.4.6.1
+  slug: 1-4-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.4.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.4.6.2
+  slug: 1-4-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.4.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: 1.4.6.3
+  slug: 1-4-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.4.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.5'
+  slug: 1-5-campus-santo-augusto
+  nome: Campus Santo Augusto
+  parent: '1.1'
+- id: 1.5.1
+  slug: 1-5-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.5'
+  cargo: PRESIDENTE
+- id: 1.5.2
+  slug: 1-5-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.5'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.5.2.1
+  slug: 1-5-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.5.2
+- id: 1.5.2.2
+  slug: 1-5-2-2-assessoria
+  nome: Assessoria
+  parent: 1.5.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0005
+- id: 1.5.3
+  slug: 1-5-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.5'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.5.3.1
+  slug: 1-5-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.5.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.3.2
+  slug: 1-5-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.5.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.3.3
+  slug: 1-5-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.5.3
+- id: 1.5.4
+  slug: 1-5-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.5'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.5.4.1
+  slug: 1-5-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.5.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.4.2
+  slug: 1-5-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.5.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.4.3
+  slug: 1-5-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.5.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.4.4
+  slug: 1-5-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.5.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.5.5
+  slug: 1-5-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.5'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.5.5.1
+  slug: 1-5-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.5.5
+- id: 1.5.5.2
+  slug: 1-5-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.5.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.5.2.1
+  slug: 1-5-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.5.5.2
+- id: 1.5.5.2.2
+  slug: 1-5-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.5.5.2
+- id: 1.5.5.3
+  slug: 1-5-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.5.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.5.5.4
+  slug: 1-5-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.5.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.5.5.4.1
+  slug: 1-5-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.5.5.4
+- id: 1.5.5.5
+  slug: 1-5-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.5.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.5.5.5.1
+  slug: 1-5-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.5.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.5.5.5.2
+  slug: 1-5-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.5.5.5
+  cargo: CHEFE
+  funcao: FG-0005
+- id: 1.5.5.6
+  slug: 1-5-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.5.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.6
+  slug: 1-5-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.5'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.5.6.1
+  slug: 1-5-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.5.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.5.6.2
+  slug: 1-5-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.5.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: 1.5.6.3
+  slug: 1-5-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.5.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.6'
+  slug: 1-6-campus-panambi
+  nome: Campus Panambi
+  parent: '1.1'
+- id: 1.6.1
+  slug: 1-6-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.6'
+  cargo: PRESIDENTE
+- id: 1.6.2
+  slug: 1-6-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.6'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.6.2.1
+  slug: 1-6-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.6.2
+- id: 1.6.3
+  slug: 1-6-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.6'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.6.3.1
+  slug: 1-6-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.6.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.3.2
+  slug: 1-6-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.6.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.3.3
+  slug: 1-6-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.6.3
+- id: 1.6.4
+  slug: 1-6-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.6'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.6.4.1
+  slug: 1-6-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.6.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.4.2
+  slug: 1-6-4-2-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.6.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.4.3
+  slug: 1-6-4-3-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.6.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.6.5
+  slug: 1-6-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.6'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.6.5.1
+  slug: 1-6-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.6.5
+- id: 1.6.5.2
+  slug: 1-6-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.6.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.5.2.1
+  slug: 1-6-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.6.5.2
+- id: 1.6.5.2.2
+  slug: 1-6-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.6.5.2
+- id: 1.6.5.3
+  slug: 1-6-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.6.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.6.5.4
+  slug: 1-6-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.6.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.6.5.4.1
+  slug: 1-6-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.6.5.4
+- id: 1.6.5.5
+  slug: 1-6-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.6.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.6.5.5.1
+  slug: 1-6-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.6.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.6.5.5.2
+  slug: 1-6-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.6.5.5
+  cargo: CHEFE
+  funcao: FG-0005
+- id: 1.6.5.5#2
+  slug: 1-6-5-5-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.6.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.6
+  slug: 1-6-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.6'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.6.6.1
+  slug: 1-6-6-1-coordenacao-de-extensao-e-producao
+  nome: Coordenação de Extensão e Produção
+  parent: 1.6.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.6.6.2
+  slug: 1-6-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.6.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: '1.7'
+  slug: 1-7-campus-santa-rosa
+  nome: Campus Santa Rosa
+  parent: '1.1'
+- id: 1.7.1
+  slug: 1-7-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.7'
+  cargo: PRESIDENTE
+- id: 1.7.2
+  slug: 1-7-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.7'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.7.2.1
+  slug: 1-7-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.7.2
+- id: 1.7.2.2
+  slug: 1-7-2-2-assessoria
+  nome: Assessoria
+  parent: 1.7.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0005
+- id: 1.7.3
+  slug: 1-7-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.7'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.7.3.1
+  slug: 1-7-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.7.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.3.2
+  slug: 1-7-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.7.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.3.3
+  slug: 1-7-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.7.3
+- id: 1.7.4
+  slug: 1-7-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.7'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.7.4.1
+  slug: 1-7-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.7.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.4.2
+  slug: 1-7-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.7.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.4.3
+  slug: 1-7-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.7.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.4.4
+  slug: 1-7-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.7.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.7.5
+  slug: 1-7-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.7'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.7.5.1
+  slug: 1-7-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.7.5
+- id: 1.7.5.2
+  slug: 1-7-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.7.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.5.2.1
+  slug: 1-7-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.7.5.2
+- id: 1.7.5.2.2
+  slug: 1-7-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.7.5.2
+- id: 1.7.5.3
+  slug: 1-7-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.7.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.7.5.4
+  slug: 1-7-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.7.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.7.5.4.1
+  slug: 1-7-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.7.5.4
+- id: 1.7.5.5
+  slug: 1-7-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.7.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.7.5.5.1
+  slug: 1-7-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.7.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.7.5.5.2
+  slug: 1-7-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.7.5.5
+- id: 1.7.5.6
+  slug: 1-7-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.7.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.6
+  slug: 1-7-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.7'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.7.6.1
+  slug: 1-7-6-1-coordenacao-de-extensao-e-producao
+  nome: Coordenação de Extensão e Produção
+  parent: 1.7.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.7.6.2
+  slug: 1-7-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.7.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: '1.8'
+  slug: 1-8-campus-sao-borja
+  nome: Campus São Borja
+  parent: '1.1'
+- id: 1.8.1
+  slug: 1-8-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.8'
+  cargo: PRESIDENTE
+- id: 1.8.2
+  slug: 1-8-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.8'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.8.2.1
+  slug: 1-8-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.8.2
+- id: 1.8.3.1
+  slug: 1-8-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: '1.8'
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.3.2
+  slug: 1-8-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: '1.8'
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.3.3
+  slug: 1-8-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: '1.8'
+- id: 1.8.4
+  slug: 1-8-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.8'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.8.4.1
+  slug: 1-8-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.8.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.4.2
+  slug: 1-8-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.8.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.4.3
+  slug: 1-8-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.8.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.4.4
+  slug: 1-8-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.8.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.8.5
+  slug: 1-8-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.8'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.8.5.1
+  slug: 1-8-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.8.5
+- id: 1.8.5.2
+  slug: 1-8-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.8.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.5.2.1
+  slug: 1-8-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.8.5.2
+- id: 1.8.5.2.2
+  slug: 1-8-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.8.5.2
+- id: 1.8.5.3
+  slug: 1-8-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.8.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.8.5.4
+  slug: 1-8-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.8.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.8.5.4.1
+  slug: 1-8-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.8.5.4
+- id: 1.8.5.5
+  slug: 1-8-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.8.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.8.5.5.1
+  slug: 1-8-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.8.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.8.5.5.2
+  slug: 1-8-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.8.5.5
+  cargo: CHEFE
+  funcao: FG-0005
+- id: 1.8.5.6
+  slug: 1-8-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.8.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.6
+  slug: 1-8-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.8'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.8.6.1
+  slug: 1-8-6-1-coordenacao-de-extensao-e-producao
+  nome: Coordenação de Extensão e Produção
+  parent: 1.8.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.8.6.2
+  slug: 1-8-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.8.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: '1.9'
+  slug: 1-9-campus-frederico-westphalen
+  nome: Campus Frederico Westphalen
+  parent: '1.1'
+- id: 1.9.1
+  slug: 1-9-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.9'
+  cargo: PRESIDENTE
+- id: 1.9.2
+  slug: 1-9-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.9'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.9.2.1
+  slug: 1-9-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.9.2
+- id: 1.9.2.2
+  slug: 1-9-2-2-assessoria
+  nome: Assessoria
+  parent: 1.9.2
+- id: 1.9.3
+  slug: 1-9-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.9'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.9.3.1
+  slug: 1-9-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.9.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.3.2
+  slug: 1-9-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.9.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.3.3
+  slug: 1-9-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.9.3
+- id: 1.9.4
+  slug: 1-9-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.9'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.9.4.1
+  slug: 1-9-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.9.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.4.2
+  slug: 1-9-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.9.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.4.3
+  slug: 1-9-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.9.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.4.4
+  slug: 1-9-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.9.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.9.5
+  slug: 1-9-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.9'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.9.5.1
+  slug: 1-9-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.9.5
+- id: 1.9.5.2
+  slug: 1-9-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.9.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.5.2.1
+  slug: 1-9-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.9.5.2
+- id: 1.9.5.2.2
+  slug: 1-9-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.9.5.2
+- id: 1.9.5.3
+  slug: 1-9-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.9.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.9.5.4
+  slug: 1-9-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.9.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.9.5.4.1
+  slug: 1-9-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.9.5.4
+- id: 1.9.5.5
+  slug: 1-9-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.9.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.9.5.5.1
+  slug: 1-9-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.9.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.9.5.5.2
+  slug: 1-9-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.9.5.5
+  cargo: CHEFE
+  funcao: FG-0005
+- id: 1.9.5.6
+  slug: 1-9-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.9.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.6
+  slug: 1-9-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.9'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.9.6.1
+  slug: 1-9-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.9.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.9.6.2
+  slug: 1-9-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.9.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: 1.9.6.3
+  slug: 1-9-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.9.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.10'
+  slug: 1-10-campus-jaguari
+  nome: Campus Jaguari
+  parent: '1.1'
+- id: 1.10.1
+  slug: 1-10-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.10'
+  cargo: PRESIDENTE
+- id: 1.10.2
+  slug: 1-10-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.10'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.10.2.1
+  slug: 1-10-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.10.2
+- id: 1.10.2.2
+  slug: 1-10-2-2-assessoria
+  nome: Assessoria
+  parent: 1.10.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0004
+- id: 1.10.2.3
+  slug: 1-10-2-3-centro-de-referencia-santiago
+  nome: Centro de Referência Santiago
+  parent: 1.10.2
+  cargo: COORDENADOR(A)
+- id: 1.10.3
+  slug: 1-10-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.10'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.10.3.1
+  slug: 1-10-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.10.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.3.2
+  slug: 1-10-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.10.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.3.3
+  slug: 1-10-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.10.3
+- id: 1.10.4
+  slug: 1-10-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.10'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.10.4.1
+  slug: 1-10-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.10.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.4.2
+  slug: 1-10-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.10.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.4.3
+  slug: 1-10-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.10.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.4.4
+  slug: 1-10-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.10.4
+  cargo: CHEFE
+  funcao: FG-0001
+- id: 1.10.5
+  slug: 1-10-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.10'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.10.5.1
+  slug: 1-10-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.10.5
+- id: 1.10.5.2
+  slug: 1-10-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.10.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.5.2.1
+  slug: 1-10-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.10.5.2
+- id: 1.10.5.2.2
+  slug: 1-10-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.10.5.2
+- id: 1.10.5.3
+  slug: 1-10-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.10.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.10.5.4
+  slug: 1-10-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.10.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.10.5.4.1
+  slug: 1-10-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.10.5.4
+- id: 1.10.5.5
+  slug: 1-10-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.10.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.10.5.5.1
+  slug: 1-10-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.10.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.10.5.5.2
+  slug: 1-10-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.10.5.5
+- id: 1.10.5.6
+  slug: 1-10-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.10.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.6
+  slug: 1-10-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.10'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.10.6.1
+  slug: 1-10-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.10.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.10.6.2
+  slug: 1-10-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.10.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: 1.10.6.3
+  slug: 1-10-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.10.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.11'
+  slug: 1-11-campus-santo-angelo
+  nome: Campus Santo Ângelo
+  parent: '1.1'
+- id: 1.11.1
+  slug: 1-11-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.11'
+  cargo: PRESIDENTE
+- id: 1.11.2
+  slug: 1-11-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.11'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.11.2.1
+  slug: 1-11-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.11.2
+- id: 1.11.2.2
+  slug: 1-11-2-2-assessoria
+  nome: Assessoria
+  parent: 1.11.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0004
+- id: 1.11.2.3
+  slug: 1-11-2-3-assessoria
+  nome: Assessoria
+  parent: 1.11.2
+  cargo: ASSESSOR(A)
+  funcao: FG-0004
+- id: 1.11.3
+  slug: 1-11-3-diretoria-de-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Planejamento e Desenvolvimento Institucional
+  parent: '1.11'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.11.3.1
+  slug: 1-11-3-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.11.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.3.2
+  slug: 1-11-3-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.11.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.3.3
+  slug: 1-11-3-3-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.11.3
+- id: 1.11.4
+  slug: 1-11-4-diretoria-de-administracao
+  nome: Diretoria de Administração
+  parent: '1.11'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.11.4.1
+  slug: 1-11-4-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.11.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.4.2
+  slug: 1-11-4-2-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.11.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.4.3
+  slug: 1-11-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.11.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.4.4
+  slug: 1-11-4-4-coordenacao-de-orcamento-e-financas
+  nome: Coordenação de Orçamento e Finanças
+  parent: 1.11.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.11.5
+  slug: 1-11-5-diretoria-de-ensino
+  nome: Diretoria de Ensino
+  parent: '1.11'
+  cargo: DIRETOR(A)
+  funcao: CD-0003
+- id: 1.11.5.1
+  slug: 1-11-5-1-biblioteca
+  nome: Biblioteca
+  parent: 1.11.5
+- id: 1.11.5.2
+  slug: 1-11-5-2-coordenacao-de-acoes-afirmativas
+  nome: Coordenação de Ações Afirmativas
+  parent: 1.11.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.5.2.1
+  slug: 1-11-5-2-1-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.11.5.2
+- id: 1.11.5.2.2
+  slug: 1-11-5-2-2-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.11.5.2
+- id: 1.11.5.3
+  slug: 1-11-5-3-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.11.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.11.5.4
+  slug: 1-11-5-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.11.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.11.5.4.1
+  slug: 1-11-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.11.5.4
+- id: 1.11.5.5
+  slug: 1-11-5-5-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.11.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.11.5.5.1
+  slug: 1-11-5-5-1-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.11.5.5
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.11.5.5.2
+  slug: 1-11-5-5-2-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.11.5.5
+  cargo: CHEFE
+  funcao: FG-0005
+- id: 1.11.5.6
+  slug: 1-11-5-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.11.5
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.6
+  slug: 1-11-6-diretoria-de-pesquisa-extensao-e-producao
+  nome: Diretoria de Pesquisa, Extensão e Produção
+  parent: '1.11'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.11.6.1
+  slug: 1-11-6-1-coordenacao-de-extensao
+  nome: Coordenação de Extensão
+  parent: 1.11.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.11.6.2
+  slug: 1-11-6-2-coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  nome: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  parent: 1.11.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0005
+- id: 1.11.6.3
+  slug: 1-11-6-3-coordenacao-de-producao
+  nome: Coordenação de Produção
+  parent: 1.11.6
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.12'
+  slug: 1-12-campus-uruguaiana
+  nome: Campus Uruguaiana
+  parent: '1.1'
+- id: 1.12.1
+  slug: 1-12-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.12'
+  cargo: PRESIDENTE
+- id: 1.12.2
+  slug: 1-12-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.12'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.12.2.1
+  slug: 1-12-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.12.2
+- id: 1.12.3
+  slug: 1-12-3-diretoria-de-administracao-planejamento-e-desenvolvimento
+  nome: Diretoria de Administração, Planejamento e Desenvolvimento
+  parent: '1.12'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.12.3.1
+  slug: 1-12-3-1-coordenacao-de-administracao-orcamento-e-financas
+  nome: Coordenação de Administração, Orçamento e Finanças
+  parent: 1.12.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.12.3.1.1
+  slug: 1-12-3-1-1-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.12.3.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.3.1.2
+  slug: 1-12-3-1-2-coordenacao-de-licitacao-compras-e-contratos
+  nome: Coordenação de Licitação, Compras e Contratos
+  parent: 1.12.3.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.3.1.3
+  slug: 1-12-3-1-3-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.12.3.1
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.3.2
+  slug: 1-12-3-2-coordenacao-de-planejamento-e-desenvolvimento-institucional
+  nome: Coordenação de Planejamento e Desenvolvimento Institucional
+  parent: 1.12.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.12.3.2.1
+  slug: 1-12-3-2-1-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.12.3.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.3.2.2
+  slug: 1-12-3-2-2-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.12.3.2
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.3.2.3
+  slug: 1-12-3-2-3-unidade-de-gestao-documental
+  nome: Unidade de Gestão Documental
+  parent: 1.12.3.2
+- id: 1.12.4
+  slug: 1-12-4-diretoria-de-ensino-pesquisa-extensao-e-producao
+  nome: Diretoria de Ensino, Pesquisa, Extensão e Produção
+  parent: '1.12'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.12.4.1
+  slug: 1-12-4-1-biblioteca
+  nome: Biblioteca
+  parent: 1.12.4
+- id: 1.12.4.2
+  slug: 1-12-4-2-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.12.4.2.1
+  slug: 1-12-4-2-1-setor-de-apoio-pedagogico
+  nome: Setor de Apoio Pedagógico
+  parent: 1.12.4.2
+- id: 1.12.4.2.2
+  slug: 1-12-4-2-2-nucleos-de-estudos-afro-brasileiros-e-indigenas
+  nome: Núcleos de Estudos Afro-Brasileiros e Indígenas
+  parent: 1.12.4.2
+- id: 1.12.4.2.3
+  slug: 1-12-4-2-3-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.12.4.2
+- id: 1.12.4.3
+  slug: 1-12-4-3-coordenacao-de-pesquisa-extensao-e-producao
+  nome: Coordenação de Pesquisa, Extensão e Produção
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.4.3.1
+  slug: 1-12-4-3-1-setor-de-inovacao
+  nome: Setor de Inovação
+  parent: 1.12.4.3
+- id: 1.12.4.4
+  slug: 1-12-4-4-coordenacao-de-atendimento-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Coordenação de Atendimento a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.12.4.4.1
+  slug: 1-12-4-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.12.4.4
+- id: 1.12.4.5
+  slug: 1-12-4-5-coordenacao-da-assistencia-estudantil
+  nome: Coordenação da Assistência Estudantil
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.12.4.6
+  slug: 1-12-4-6-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.12.4.7
+  slug: 1-12-4-7-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.12.4
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: '1.13'
+  slug: 1-13-campus-sao-luiz-gonzaga
+  nome: Campus São Luiz Gonzaga
+  parent: '1.1'
+- id: 1.13.1
+  slug: 1-13-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.13'
+  cargo: PRESIDENTE
+- id: 1.13.2
+  slug: 1-13-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.13'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.13.2.1
+  slug: 1-13-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.13.2
+- id: 1.13.3
+  slug: 1-13-3-diretoria-de-ensino-pesquisa-e-extensao
+  nome: Diretoria de Ensino, Pesquisa e Extensão
+  parent: '1.13'
+  cargo: DIRETOR(A)
+  funcao: CD-004
+- id: 1.13.3.1
+  slug: 1-13-3-1-biblioteca
+  nome: Biblioteca
+  parent: 1.13.3
+- id: 1.13.3.2
+  slug: 1-13-3-2-nucleo-de-estudos-afro-brasileiros-e-indigena
+  nome: Núcleo de Estudos Afro-Brasileiros e Indígena
+  parent: 1.13.3
+- id: 1.13.3.3
+  slug: 1-13-3-3-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.13.3
+- id: 1.13.3.4
+  slug: 1-13-3-4-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.13.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.13.3.4.1
+  slug: 1-13-3-4-1-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.13.3.4
+- id: 1.13.3.4.2
+  slug: 1-13-3-4-2-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.13.3.4
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.13.3.5
+  slug: 1-13-3-5-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.13.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.3.6
+  slug: 1-13-3-6-coordenacao-de-pesquisa-extensao-e-producao
+  nome: Coordenação de Pesquisa, Extensão e Produção
+  parent: 1.13.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.3.7
+  slug: 1-13-3-7-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.13.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.4
+  slug: 1-13-4-diretoria-de-administracao-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Administração, Planejamento e Desenvolvimento Institucional
+  parent: '1.13'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.13.4.1
+  slug: 1-13-4-1-coordenacao-de-administracao-orcamento-e-financas
+  nome: Coordenação de Administração, Orçamento e Finanças
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.13.4.2
+  slug: 1-13-4-2-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.4.3
+  slug: 1-13-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.4.4
+  slug: 1-13-4-4-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.4.5
+  slug: 1-13-4-5-coordenacao-de-planejamento-e-desenvolvimento-institucional
+  nome: Coordenação de Planejamento e Desenvolvimento Institucional
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.13.4.6
+  slug: 1-13-4-6-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.13.4
+- id: 1.13.4.7
+  slug: 1-13-4-7-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.13.4.8
+  slug: 1-13-4-8-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.13.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: '1.14'
+  slug: 1-14-campus-santiago
+  nome: Campus Santiago
+  parent: '1.1'
+- id: 1.14.1
+  slug: 1-14-1-colegiado-de-campus
+  nome: Colegiado de Campus
+  parent: '1.14'
+  cargo: PRESIDENTE
+- id: 1.14.2
+  slug: 1-14-2-gabinete-do-a-diretor-a-geral
+  nome: Gabinete Do(a) Diretor(a) Geral
+  parent: '1.14'
+  cargo: DIRETOR(A)
+  funcao: CD-0002
+- id: 1.14.2.1
+  slug: 1-14-2-1-nucleo-de-gestao-e-educacao-ambiental
+  nome: Núcleo de Gestão e Educação Ambiental
+  parent: 1.14.2
+- id: 1.14.3
+  slug: 1-14-3-diretoria-de-ensino-pesquisa-e-extensao
+  nome: Diretoria de Ensino, Pesquisa e Extensão
+  parent: '1.14'
+  cargo: DIRETOR(A)
+  funcao: CD-004
+- id: 1.14.3.1
+  slug: 1-14-3-1-biblioteca
+  nome: Biblioteca
+  parent: 1.14.3
+- id: 1.14.3.2
+  slug: 1-14-3-2-nucleo-de-estudos-afro-brasileiros-e-indigena
+  nome: Núcleo de Estudos Afro-Brasileiros e Indígena
+  parent: 1.14.3
+- id: 1.14.3.3
+  slug: 1-14-3-3-nucleo-de-genero-e-diversidade-sexual
+  nome: Núcleo de Gênero e Diversidade Sexual
+  parent: 1.14.3
+- id: 1.14.3.4
+  slug: 1-14-3-4-coordenacao-geral-de-ensino
+  nome: Coordenação Geral de Ensino
+  parent: 1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.14.3.4.1
+  slug: 1-14-3-4-1-setor-de-assessoria-pedagogica
+  nome: Setor de Assessoria Pedagógica
+  parent: 1.14.3.4
+- id: 1.14.3.4.2
+  slug: 1-14-3-4-2-coordenacoes-de-curso
+  nome: Coordenações de Curso
+  parent: 1.14.3.4
+  cargo: COORDENADOR(A)
+  funcao: FCC
+- id: 1.14.3.5
+  slug: 1-14-3-5-coordenacao-de-registros-academicos
+  nome: Coordenação de Registros Acadêmicos
+  parent: 1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.3.6
+  slug: 1-14-3-6-coordenacao-de-pesquisa-extensao-e-producao
+  nome: Coordenação de Pesquisa, Extensão e Produção
+  parent: 1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.3.7
+  slug: 1-14-3-7-coordenacao-de-assistencia-estudantil
+  nome: Coordenação de Assistência Estudantil
+  parent: 1.14.3
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.4
+  slug: 1-14-4-diretoria-de-administracao-planejamento-e-desenvolvimento-institucional
+  nome: Diretoria de Administração, Planejamento e Desenvolvimento Institucional
+  parent: '1.14'
+  cargo: DIRETOR(A)
+  funcao: CD-0004
+- id: 1.14.4.1
+  slug: 1-14-4-1-coordenacao-de-administracao-orcamento-e-financas
+  nome: Coordenação de Administração, Orçamento e Finanças
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.14.4.2
+  slug: 1-14-4-2-coordenacao-de-almoxarifado-e-patrimonio
+  nome: Coordenação de Almoxarifado e Patrimônio
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.4.3
+  slug: 1-14-4-3-coordenacao-de-licitacoes-e-contratos
+  nome: Coordenação de Licitações e Contratos
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.4.4
+  slug: 1-14-4-4-coordenacao-de-infraestrutura
+  nome: Coordenação de Infraestrutura
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.4.5
+  slug: 1-14-4-5-coordenacao-de-planejamento-e-desenvolvimento-institucional
+  nome: Coordenação de Planejamento e Desenvolvimento Institucional
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0001
+- id: 1.14.4.6
+  slug: 1-14-4-6-unidade-de-gestao-de-documentos
+  nome: Unidade de Gestão de Documentos
+  parent: 1.14.4
+- id: 1.14.4.7
+  slug: 1-14-4-7-coordenacao-de-gestao-de-pessoas
+  nome: Coordenação de Gestão de Pessoas
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002
+- id: 1.14.4.8
+  slug: 1-14-4-8-coordenacao-de-tecnologia-da-informacao
+  nome: Coordenação de Tecnologia da Informação
+  parent: 1.14.4
+  cargo: COORDENADOR(A)
+  funcao: FG-0002

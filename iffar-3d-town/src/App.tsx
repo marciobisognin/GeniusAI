@@ -1,9 +1,30 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Html } from "@react-three/drei";
+import { parse as parseYaml } from "yaml";
 import * as THREE from "three";
 
 // Types
+
+// Espelha businesses/iffar/org-chart.yaml — tudo que a cena mostra deriva
+// deste organograma; nenhuma unidade é inventada no frontend.
+interface OrgUnit {
+  id: string;
+  slug: string;
+  nome: string;
+  parent: string | null;
+  cargo?: string;
+  funcao?: string;
+}
+
+interface CompetenciaEntry {
+  artigo: number;
+  unidade_titulo: string;
+  slug: string;
+  resumo: string | null;
+  total_incisos: number;
+}
+
 interface AgentNode {
   id: string;
   name: string;
@@ -11,6 +32,8 @@ interface AgentNode {
   campus: string;
   color: string;
   pos: [number, number, number];
+  cargo?: string;
+  funcao?: string;
 }
 
 interface InboxItem {
@@ -19,6 +42,38 @@ interface InboxItem {
   title: string;
   link: string;
   summary: string;
+}
+
+const CAMPUS_ROOT_RE = /^1\.\d+$/;
+
+function normalizeName(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Posição estável derivada do id da unidade (nunca coordenadas hardcoded) —
+// mesmo id sempre cai no mesmo ângulo do anel, então o layout não "pula"
+// entre carregamentos.
+function hashAngle(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
+  }
+  return (hash % 1000) / 1000;
+}
+
+function colorForCargo(cargo?: string): string {
+  if (!cargo) return "#64748b"; // comissões/núcleos sem cargo definido
+  if (cargo.includes("REITOR")) return "#8b5cf6"; // Reitor(a) / Pró-Reitor(a)
+  if (cargo === "DIRETOR(A) GERAL") return "#f59e0b"; // Diretor(a) Geral de campus
+  if (cargo.startsWith("DIRETOR")) return "#06b6d4"; // Diretorias
+  if (cargo.startsWith("COORDENADOR")) return "#10b981"; // Coordenações
+  if (cargo === "PRESIDENTE") return "#ef4444"; // comissões/colegiados
+  if (cargo === "CHEFE") return "#3b82f6";
+  return "#84cc16";
 }
 
 // ---------------------------------------------------------------------------
@@ -283,14 +338,23 @@ const VoxelAvatar = ({
   position,
   isActive,
   currentMessage,
+  cargo,
+  funcao,
+  competencia,
+  onClick,
 }: {
   name: string;
   color: string;
   position: [number, number, number];
   isActive: boolean;
   currentMessage?: string;
+  cargo?: string;
+  funcao?: string;
+  competencia?: { artigo: number; resumo: string | null } | null;
+  onClick?: () => void;
 }) => {
   const avatarRef = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
 
   useFrame((state) => {
     if (avatarRef.current) {
@@ -304,7 +368,19 @@ const VoxelAvatar = ({
   });
 
   return (
-    <group ref={avatarRef} position={position}>
+    <group
+      ref={avatarRef}
+      position={position}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+      onPointerOver={(e) => {
+        e.stopPropagation();
+        setHovered(true);
+      }}
+      onPointerOut={() => setHovered(false)}
+    >
       <mesh position={[0, 1.35, 0]} castShadow>
         <boxGeometry args={[0.38, 0.38, 0.38]} />
         <meshStandardMaterial color="#fcd34d" />
@@ -340,6 +416,24 @@ const VoxelAvatar = ({
             <div className="mb-1.5 bg-amber-400 text-slate-950 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xl border border-slate-900 flex items-center gap-1.5 animate-bounce font-mono whitespace-nowrap">
               <span>💭</span>
               <span>{currentMessage}</span>
+            </div>
+          )}
+
+          {hovered && !isActive && (cargo || competencia) && (
+            <div className="mb-1.5 max-w-[220px] bg-[#120f11]/95 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono">
+              <div className="font-bold text-amber-400 whitespace-normal">{name}</div>
+              {cargo && (
+                <div className="text-stone-400">
+                  {cargo}
+                  {funcao ? ` · ${funcao}` : ""}
+                </div>
+              )}
+              {competencia && (
+                <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
+                  Art. {competencia.artigo}
+                  {competencia.resumo ? ` — ${competencia.resumo.slice(0, 140)}` : ""}
+                </div>
+              )}
             </div>
           )}
 
@@ -492,85 +586,168 @@ export default function App() {
 
   // Artifacts & History State
   const [inboxItems, setInboxItems] = useState<InboxItem[]>([]);
+  const [historyItems, setHistoryItems] = useState<
+    { id: string; time: string; prompt: string; success: boolean }[]
+  >([]);
 
-  // Organogram Agents positioned in 3D HQ
-  const agents: AgentNode[] = useMemo(
-    () => [
-      {
-        id: "unit-1-1-reit-oria",
-        name: "Luke (Reitora)",
-        title: "Gabinete da Reitoria",
-        campus: "Reitoria",
-        color: "#8b5cf6",
-        pos: [-9, 0, -5],
-      },
-      {
-        id: "unit-1-1-2-audit-oria-interna",
-        name: "Allan (Auditoria)",
-        title: "Auditoria Interna",
-        campus: "Reitoria",
-        color: "#10b981",
-        pos: [-7, 0, -7],
-      },
-      {
-        id: "unit-1-1-4-gabinete-do-a-reit-or-a-reit-or-a-cd-0001",
-        name: "Ben (Gabinete)",
-        title: "Chefe de Gabinete",
-        campus: "Reitoria",
-        color: "#06b6d4",
-        pos: [1.5, 0, -5.5],
-      },
-      {
-        id: "unit-1-1-16-pro-reit-oria-de-ensino-pro-reit-or-a-cd-0002",
-        name: "Cory (Pro-Ensino)",
-        title: "Pró-Reitoria Ensino",
-        campus: "Reitoria",
-        color: "#f97316",
-        pos: [-1, 0, 1],
-      },
-      {
-        id: "unit-1-1-18-pro-reit-oria-de-extens-ao-pro-reit-or-a-cd-0002",
-        name: "Neviton (Pro-Extensao)",
-        title: "Pró-Reitoria Extensão",
-        campus: "Reitoria",
-        color: "#ec4899",
-        pos: [3.5, 0, 3.5],
-      },
-      {
-        id: "unit-1-2-campus-alegrete",
-        name: "Susie (Dir. Alegrete)",
-        title: "Direção Campus Alegrete",
-        campus: "Alegrete",
-        color: "#84cc16",
-        pos: [7.5, 0, 6],
-      },
-      {
-        id: "unit-1-6-campus-panambi",
-        name: "Marcos (Dir. Panambi)",
-        title: "Direção Campus Panambi",
-        campus: "Panambi",
-        color: "#3b82f6",
-        pos: [11, 0, 3],
-      },
-      {
-        id: "unit-1-11-campus-sant-o-angel-o",
-        name: "Carla (Dir. Santo Ângelo)",
-        title: "Direção Campus Santo Ângelo",
-        campus: "Santo Ângelo",
-        color: "#ef4444",
-        pos: [10, 0, -5],
-      },
-      {
-        id: "unit-1-7-campus-santa-rosa",
-        name: "Rafael (Dir. Santa Rosa)",
-        title: "Direção Campus Santa Rosa",
-        campus: "Santa Rosa",
-        color: "#eab308",
-        pos: [7.5, 0, -8],
-      },
-    ],
-    [],
+  // Organograma real, carregado de GET /api/org-chart — nenhuma unidade é
+  // hardcoded no frontend; se um setor não existe no organograma servido
+  // pelo bridge, ele simplesmente não aparece na cena.
+  const [orgUnits, setOrgUnits] = useState<OrgUnit[]>([]);
+  const [orgError, setOrgError] = useState<string | null>(null);
+  const [competencias, setCompetencias] = useState<CompetenciaEntry[]>([]);
+  const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
+  const [campusFilterId, setCampusFilterId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch(`${bridgeUrl}/api/org-chart`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      })
+      .then((text) => {
+        const doc = parseYaml(text) as { units: OrgUnit[] };
+        setOrgUnits(doc.units ?? []);
+      })
+      .catch((err) => {
+        console.error("Falha ao carregar /api/org-chart:", err);
+        setOrgError(
+          "Não foi possível carregar o organograma do bridge. Verifique se o Nirvana Bridge está rodando.",
+        );
+      });
+
+    fetch(`${bridgeUrl}/api/competencias`)
+      .then((res) => (res.ok ? res.text() : null))
+      .then((text) => {
+        if (!text) return;
+        const doc = parseYaml(text) as { competencias: CompetenciaEntry[] };
+        setCompetencias(doc.competencias ?? []);
+      })
+      .catch(() => {
+        // enriquecimento opcional — sem ele a UI só perde o resumo de competência
+      });
+  }, [bridgeUrl]);
+
+  const unitsById = useMemo(() => {
+    const map = new Map<string, OrgUnit>();
+    for (const u of orgUnits) map.set(u.id, u);
+    return map;
+  }, [orgUnits]);
+
+  const childrenByParent = useMemo(() => {
+    const map = new Map<string, OrgUnit[]>();
+    for (const u of orgUnits) {
+      if (!u.parent) continue;
+      const list = map.get(u.parent) ?? [];
+      list.push(u);
+      map.set(u.parent, list);
+    }
+    return map;
+  }, [orgUnits]);
+
+  const competenciaByName = useMemo(() => {
+    const map = new Map<string, CompetenciaEntry>();
+    for (const c of competencias) map.set(normalizeName(c.unidade_titulo), c);
+    return map;
+  }, [competencias]);
+
+  const campusRoots = useMemo(
+    () =>
+      orgUnits
+        .filter((u) => CAMPUS_ROOT_RE.test(u.id) && u.id !== "1.1")
+        .sort((a, b) => a.nome.localeCompare(b.nome)),
+    [orgUnits],
   );
+
+  // Agentes/prédios exibidos por padrão: Reitoria + Pró-Reitorias + o
+  // Gabinete do(a) Diretor(a) Geral de cada campus (~20 prédios). Clicar em
+  // um campus expande as diretorias vinculadas ao Gabinete daquele campus —
+  // evita colocar as ~450 unidades na cena de uma vez.
+  const agents: AgentNode[] = useMemo(() => {
+    if (orgUnits.length === 0) return [];
+    const reitoria = unitsById.get("1.1");
+    if (!reitoria) return [];
+
+    const list: OrgUnit[] = [reitoria];
+    const proReitorias = (childrenByParent.get("1.1") ?? []).filter((u) =>
+      (u.cargo ?? "").includes("REITOR"),
+    );
+    list.push(...proReitorias);
+
+    const visibleCampi = campusFilterId
+      ? campusRoots.filter((c) => c.id === campusFilterId)
+      : campusRoots;
+
+    for (const campus of visibleCampi) {
+      const gabinete = (childrenByParent.get(campus.id) ?? []).find((u) =>
+        normalizeName(u.nome).includes("gabinete"),
+      );
+      if (gabinete) list.push(gabinete);
+      if (expandedCampusId === campus.id && gabinete) {
+        list.push(...(childrenByParent.get(gabinete.id) ?? []));
+      }
+    }
+
+    const RING_RADIUS = campusRoots.length > 0 ? Math.min(6 + campusRoots.length * 0.35, 9.5) : 8;
+    const CENTER_RADIUS = 3.2;
+    let proIdx = 0;
+    let campusIdx = 0;
+    const positionById = new Map<string, [number, number, number]>();
+
+    return list.map((unit) => {
+      const isReitoria = unit.id === "1.1";
+      const isCampusGabinete = campusRoots.some((c) => c.id === unit.parent);
+      const isProReitoria = proReitorias.includes(unit);
+
+      let pos: [number, number, number] = [0, 0, 0];
+      if (isReitoria) {
+        pos = [0, 0, 0];
+      } else if (isProReitoria) {
+        const angle = (proIdx / Math.max(proReitorias.length, 1)) * Math.PI * 2;
+        pos = [
+          Math.cos(angle) * CENTER_RADIUS,
+          0,
+          Math.sin(angle) * CENTER_RADIUS,
+        ];
+        proIdx++;
+      } else if (isCampusGabinete) {
+        const angle = (campusIdx / Math.max(campusRoots.length, 1)) * Math.PI * 2;
+        pos = [
+          Math.cos(angle) * RING_RADIUS,
+          0,
+          Math.sin(angle) * RING_RADIUS,
+        ];
+        campusIdx++;
+      } else {
+        // filhos expandidos de um campus: espalhados perto do gabinete pai,
+        // por um ângulo estável derivado do próprio id (nunca hardcoded)
+        const base = positionById.get(unit.parent ?? "") ?? [0, 0, 0];
+        const angle = hashAngle(unit.id) * Math.PI * 2;
+        pos = [base[0] + Math.cos(angle) * 2.6, 0, base[2] + Math.sin(angle) * 2.6];
+      }
+
+      const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
+      // "Gabinete Do(a) Diretor(a) Geral" se repete em todos os campi — na
+      // cena e nos chips, o nome do campus identifica o prédio melhor do
+      // que o nome genérico do cargo.
+      const displayName = ownerCampus
+        ? ownerCampus.nome.replace(/^Campus\s+/i, "")
+        : unit.nome.split(" ").slice(0, 3).join(" ");
+
+      const node: AgentNode = {
+        id: unit.id,
+        name: displayName,
+        title: unit.nome,
+        campus: ownerCampus?.nome ?? "Reitoria",
+        color: colorForCargo(unit.cargo),
+        pos,
+        cargo: unit.cargo,
+        funcao: unit.funcao,
+      };
+      positionById.set(unit.id, pos);
+      return node;
+    });
+  }, [orgUnits, unitsById, childrenByParent, campusRoots, expandedCampusId, campusFilterId]);
 
   // Execute Briefing Prompt with Strict Organogram Route & Camera Lerp Tracking
   const handleExecutePrompt = async (promptText: string) => {
@@ -589,40 +766,79 @@ export default function App() {
       const data = await res.json();
 
       if (data.sequence) {
-        data.sequence.forEach((step: any, idx: number) => {
+        // Resolução defensiva: se o passo referenciar uma unidade que não
+        // está entre os agentes carregados (ex.: fora do nível de detalhe
+        // exibido), registra um aviso e PULA o passo — nunca anima um
+        // agente errado silenciosamente.
+        const resolvableSteps = data.sequence
+          .map((step: any) => ({
+            step,
+            agent: agents.find((a) => a.id === step.to || a.id === step.from),
+          }))
+          .filter(({ step, agent }: any) => {
+            if (!agent) {
+              console.warn(
+                `[Organograma] Passo ignorado: unidade "${step.to}" não está entre os agentes exibidos.`,
+              );
+            }
+            return Boolean(agent);
+          });
+
+        resolvableSteps.forEach(({ step, agent }: any, idx: number) => {
           setTimeout(() => {
-            const targetAgent =
-              agents.find((a) => a.id === step.to || a.id === step.from) ||
-              agents[idx % agents.length];
+            setActiveAgentId(agent.id);
+            setActiveStatusMsg(`[${agent.name}] ${step.action}`);
 
-            setActiveAgentId(targetAgent.id);
-            setActiveStatusMsg(`[${targetAgent.name}] ${step.action}`);
-
-            if (idx === data.sequence.length - 1) {
-              setTimeout(() => {
+            if (idx === resolvableSteps.length - 1) {
+              setTimeout(async () => {
                 setLoading(false);
-
                 setActiveAgentId(null);
                 setActiveStatusMsg("Orquestração Concluída com Sucesso!");
 
-                if (data.artifacts && data.artifacts.length > 0) {
-                  const newInbox: InboxItem = {
-                    id: `ticket-${Date.now().toString().slice(-4)}`,
-                    date: "AGORA",
-                    title: `Resultado: ${promptText.substring(0, 30)}...`,
-                    link: data.artifacts[0],
-                    summary:
-                      "Artefato gerado e despachado pelo organograma do IFFar.",
-                  };
-                  setInboxItems((prev) => [newInbox, ...prev]);
-                  setActiveTab("INBOX");
-                  // Automatically open the new artifact in the reader modal!
-                  setSelectedArtifact(newInbox);
+                setHistoryItems((prev) => [
+                  {
+                    id: data.ticketId ?? `ticket-${Date.now()}`,
+                    time: new Date().toLocaleTimeString("pt-BR"),
+                    prompt: promptText,
+                    success: Boolean(data.success),
+                  },
+                  ...prev,
+                ]);
+
+                // Só entra no Inbox depois que /api/view-artifact confirmar
+                // 200 — um link devolvido pelo bridge não garante que o
+                // arquivo já esteja pronto para leitura.
+                const link = data.artifacts?.[0];
+                if (link) {
+                  try {
+                    const check = await fetch(link);
+                    if (check.ok) {
+                      const newInbox: InboxItem = {
+                        id: data.ticketId ?? `ticket-${Date.now().toString().slice(-4)}`,
+                        date: "AGORA",
+                        title: `Resultado: ${promptText.substring(0, 30)}...`,
+                        link,
+                        summary:
+                          "Artefato gerado e despachado pelo organograma do IFFar.",
+                      };
+                      setInboxItems((prev) => [newInbox, ...prev]);
+                      setActiveTab("INBOX");
+                      // Automatically open the new artifact in the reader modal!
+                      setSelectedArtifact(newInbox);
+                    }
+                  } catch {
+                    // artefato indisponível — a execução continua registrada no History
+                  }
                 }
               }, 3500);
             }
           }, step.delay);
         });
+
+        if (resolvableSteps.length === 0) {
+          setLoading(false);
+          setActiveStatusMsg("Nenhum passo pôde ser reproduzido na cena atual.");
+        }
       } else {
         setLoading(false);
       }
@@ -645,6 +861,12 @@ export default function App() {
           <span className="font-mono tracking-widest text-xs font-bold text-amber-500 uppercase whitespace-nowrap">
             IFFAR HEADQUARTERS
           </span>
+          <span
+            title="Simulação demonstrativa: não substitui o trâmite oficial via SIPAC."
+            className="hidden md:inline text-[10px] font-mono text-stone-500 border border-stone-700/70 rounded px-1.5 py-0.5 whitespace-nowrap"
+          >
+            PROTÓTIPO DEMONSTRATIVO — NÃO SUBSTITUI O SIPAC
+          </span>
         </div>
 
         {/* Center Agent Chips Bar */}
@@ -655,6 +877,7 @@ export default function App() {
               onClick={() =>
                 setActiveAgentId(activeAgentId === agent.id ? null : agent.id)
               }
+              title={agent.title}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold transition-all border shrink-0 ${
                 activeAgentId === agent.id
                   ? "bg-amber-500 text-stone-950 border-amber-400 ring-2 ring-amber-500/40"
@@ -671,11 +894,27 @@ export default function App() {
           ))}
         </div>
 
-        {/* Right Gateway Status */}
-        <div className="shrink-0 flex items-center">
+        {/* Campus filter + Gateway Status */}
+        <div className="shrink-0 flex items-center gap-2">
+          <select
+            value={campusFilterId ?? ""}
+            onChange={(e) => {
+              const value = e.target.value || null;
+              setCampusFilterId(value);
+              setExpandedCampusId(value);
+            }}
+            className="text-[11px] font-mono bg-[#221c20] text-stone-300 border border-[#382e34] rounded-md px-2 py-1 focus:outline-none focus:border-amber-500"
+          >
+            <option value="">Todos os campi</option>
+            {campusRoots.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.nome.replace(/^Campus\s+/i, "")}
+              </option>
+            ))}
+          </select>
           <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/60 px-2.5 py-1 rounded-md border border-emerald-800/50 flex items-center gap-1.5 whitespace-nowrap">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            GATEWAY 4000
+            {orgError ? "ORGANOGRAMA OFFLINE" : `${orgUnits.length} UNIDADES`}
           </span>
         </div>
       </header>
@@ -736,25 +975,38 @@ export default function App() {
 
             <ConferenceTable position={[-7.5, 0, -4.5]} />
             <LoungeArea position={[7.5, 0, -4.5]} />
-            <WorkstationDesk position={[-1, 0, 1]} />
-            <WorkstationDesk position={[3.5, 0, 3.5]} />
-            <WorkstationDesk position={[7.5, 0, 6]} />
-            <WorkstationDesk position={[11, 0, 3]} />
-            <WorkstationDesk position={[10, 0, -5]} />
-            <WorkstationDesk position={[7.5, 0, -8]} />
+            <WorkstationDesk position={[0, 0, -2.2]} rotation={Math.PI / 2} />
+            <WorkstationDesk position={[0, 0, 2.2]} rotation={-Math.PI / 2} />
 
-            {agents.map((agent) => (
-              <VoxelAvatar
-                key={agent.id}
-                name={agent.name}
-                color={agent.color}
-                position={agent.pos}
-                isActive={activeAgentId === agent.id}
-                currentMessage={
-                  activeAgentId === agent.id ? activeStatusMsg : undefined
-                }
-              />
-            ))}
+            {agents.map((agent) => {
+              const ownerCampus = campusRoots.find((c) =>
+                (childrenByParent.get(c.id) ?? []).some((u) => u.id === agent.id),
+              );
+              const competencia = competenciaByName.get(normalizeName(agent.title));
+              return (
+                <VoxelAvatar
+                  key={agent.id}
+                  name={agent.name}
+                  color={agent.color}
+                  position={agent.pos}
+                  isActive={activeAgentId === agent.id}
+                  currentMessage={
+                    activeAgentId === agent.id ? activeStatusMsg : undefined
+                  }
+                  cargo={agent.cargo}
+                  funcao={agent.funcao}
+                  competencia={competencia ?? null}
+                  onClick={() => {
+                    if (ownerCampus) {
+                      setExpandedCampusId((prev) =>
+                        prev === ownerCampus.id ? null : ownerCampus.id,
+                      );
+                    }
+                    setActiveAgentId((prev) => (prev === agent.id ? null : agent.id));
+                  }}
+                />
+              );
+            })}
 
             <CameraController activeAgentId={activeAgentId} agents={agents} />
           </Canvas>
@@ -778,6 +1030,20 @@ export default function App() {
               </span>
             )}
           </div>
+
+          {/* Organogram Load Error Banner */}
+          {orgError && (
+            <div className="absolute top-3 left-4 right-4 md:left-6 md:right-auto bg-red-950/90 border border-red-500/50 text-red-300 px-3.5 py-2 rounded-lg shadow-2xl backdrop-blur flex items-center gap-2.5 z-10 font-mono text-xs max-w-md">
+              <span className="w-2 h-2 rounded-full shrink-0 bg-red-500" />
+              <span>{orgError}</span>
+            </div>
+          )}
+          {!orgError && orgUnits.length === 0 && (
+            <div className="absolute top-3 left-4 right-4 md:left-6 md:right-auto bg-[#181517]/95 border border-stone-700/80 text-stone-300 px-3.5 py-2 rounded-lg shadow-2xl backdrop-blur flex items-center gap-2.5 z-10 font-mono text-xs max-w-md">
+              <span className="w-2 h-2 rounded-full shrink-0 bg-stone-400 animate-pulse" />
+              <span>Carregando organograma do IFFar...</span>
+            </div>
+          )}
 
           {/* Active Status Banner */}
           {activeStatusMsg && (
@@ -899,12 +1165,12 @@ export default function App() {
                       <div className="bg-[#120f11] p-2.5 rounded-xl border border-[#2d262a] hover:border-amber-500/40 transition-colors group">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-xs font-bold text-stone-200 group-hover:text-amber-400 truncate">
-                            AUDITORIA DE CONTRATO IN 05
+                            FISCALIZAÇÃO DE CONTRATO IN 05
                           </span>
                           <button
                             onClick={() =>
                               handleExecutePrompt(
-                                "Fiscalização e Análise de Contratos Federais conforme IN 05/2017.",
+                                "Fiscalizar o contrato de limpeza do Campus Frederico Westphalen (IN 05/2017).",
                               )
                             }
                             className="text-[10px] font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded hover:bg-amber-500 hover:text-stone-950 transition-colors shrink-0"
@@ -913,8 +1179,9 @@ export default function App() {
                           </button>
                         </div>
                         <p className="text-[10px] text-stone-400">
-                          Encaminhado à Auditoria Interna e fiscalizado no
-                          Campus Santo Ângelo.
+                          Encaminhado à Pró-Reitoria de Administração (Diretoria
+                          de Compras, Licitações e Contratos) e executado no
+                          Campus Frederico Westphalen.
                         </p>
                       </div>
 
@@ -991,22 +1258,28 @@ export default function App() {
                 {activeTab === "HISTORY" && (
                   <div className="flex flex-col gap-2.5 font-mono text-xs text-stone-400">
                     <span className="text-[10px] font-mono text-stone-400 uppercase tracking-wider">
-                      LOGS DE ORQUESTRAÇÃO
+                      EXECUÇÕES DESTA SESSÃO
                     </span>
-                    <div className="bg-[#120f11] p-3 rounded-xl border border-[#2d262a] flex flex-col gap-2 text-[10px]">
-                      <div className="text-emerald-400">
-                        [11:42:01] Reitoria ➔ Auditoria Interna
-                      </div>
-                      <div className="text-stone-300">
-                        Despacho de instrução legal IN 05/2017 concluído.
-                      </div>
-                      <div className="text-emerald-400">
-                        [11:42:08] Auditoria Interna ➔ Campus Santo Ângelo
-                      </div>
-                      <div className="text-stone-300">
-                        Solicitação de comprovante fiscal e relatório.
-                      </div>
-                    </div>
+                    {historyItems.length === 0 ? (
+                      <p className="text-xs text-stone-500 font-mono py-4">
+                        Nenhuma execução realizada ainda nesta sessão.
+                      </p>
+                    ) : (
+                      historyItems.map((h) => (
+                        <div
+                          key={h.id}
+                          className="bg-[#120f11] p-3 rounded-xl border border-[#2d262a] flex flex-col gap-1 text-[10px]"
+                        >
+                          <div
+                            className={h.success ? "text-emerald-400" : "text-red-400"}
+                          >
+                            [{h.time}] {h.success ? "✔ concluído" : "✖ falhou"} · ticket{" "}
+                            {h.id}
+                          </div>
+                          <div className="text-stone-300">{h.prompt}</div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 )}
               </div>

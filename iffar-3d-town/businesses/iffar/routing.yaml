@@ -1,0 +1,205 @@
+# Regras de roteamento institucional do IFFar 3D Town.
+#
+# Gerado a partir da leitura da Portaria Eletrônica nº 876/2026 - GRE
+# (Art. 1º — estrutura em businesses/iffar/org-chart.yaml — e Anexo I —
+# atribuições em businesses/iffar/competencias.yaml). Diferente do
+# org-chart e do competencias, este arquivo é curadoria manual (mapeia
+# temas de negócio, não estrutura ou texto legal), então É esperado
+# editá-lo à mão conforme o roteamento precisar evoluir.
+#
+# Como o motor usa isto (ver nirvana-bridge.ts):
+#   1. Normaliza o briefing (minúsculas, sem acentos).
+#   2. Pontua cada regra por nº de keywords casadas × prioridade.
+#   3. A regra de maior score vence; empate ou nenhuma keyword => default_route.
+#   4. cadeia_sistemica é uma lista de ids de businesses/iffar/org-chart.yaml,
+#      sempre a partir da Reitoria ("1.1").
+#   5. cadeia_campus é uma lista de NOMES (não ids) resolvidos em tempo de
+#      execução dentro da subárvore do campus detectado no briefing — os
+#      ids variam de campus para campus (nem toda unidade existe em todo
+#      campus; campi menores usam a estrutura reduzida dos Arts. 114-120).
+#      Sem campus explícito no briefing, a cadeia_campus é ignorada e o
+#      fluxo permanece sistêmico (não há mais fallback para um campus
+#      arbitrário).
+version: 1
+fonte: "Portaria Eletrônica nº 876/2026 - GRE, Anexo I"
+default_route:
+  nome: "Chefia de Gabinete do(a) Reitor(a) — triagem e despacho"
+  cadeia_sistemica: ["1.1.4.3"]
+  base_legal: ["Anexo I, Art. 15"]
+
+rules:
+  - tema: licitacoes-e-contratos
+    keywords: ["licitacao", "licitacoes", "contrato", "contratos", "pregao", "dispensa",
+               "edital", "termo de referencia", "lei 14133", "14.133", "compra", "compras"]
+    prioridade: 10
+    cadeia_sistemica: ["1.1.15", "1.1.15.3", "1.1.15.3.1"]
+    cadeia_campus: ["Diretoria de Administração", "Coordenação de Licitações e Contratos"]
+    base_legal: ["Anexo I, Arts. 38, 57, 58, 59, 92, 93"]
+
+  - tema: fiscalizacao-contratual
+    keywords: ["fiscalizacao", "fiscal do contrato", "in 05", "in 05/2017", "atesto",
+               "medicao", "glosa", "sancao administrativa"]
+    prioridade: 12
+    cadeia_sistemica: ["1.1.15", "1.1.15.3", "1.1.15.3.1"]
+    cadeia_campus: ["Diretoria de Administração", "Coordenação de Licitações e Contratos"]
+    base_legal: ["Anexo I, Arts. 57, 59, 92, 93"]
+
+  - tema: auditoria-controle-interno
+    keywords: ["auditoria", "paint", "raint", "cgu", "tcu", "recomendacao de auditoria",
+               "tomada de contas", "controle interno"]
+    prioridade: 20
+    cadeia_sistemica: ["1.1.2"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Art. 3"]
+
+  - tema: orcamento-e-financas
+    keywords: ["orcamento", "empenho", "pagamento", "nota fiscal", "liquidacao",
+               "restos a pagar", "prestacao de contas"]
+    prioridade: 8
+    cadeia_sistemica: ["1.1.15", "1.1.15.2", "1.1.15.2.3"]
+    cadeia_campus: ["Diretoria de Administração", "Coordenação de Orçamento e Finanças"]
+    base_legal: ["Anexo I, Arts. 51, 56, 94, 95"]
+
+  - tema: patrimonio-e-almoxarifado
+    keywords: ["patrimonio", "almoxarifado", "inventario", "bens moveis", "tombamento"]
+    prioridade: 8
+    cadeia_sistemica: ["1.1.15", "1.1.15.2", "1.1.15.2.1"]
+    cadeia_campus: ["Diretoria de Administração", "Coordenação de Almoxarifado e Patrimônio"]
+    base_legal: ["Anexo I, Arts. 52, 53, 89"]
+
+  - tema: infraestrutura-e-obras
+    keywords: ["obra", "manutencao predial", "infraestrutura", "reforma", "instalacao eletrica"]
+    prioridade: 8
+    cadeia_sistemica: ["1.1.15", "1.1.15.1"]
+    cadeia_campus: ["Diretoria de Administração", "Coordenação de Infraestrutura"]
+    base_legal: ["Anexo I, Arts. 90, 91"]
+
+  - tema: ensino-cursos-pdi
+    keywords: ["ensino", "curso", "pdi", "ppc", "pedagogic", "curriculo", "graduacao"]
+    prioridade: 6
+    cadeia_sistemica: ["1.1.16", "1.1.16.3"]
+    cadeia_campus: ["Diretoria de Ensino", "Coordenação Geral de Ensino", "Coordenações de Curso"]
+    base_legal: ["Anexo I, Arts. 64, 96, 101, 103"]
+
+  - tema: registros-academicos
+    keywords: ["matricula", "diploma", "historico escolar", "registro academico"]
+    prioridade: 9
+    cadeia_sistemica: ["1.1.16", "1.1.16.3", "1.1.16.3.5"]
+    cadeia_campus: ["Diretoria de Ensino", "Coordenação de Registros Acadêmicos"]
+    base_legal: ["Anexo I, Arts. 69, 106"]
+
+  - tema: assistencia-estudantil
+    keywords: ["assistencia estudantil", "auxilio permanencia", "moradia estudantil", "bolsa auxilio"]
+    prioridade: 9
+    cadeia_sistemica: ["1.1.16", "1.1.16.1"]
+    cadeia_campus: ["Diretoria de Ensino", "Coordenação de Assistência Estudantil"]
+    base_legal: ["Anexo I, Arts. 62, 99, 100"]
+
+  - tema: ead
+    keywords: ["ead", "ensino a distancia", "moodle", "polo de apoio presencial"]
+    prioridade: 9
+    cadeia_sistemica: ["1.1.16", "1.1.16.2"]
+    cadeia_campus: ["Diretoria de Ensino", "Coordenação Geral de Ensino"]
+    base_legal: ["Anexo I, Arts. 63, 102"]
+
+  - tema: pesquisa-pos-inovacao
+    keywords: ["pesquisa", "pos-graduacao", "pos graduacao", "inovacao", "patente",
+               "bolsa de pesquisa", "iniciacao cientifica"]
+    prioridade: 7
+    cadeia_sistemica: ["1.1.17", "1.1.17.1"]
+    cadeia_campus: ["Diretoria de Pesquisa, Extensão e Produção", "Coordenação de Pesquisa, Pós-Graduação e Inovação"]
+    base_legal: ["Anexo I, Arts. 71, 72, 73, 74, 75, 107, 111"]
+
+  - tema: extensao
+    keywords: ["extensao", "comunidade", "projeto social", "evento de extensao", "curso de extensao"]
+    prioridade: 7
+    cadeia_sistemica: ["1.1.18", "1.1.18.1"]
+    cadeia_campus: ["Diretoria de Pesquisa, Extensão e Produção", "Coordenação de Extensão"]
+    base_legal: ["Anexo I, Arts. 77, 78, 79, 80, 107, 108"]
+
+  - tema: estagios
+    keywords: ["estagio", "convenio de estagio", "termo de compromisso de estagio"]
+    prioridade: 10
+    cadeia_sistemica: ["1.1.18"]
+    cadeia_campus: ["Diretoria de Pesquisa, Extensão e Produção", "Setor de Estágios"]
+    base_legal: ["Anexo I, Art. 109"]
+
+  - tema: producao
+    keywords: ["producao", "agroindustria", "setor de producao", "unidade de producao"]
+    prioridade: 9
+    cadeia_sistemica: []
+    cadeia_campus: ["Diretoria de Pesquisa, Extensão e Produção", "Coordenação de Produção", "Setor de Produção"]
+    base_legal: ["Anexo I, Arts. 110, 112, 113"]
+
+  - tema: gestao-de-pessoas
+    keywords: ["servidor", "ferias", "remocao", "progressao funcional", "capacitacao",
+               "aposentadoria", "concurso publico"]
+    prioridade: 6
+    cadeia_sistemica: ["1.1.14", "1.1.14.2"]
+    cadeia_campus: ["Coordenação de Gestão de Pessoas"]
+    base_legal: ["Anexo I, Arts. 84, 85"]
+
+  - tema: tecnologia-da-informacao
+    keywords: ["sistema", "sipac", "sigaa", "rede", "computador", "chamado de ti",
+               "seguranca da informacao"]
+    prioridade: 6
+    cadeia_sistemica: ["1.1.14", "1.1.14.4"]
+    cadeia_campus: ["Coordenação de Tecnologia da Informação"]
+    base_legal: ["Anexo I, Arts. 33, 34, 86"]
+
+  - tema: gestao-documental
+    keywords: ["arquivo", "protocolo", "documento institucional", "tabela de temporalidade"]
+    prioridade: 7
+    cadeia_sistemica: ["1.1.14", "1.1.14.3", "1.1.14.3.2"]
+    cadeia_campus: ["Unidade de Gestão de Documentos"]
+    base_legal: ["Anexo I, Arts. 30, 31, 87"]
+
+  - tema: comunicacao
+    keywords: ["comunicacao institucional", "divulgacao", "imprensa", "assessoria de imprensa",
+               "redes sociais"]
+    prioridade: 8
+    cadeia_sistemica: ["1.1.4.8"]
+    cadeia_campus: ["Gabinete Do(a) Diretor(a) Geral"]
+    base_legal: ["Anexo I, Arts. 16, 82"]
+
+  - tema: ouvidoria-denuncia
+    keywords: ["ouvidoria", "denuncia", "reclamacao", "manifestacao"]
+    prioridade: 11
+    cadeia_sistemica: ["1.1.11"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Art. 11"]
+
+  - tema: correicao-etica
+    keywords: ["correicao", "processo administrativo disciplinar", "sindicancia", "etica"]
+    prioridade: 11
+    cadeia_sistemica: ["1.1.5"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Arts. 5, 8"]
+
+  - tema: transparencia-lai
+    keywords: ["lai", "acesso a informacao", "e-sic", "esic"]
+    prioridade: 11
+    cadeia_sistemica: ["1.1.12"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Art. 13"]
+
+  - tema: governanca-e-riscos
+    keywords: ["governanca", "gestao de riscos", "integridade publica", "mapa de riscos"]
+    prioridade: 9
+    cadeia_sistemica: ["1.1.4.4"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Art. 18"]
+
+  - tema: ambiental
+    keywords: ["ambiental", "residuo solido", "sustentabilidade", "pgrs", "logistica reversa"]
+    prioridade: 9
+    cadeia_sistemica: ["1.1.14", "1.1.14.1"]
+    cadeia_campus: ["Núcleo de Gestão e Educação Ambiental"]
+    base_legal: ["Anexo I, Art. 37"]
+
+  - tema: juridico
+    keywords: ["parecer juridico", "procuradoria federal", "agu", "acao judicial"]
+    prioridade: 10
+    cadeia_sistemica: ["1.1.13"]
+    cadeia_campus: []
+    base_legal: ["Anexo I, Art. 12"]
