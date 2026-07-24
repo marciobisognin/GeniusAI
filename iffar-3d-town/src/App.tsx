@@ -485,6 +485,7 @@ const VoxelAvatar = ({
   funcao,
   competencia,
   onClick,
+  showLabel = true,
 }: {
   name: string;
   color: string;
@@ -495,6 +496,7 @@ const VoxelAvatar = ({
   funcao?: string;
   competencia?: { artigo: number; resumo: string | null } | null;
   onClick?: () => void;
+  showLabel?: boolean;
 }) => {
   const avatarRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
@@ -547,6 +549,7 @@ const VoxelAvatar = ({
         <meshStandardMaterial color="#1e293b" />
       </mesh>
 
+      {showLabel && (
       <Html
         position={[0, 1.85, 0]}
         center
@@ -590,12 +593,13 @@ const VoxelAvatar = ({
             <span
               className={`w-2 h-2 rounded-full ${isActive ? "bg-red-500 animate-ping" : "bg-emerald-400"}`}
             />
-            <span className="font-mono tracking-wide whitespace-nowrap">
+            <span className="font-mono tracking-wide whitespace-nowrap max-w-[260px] truncate">
               {name}
             </span>
           </div>
         </div>
       </Html>
+      )}
     </group>
   );
 };
@@ -865,12 +869,14 @@ export default function App() {
       }
 
       const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
-      // "Gabinete Do(a) Diretor(a) Geral" se repete em todos os campi — na
-      // cena e nos chips, o nome do campus identifica o prédio melhor do
-      // que o nome genérico do cargo.
+      // O rótulo do agente é sempre a função/unidade como está escrita no
+      // organograma (nunca um nome de pessoa fictício). "Gabinete Do(a)
+      // Diretor(a) Geral" se repete em todos os campi, então nesse caso
+      // específico o nome do campus é anexado só para diferenciar o prédio —
+      // nunca substitui a função.
       const displayName = ownerCampus
-        ? ownerCampus.nome.replace(/^Campus\s+/i, "")
-        : unit.nome.split(" ").slice(0, 3).join(" ");
+        ? `${unit.nome} — ${ownerCampus.nome.replace(/^Campus\s+/i, "")}`
+        : unit.nome;
 
       const node: AgentNode = {
         id: unit.id,
@@ -1064,8 +1070,8 @@ export default function App() {
               <span
                 className={`w-2 h-2 rounded-full shrink-0 ${activeAgentId === agent.id ? "bg-red-600 animate-ping" : "bg-emerald-400"}`}
               />
-              <span className="whitespace-nowrap">
-                {agent.name.split(" ")[0]}
+              <span className="whitespace-nowrap max-w-[220px] truncate">
+                {agent.name}
               </span>
             </button>
           ))}
@@ -1197,6 +1203,13 @@ export default function App() {
                 (childrenByParent.get(c.id) ?? []).some((u) => u.id === agent.id),
               );
               const competencia = competenciaByName.get(normalizeName(agent.title));
+              // Na visão geral (nenhum prédio em foco) só os pins dos 14
+              // prédios aparecem. Ao focar um prédio (drone-zoom), rotula
+              // somente os agentes daquele prédio — evita poluir a cena com
+              // dezenas de rótulos de prédios distantes fora do foco.
+              const showLabel =
+                activeLocationId !== null &&
+                physicalLocationId(agent.id, unitsById) === activeLocationId;
               return (
                 <VoxelAvatar
                   key={agent.id}
@@ -1210,6 +1223,7 @@ export default function App() {
                   cargo={agent.cargo}
                   funcao={agent.funcao}
                   competencia={competencia ?? null}
+                  showLabel={showLabel}
                   onClick={() => {
                     if (ownerCampus) {
                       setExpandedCampusId((prev) =>
