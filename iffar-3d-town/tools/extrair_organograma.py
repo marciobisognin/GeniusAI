@@ -11,10 +11,20 @@ exatidão a quebra de nomes de unidade em múltiplas linhas dentro de uma
 célula — o problema que inviabiliza o parsing por posição de texto puro
 (`pdftotext -layout`) ou por proximidade vertical de palavras.
 
-Gate de qualidade obrigatório antes de usar o YAML gerado: conferir manualmente
-as seções 1.1 (Reitoria), 1.9 (Campus Frederico Westphalen) e 1.13 (Campus São
-Luiz Gonzaga) contra o PDF. Divergência em qualquer código, nome ou função deve
-ser corrigida neste script, nunca no YAML gerado.
+A extração por tabela por si só não é suficiente: uma linha cujo conteúdo é
+cortado ao meio pela quebra de página pode sobreviver como fragmento (ver
+`recover_split_row`) ou desaparecer inteira de `find_tables()` sem deixar
+nenhum resquício (ver `recover_missing_code` — foi o caso de `1.6.2` e
+`1.2.5.4.1`, encontrados só depois de comparar a contagem de unidades por
+seção com uma varredura bruta de códigos no texto). Por isso o script varre
+o documento inteiro em busca de qualquer código que não tenha sido
+capturado por nenhuma tabela (`scan_all_codes`) e tenta reconstruir essas
+linhas — mas o "tentar" importa: confira o aviso "[aviso] código '...'
+ausente de todas as tabelas" no stderr sempre que a extração rodar, e
+confirme manualmente contra o PDF qualquer unidade reconstruída dessa
+forma, além das seções 1.1 (Reitoria), 1.9 (Frederico Westphalen) e 1.13
+(São Luiz Gonzaga). Divergência em qualquer código, nome ou função deve ser
+corrigida neste script, nunca no YAML gerado.
 """
 
 import re
@@ -102,6 +112,68 @@ def recover_split_row(page, after_top: float):
     return code_word["text"].rstrip("."), nome or None
 
 
+def scan_all_codes(pdf, last_page: int):
+    """Varre todas as páginas em busca de QUALQUER token de código (coluna
+    UNIDADE), independente da extração por tabela — usado só para validar
+    que nenhuma unidade foi perdida (`find_tables()` pode derrubar uma linha
+    inteira quando ela é cortada ao meio pela quebra de página, sem deixar
+    nem um fragmento; ver `1.2.5.4.1`, Campus Alegrete)."""
+    found = []
+    for page_idx, page in enumerate(pdf.pages[:last_page]):
+        for w in page.extract_words(use_text_flow=False, keep_blank_chars=False):
+            if w["x0"] < 130 and 20 < w["top"] < 810 and CODE_RE.match(w["text"]):
+                found.append((page_idx, w["top"], w["text"].rstrip(".")))
+    found.sort(key=lambda t: (t[0], t[1]))
+    return found
+
+
+def recover_missing_code(pdf, all_codes, missing_index: int, next_known_nome: str | None):
+    """Reconstrói uma linha cujo código nem chegou a aparecer em nenhuma
+    tabela extraída (diferente de `recover_split_row`, que trata o caso mais
+    comum de um fragmento sobrevivente).
+
+    O código da linha perdida aparece no início do conteúdo da própria
+    linha nos casos observados, então a janela vai da posição do próprio
+    código até a posição do PRÓXIMO código conhecido (podendo atravessar a
+    quebra de página). Mas o INVERSO nem sempre vale: o próximo código pode
+    estar no meio do nome dele (como qualquer linha normal), o que vazaria
+    o começo do próximo nome para dentro deste. Por isso, se o nome da
+    próxima unidade já foi capturado corretamente pela extração por tabela
+    (`next_known_nome`), qualquer palavra final que bata com o começo desse
+    nome é removida da reconstrução.
+    """
+    page_idx, top, code = all_codes[missing_index]
+    v_here = page_idx * 1000.0 + top
+    v_next = (
+        all_codes[missing_index + 1][0] * 1000.0 + all_codes[missing_index + 1][1]
+        if missing_index + 1 < len(all_codes)
+        else v_here + 2000
+    )
+
+    words = []
+    for p_idx in range(page_idx, min(page_idx + 3, len(pdf.pages))):
+        for w in pdf.pages[p_idx].extract_words(use_text_flow=False, keep_blank_chars=False):
+            if 20 < w["top"] < 810:
+                v = p_idx * 1000.0 + w["top"]
+                if v_here <= v < v_next:
+                    words.append((v, w["x0"], w["text"]))
+    words.sort(key=lambda t: (t[0], t[1]))
+
+    nome_words = [t for _, x0, t in words if x0 < X_NOME_MAX and t.rstrip(".") != code]
+    tail_words = [t for _, x0, t in words if x0 >= X_NOME_MAX]
+
+    if next_known_nome:
+        next_words = next_known_nome.upper().split()
+        for k in range(min(len(next_words), len(nome_words)), 0, -1):
+            if nome_words[-k:] == next_words[:k]:
+                nome_words = nome_words[:-k]
+                break
+
+    nome = re.sub(r"\s+", " ", " ".join(nome_words)).strip() or None
+    cargo, funcao = (tail_words[0], tail_words[1]) if len(tail_words) >= 2 else (None, None)
+    return [code, nome, cargo, funcao]
+
+
 def extract_rows(pdf_path: str, last_page: int):
     """Percorre as tabelas do PDF e devolve linhas normalizadas
     (code, nome, cargo, funcao), ignorando cabeçalhos de seção/tabela."""
@@ -155,6 +227,30 @@ def extract_rows(pdf_path: str, last_page: int):
                     last[0], last[1] = code, nome
 
             rows.extend(page_rows)
+
+        # gate de validação: nenhum código que aparece no PDF pode ficar de
+        # fora — diferente do fragmento tratado acima, uma linha cortada ao
+        # meio pela quebra de página às vezes some inteira de find_tables(),
+        # sem deixar nem um resquício (ver 1.2.5.4.1, Campus Alegrete).
+        all_codes = scan_all_codes(pdf, last_page)
+        nome_by_code = {
+            r[0].rstrip("."): r[1] for r in rows if r[0] and CODE_RE.match(r[0]) and r[1]
+        }
+        captured = {r[0].rstrip(".") for r in rows if r[0] and CODE_RE.match(r[0])}
+        for i, (_, _, code) in enumerate(all_codes):
+            if code in captured:
+                continue
+            next_code = all_codes[i + 1][2] if i + 1 < len(all_codes) else None
+            recovered = recover_missing_code(
+                pdf, all_codes, i, nome_by_code.get(next_code) if next_code else None
+            )
+            print(
+                f"[aviso] código '{code}' ausente de todas as tabelas extraídas "
+                "(provável quebra de página); recuperado por posição bruta",
+                file=sys.stderr,
+            )
+            rows.append(recovered)
+            captured.add(code)
     return rows
 
 

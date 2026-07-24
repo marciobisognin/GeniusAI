@@ -2481,3 +2481,7 @@ units:
   parent: 1.14.4
   cargo: COORDENADOR(A)
   funcao: FG-0002
+- id: 1.2.5.4.1
+  slug: 1-2-5-4-1-nucleos-de-apoio-a-pessoas-com-necessidades-educacionais-especificas
+  nome: Núcleos de Apoio a Pessoas com Necessidades Educacionais Específicas
+  parent: 1.2.5.4
