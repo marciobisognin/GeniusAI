@@ -1,8 +1,5 @@
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Html } from "@react-three/drei";
+import { useState, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { parse as parseYaml } from "yaml";
-import * as THREE from "three";
 
 // Types
 
@@ -31,9 +28,16 @@ interface AgentNode {
   title: string;
   campus: string;
   color: string;
-  pos: [number, number, number];
+  pos: [number, number];
   cargo?: string;
   funcao?: string;
+}
+
+interface MapLocation {
+  id: string;
+  nome: string;
+  pos: [number, number];
+  primaryAgentId: string;
 }
 
 interface InboxItem {
@@ -55,8 +59,8 @@ function normalizeName(text: string): string {
 }
 
 // Posição estável derivada do id da unidade (nunca coordenadas hardcoded) —
-// mesmo id sempre cai no mesmo ângulo do anel, então o layout não "pula"
-// entre carregamentos.
+// mesmo id sempre cai no mesmo ângulo dentro do escritório, então o layout
+// não "pula" entre carregamentos.
 function hashAngle(id: string): number {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
@@ -85,7 +89,9 @@ function colorForCargo(cargo?: string): string {
 // IBGE (via github.com/giuliano-macedo/geodata-br-states), simplificado por
 // Douglas-Peucker e projetado com a mesma transformação — por isso os
 // prédios caem no lugar geograficamente certo dentro do contorno real do RS,
-// não em posições arbitrárias.
+// não em posições arbitrárias. O mapa é desenhado em 2D, direto nesse plano
+// (x = longitude projetada, z = latitude projetada — norte fica para cima
+// sem precisar inverter nada, já que z cresce para o sul nessa projeção).
 // ---------------------------------------------------------------------------
 
 // nome (sem "Campus ") -> posição real no plano (lat/long projetadas com
@@ -128,6 +134,26 @@ const RS_OUTLINE: [number, number][] = [
   [56.89, 8.71],
 ];
 
+// Retângulo (com folga) que envolve o contorno do RS + todos os prédios —
+// vira o viewBox do mapa e a base para os percentuais de transform-origin
+// usados no zoom de câmera para dentro de cada prédio.
+const MAP_BOUNDS = (() => {
+  const xs = [...RS_OUTLINE.map((p) => p[0]), ...Object.values(RS_CITY_COORDS).map((p) => p[0])];
+  const zs = [...RS_OUTLINE.map((p) => p[1]), ...Object.values(RS_CITY_COORDS).map((p) => p[1])];
+  const pad = 8;
+  const minX = Math.min(...xs) - pad;
+  const maxX = Math.max(...xs) + pad;
+  const minZ = Math.min(...zs) - pad;
+  const maxZ = Math.max(...zs) + pad;
+  return { minX, minZ, width: maxX - minX, height: maxZ - minZ };
+})();
+
+function originPercent([x, z]: [number, number]): string {
+  const left = ((x - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * 100;
+  const top = ((z - MAP_BOUNDS.minZ) / MAP_BOUNDS.height) * 100;
+  return `${left}% ${top}%`;
+}
+
 function cityKeyFromName(nome: string): string {
   return nome.replace(/^Campus\s+/i, "").trim();
 }
@@ -146,461 +172,242 @@ function physicalLocationId(unitId: string, unitsById: Map<string, OrgUnit>): st
 }
 
 // ---------------------------------------------------------------------------
-// DYNAMIC CAMERA CONTROLLER
+// MAPA 2D DO RS (ESTILO "DESENHO", TOPO)
 // ---------------------------------------------------------------------------
 
-// Câmera "drone": quando o agente ativo muda de PRÉDIO (Reitoria <-> campus,
-// ou de um campus para outro), a câmera corta para uma posição de aproximação
-// bem alta acima do novo prédio (mudança de cenário) e então desce em zoom
-// até o escritório — em vez de sobrevoar em linha reta por cima do mapa
-// inteiro. Trocar de agente DENTRO do mesmo prédio continua um lerp suave.
-const CameraController = ({
-  activeAgentId,
-  agents,
-  activeLocationId,
-  onSceneChange,
-}: {
-  activeAgentId: string | null;
-  agents: AgentNode[];
-  activeLocationId: string | null;
-  onSceneChange: () => void;
-}) => {
-  const controlsRef = useRef<any>(null);
-  const lastLocationRef = useRef<string | null>(null);
-
-  useFrame((state, delta) => {
-    if (!controlsRef.current) return;
-
-    if (activeAgentId) {
-      const agent = agents.find((a) => a.id === activeAgentId);
-      if (agent) {
-        if (activeLocationId && lastLocationRef.current !== activeLocationId) {
-          const wasAnotherLocation = lastLocationRef.current !== null;
-          lastLocationRef.current = activeLocationId;
-          if (wasAnotherLocation) {
-            // mudança de cenário: corta para uma aproximação alta acima do
-            // novo prédio antes de descer, em vez de deslizar por cima do
-            // mapa inteiro de um campus para o outro.
-            state.camera.position.set(agent.pos[0] + 3, 26, agent.pos[2] + 3);
-            controlsRef.current.target.set(agent.pos[0], 2, agent.pos[2]);
-            onSceneChange();
-          }
-        }
-
-        const targetPos = new THREE.Vector3(agent.pos[0], 1.2, agent.pos[2]);
-        controlsRef.current.target.lerp(targetPos, delta * 3.2);
-
-        // zoom "drone": desce quase em cima do prédio, câmera baixa e perto
-        const desiredCamPos = new THREE.Vector3(
-          agent.pos[0] + 6,
-          6.5,
-          agent.pos[2] + 6,
-        );
-        state.camera.position.lerp(desiredCamPos, delta * 3.2);
-      }
-    } else {
-      lastLocationRef.current = null;
-      const centerTarget = new THREE.Vector3(0, 0, 0);
-      controlsRef.current.target.lerp(centerTarget, delta * 2.2);
-
-      const overviewCamPos = new THREE.Vector3(46, 48, 46);
-      state.camera.position.lerp(overviewCamPos, delta * 2.2);
-    }
-
-    controlsRef.current.update();
-  });
-
+// Ícone estilizado (visto de cima) de um prédio — corpo verde, telhado
+// vermelho, sempre nas mesmas cores institucionais do IFFar.
+const BuildingIcon = ({ isActive, big }: { isActive: boolean; big?: boolean }) => {
+  const s = big ? 1.4 : 1;
   return (
-    <OrbitControls
-      ref={controlsRef}
-      makeDefault
-      enableRotate={true}
-      enablePan={true}
-      maxPolarAngle={Math.PI / 2.1}
-      minDistance={4}
-      maxDistance={120}
-    />
-  );
-};
-
-// ---------------------------------------------------------------------------
-// 3D SCENERY COMPONENTS
-// ---------------------------------------------------------------------------
-
-// Terreno estilizado do Rio Grande do Sul: o contorno real do estado
-// (RS_OUTLINE, do IBGE) extrudado como um "tabuleiro", para que os prédios
-// caiam na posição geográfica certa dentro da silhueta reconhecível do RS.
-const RSTerrain = () => {
-  const geometry = useMemo(() => {
-    const shape = new THREE.Shape();
-    RS_OUTLINE.forEach(([x, z], i) => {
-      if (i === 0) shape.moveTo(x, z);
-      else shape.lineTo(x, z);
-    });
-    return new THREE.ExtrudeGeometry(shape, {
-      depth: 0.6,
-      bevelEnabled: true,
-      bevelThickness: 0.15,
-      bevelSize: 0.15,
-      bevelSegments: 2,
-    });
-  }, []);
-
-  const edgePoints = useMemo(
-    () => RS_OUTLINE.map(([x, z]) => new THREE.Vector3(x, 0.62, z)),
-    [],
-  );
-
-  return (
-    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
-      <mesh geometry={geometry} receiveShadow castShadow rotation={[0, 0, 0]}>
-        <meshStandardMaterial color="#2f6b3a" roughness={0.85} />
-      </mesh>
-      <line>
-        <bufferGeometry>
-          <bufferAttribute
-            attach="attributes-position"
-            args={[new Float32Array(edgePoints.flatMap((p) => [p.x, p.y, p.z])), 3]}
-          />
-        </bufferGeometry>
-        <lineBasicMaterial color="#f59e0b" linewidth={2} />
-      </line>
-    </group>
-  );
-};
-
-// Prédio estilizado (verde e vermelho) de um campus ou da Reitoria,
-// posicionado na coordenada geográfica real. `scale` destaca a Reitoria.
-const CampusBuilding = ({
-  position,
-  label,
-  isActive,
-  scale = 1,
-  onClick,
-}: {
-  position: [number, number, number];
-  label: string;
-  isActive: boolean;
-  scale?: number;
-  onClick?: () => void;
-}) => {
-  return (
-    <group
-      position={position}
-      scale={scale}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-    >
-      {/* base do prédio */}
-      <mesh position={[0, 1.1, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3.2, 2.2, 2.6]} />
-        <meshStandardMaterial color="#166534" roughness={0.6} />
-      </mesh>
-      {/* faixa/aceso vermelho */}
-      <mesh position={[0, 0.35, 1.32]}>
-        <boxGeometry args={[3.2, 0.6, 0.04]} />
-        <meshStandardMaterial color="#b91c1c" />
-      </mesh>
-      {/* telhado vermelho em duas águas */}
-      <mesh position={[0, 2.55, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
-        <coneGeometry args={[2.5, 1.4, 4]} />
-        <meshStandardMaterial color="#dc2626" roughness={0.5} />
-      </mesh>
-      {/* bandeirinha de destaque quando ativo */}
+    <g transform={`scale(${s})`}>
       {isActive && (
-        <mesh position={[0, 4.2, 0]}>
-          <cylinderGeometry args={[0.04, 0.04, 1.6]} />
-          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.6} />
-        </mesh>
+        <circle r={4.4} fill="#f59e0b" opacity={0.22}>
+          <animate attributeName="r" values="3.6;5.2;3.6" dur="1.6s" repeatCount="indefinite" />
+        </circle>
       )}
+      <rect x={-2.1} y={-1.5} width={4.2} height={3} rx={0.35} fill="#166534" stroke="#0a1f0f" strokeWidth={0.18} />
+      <polygon points="-2.5,-1.5 2.5,-1.5 0,-3.5" fill="#dc2626" stroke="#7f1d1d" strokeWidth={0.15} />
+      <rect x={-1.4} y={-0.6} width={0.8} height={0.8} fill="#b91c1c" opacity={0.85} />
+      <rect x={0.6} y={-0.6} width={0.8} height={0.8} fill="#b91c1c" opacity={0.85} />
+      <rect x={-0.35} y={0.3} width={0.7} height={1.2} fill="#7c2d12" />
+      {isActive && <circle cy={-4.3} r={0.4} fill="#f59e0b" />}
+    </g>
+  );
+};
 
-      <Html position={[0, 3.9, 0]} center distanceFactor={26} style={{ pointerEvents: "none" }}>
-        <div
-          className={`px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold whitespace-nowrap shadow-lg ${
-            isActive
-              ? "bg-amber-500 text-stone-950 border-amber-300"
-              : "bg-[#181517]/90 text-emerald-300 border-emerald-700/60"
-          }`}
+// Mapa do Rio Grande do Sul: contorno real do estado (RS_OUTLINE, do IBGE) +
+// um prédio estilizado por local (Reitoria + 13 campi), cada um na posição
+// geográfica correta. Estilo top-down, no espírito de um "virtual office"
+// (gather.town): edifícios simples sobre um mapa, sem perspectiva 3D.
+const RSMap = ({
+  locations,
+  activeLocationId,
+  onSelect,
+}: {
+  locations: MapLocation[];
+  activeLocationId: string | null;
+  onSelect: (loc: MapLocation) => void;
+}) => {
+  const outlinePoints = useMemo(() => RS_OUTLINE.map(([x, z]) => `${x},${z}`).join(" "), []);
+
+  return (
+    <svg
+      viewBox={`${MAP_BOUNDS.minX} ${MAP_BOUNDS.minZ} ${MAP_BOUNDS.width} ${MAP_BOUNDS.height}`}
+      className="w-full h-full"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <defs>
+        <pattern id="rs-grid" width={4} height={4} patternUnits="userSpaceOnUse">
+          <path d="M 4 0 L 0 0 0 4" fill="none" stroke="#ffffff" strokeOpacity={0.05} strokeWidth={0.15} />
+        </pattern>
+      </defs>
+      <polygon points={outlinePoints} fill="#1f4d29" stroke="#f59e0b" strokeWidth={0.5} strokeLinejoin="round" />
+      <polygon points={outlinePoints} fill="url(#rs-grid)" />
+      {locations.map((loc) => (
+        <g
+          key={loc.id}
+          transform={`translate(${loc.pos[0]} ${loc.pos[1]})`}
+          onClick={() => onSelect(loc)}
+          className="cursor-pointer"
         >
-          🏛️ {label}
-        </div>
-      </Html>
-    </group>
-  );
-};
-
-const WorkstationDesk = ({
-  position,
-  rotation = 0,
-}: {
-  position: [number, number, number];
-  rotation?: number;
-}) => {
-  return (
-    <group position={position} rotation={[0, rotation, 0]}>
-      <mesh position={[0, 0.65, 0]} castShadow receiveShadow>
-        <boxGeometry args={[1.6, 0.08, 0.9]} />
-        <meshStandardMaterial color="#7a4e2b" roughness={0.4} />
-      </mesh>
-      <mesh position={[-0.7, 0.32, -0.35]} castShadow>
-        <boxGeometry args={[0.07, 0.64, 0.07]} />
-        <meshStandardMaterial color="#1a1817" />
-      </mesh>
-      <mesh position={[0.7, 0.32, -0.35]} castShadow>
-        <boxGeometry args={[0.07, 0.64, 0.07]} />
-        <meshStandardMaterial color="#1a1817" />
-      </mesh>
-      <mesh position={[-0.7, 0.32, 0.35]} castShadow>
-        <boxGeometry args={[0.07, 0.64, 0.07]} />
-        <meshStandardMaterial color="#1a1817" />
-      </mesh>
-      <mesh position={[0.7, 0.32, 0.35]} castShadow>
-        <boxGeometry args={[0.07, 0.64, 0.07]} />
-        <meshStandardMaterial color="#1a1817" />
-      </mesh>
-
-      <mesh position={[-0.28, 1.02, -0.18]} rotation={[0, 0.08, 0]} castShadow>
-        <boxGeometry args={[0.55, 0.35, 0.03]} />
-        <meshStandardMaterial color="#141213" />
-      </mesh>
-      <mesh position={[-0.28, 1.02, -0.16]} rotation={[0, 0.08, 0]}>
-        <planeGeometry args={[0.5, 0.3]} />
-        <meshBasicMaterial color="#0284c7" />
-      </mesh>
-      <mesh position={[0.28, 1.02, -0.18]} rotation={[0, -0.08, 0]} castShadow>
-        <boxGeometry args={[0.55, 0.35, 0.03]} />
-        <meshStandardMaterial color="#141213" />
-      </mesh>
-      <mesh position={[0.28, 1.02, -0.16]} rotation={[0, -0.08, 0]}>
-        <planeGeometry args={[0.5, 0.3]} />
-        <meshBasicMaterial color="#0f766e" />
-      </mesh>
-
-      <group position={[0, 0, 0.75]}>
-        <mesh position={[0, 0.42, 0]} castShadow>
-          <boxGeometry args={[0.48, 0.07, 0.45]} />
-          <meshStandardMaterial color="#2d2a33" />
-        </mesh>
-        <mesh position={[0, 0.72, 0.18]} castShadow>
-          <boxGeometry args={[0.44, 0.55, 0.05]} />
-          <meshStandardMaterial color="#2d2a33" />
-        </mesh>
-      </group>
-    </group>
-  );
-};
-
-const ConferenceTable = ({
-  position,
-}: {
-  position: [number, number, number];
-}) => {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.68, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[1.8, 1.8, 0.08, 6]} />
-        <meshStandardMaterial color="#8a552e" roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.32, 0]} castShadow>
-        <cylinderGeometry args={[0.5, 0.7, 0.64]} />
-        <meshStandardMaterial color="#241913" />
-      </mesh>
-      {[0, 60, 120, 180, 240, 300].map((deg, i) => {
-        const rad = (deg * Math.PI) / 180;
-        const cx = Math.cos(rad) * 2.2;
-        const cz = Math.sin(rad) * 2.2;
-        return (
-          <group
-            key={i}
-            position={[cx, 0, cz]}
-            rotation={[0, -rad - Math.PI / 2, 0]}
+          <BuildingIcon isActive={activeLocationId === loc.id} big={loc.id === "1.1"} />
+          <text
+            y={loc.id === "1.1" ? 5.6 : 4.7}
+            textAnchor="middle"
+            fontSize={loc.id === "1.1" ? 1.9 : 1.4}
+            fontWeight={700}
+            fill="#fef9ec"
+            stroke="#0a0a0a"
+            strokeWidth={0.28}
+            paintOrder="stroke"
+            fontFamily="monospace"
           >
-            <mesh position={[0, 0.4, 0]} castShadow>
-              <boxGeometry args={[0.42, 0.07, 0.42]} />
-              <meshStandardMaterial color="#332f32" />
-            </mesh>
-            <mesh position={[0, 0.7, 0.16]} castShadow>
-              <boxGeometry args={[0.38, 0.5, 0.05]} />
-              <meshStandardMaterial color="#332f32" />
-            </mesh>
-          </group>
-        );
-      })}
-    </group>
-  );
-};
-
-const LoungeArea = ({ position }: { position: [number, number, number] }) => {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.32, 0]} castShadow receiveShadow>
-        <boxGeometry args={[2.4, 0.35, 0.8]} />
-        <meshStandardMaterial color="#222838" />
-      </mesh>
-      <mesh position={[0, 0.62, -0.3]} castShadow>
-        <boxGeometry args={[2.4, 0.45, 0.2]} />
-        <meshStandardMaterial color="#222838" />
-      </mesh>
-      <mesh position={[0, 0.22, 0.95]} castShadow receiveShadow>
-        <boxGeometry args={[1.2, 0.07, 0.5]} />
-        <meshStandardMaterial color="#473424" />
-      </mesh>
-      <group position={[1.4, 0, -0.3]}>
-        <mesh position={[0, 1.1, 0]}>
-          <cylinderGeometry args={[0.02, 0.02, 2.2]} />
-          <meshStandardMaterial color="#d97706" />
-        </mesh>
-        <mesh position={[0, 2.1, 0]}>
-          <coneGeometry args={[0.26, 0.35, 16]} />
-          <meshStandardMaterial
-            color="#fcd34d"
-            emissive="#f59e0b"
-            emissiveIntensity={0.9}
-          />
-        </mesh>
-        <pointLight
-          position={[0, 1.9, 0]}
-          intensity={1.5}
-          color="#f59e0b"
-          distance={4}
-        />
-      </group>
-    </group>
+            {cityKeyFromName(loc.nome)}
+          </text>
+        </g>
+      ))}
+    </svg>
   );
 };
 
 // ---------------------------------------------------------------------------
-// BLOCKY VOXEL AVATAR COMPONENT
+// INTERIOR DO ESCRITÓRIO (ESTILO GATHER.TOWN — SALA VISTA DE CIMA)
 // ---------------------------------------------------------------------------
 
-const VoxelAvatar = ({
-  name,
-  color,
-  position,
+const DESK_POSITIONS: CSSProperties[] = [
+  { left: "16%", top: "72%" },
+  { left: "84%", top: "72%" },
+  { left: "16%", top: "24%" },
+  { left: "84%", top: "24%" },
+];
+
+const AvatarToken = ({
+  agent,
   isActive,
-  currentMessage,
-  cargo,
-  funcao,
+  statusMsg,
   competencia,
   onClick,
-  showLabel = true,
+  style,
 }: {
-  name: string;
-  color: string;
-  position: [number, number, number];
+  agent: AgentNode;
   isActive: boolean;
-  currentMessage?: string;
-  cargo?: string;
-  funcao?: string;
-  competencia?: { artigo: number; resumo: string | null } | null;
-  onClick?: () => void;
-  showLabel?: boolean;
+  statusMsg?: string;
+  competencia?: CompetenciaEntry | null;
+  onClick: () => void;
+  style: CSSProperties;
 }) => {
-  const avatarRef = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
 
-  useFrame((state) => {
-    if (avatarRef.current) {
-      const t = state.clock.getElapsedTime();
-      if (isActive) {
-        avatarRef.current.position.y = position[1] + Math.sin(t * 8) * 0.06;
-      } else {
-        avatarRef.current.position.y = position[1] + Math.sin(t * 1.5) * 0.015;
-      }
-    }
-  });
-
   return (
-    <group
-      ref={avatarRef}
-      position={position}
-      onClick={(e) => {
-        e.stopPropagation();
-        onClick?.();
-      }}
-      onPointerOver={(e) => {
-        e.stopPropagation();
-        setHovered(true);
-      }}
-      onPointerOut={() => setHovered(false)}
+    <div
+      className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer z-10"
+      style={style}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
-      <mesh position={[0, 1.35, 0]} castShadow>
-        <boxGeometry args={[0.38, 0.38, 0.38]} />
-        <meshStandardMaterial color="#fcd34d" />
-      </mesh>
-      <mesh position={[0, 1.55, 0.01]} castShadow>
-        <boxGeometry args={[0.4, 0.1, 0.4]} />
-        <meshStandardMaterial color="#2b1a0e" />
-      </mesh>
-
-      <mesh position={[0, 0.85, 0]} castShadow>
-        <boxGeometry args={[0.4, 0.5, 0.24]} />
-        <meshStandardMaterial color={color} />
-      </mesh>
-
-      <mesh position={[-0.1, 0.3, 0]} castShadow>
-        <boxGeometry args={[0.16, 0.58, 0.2]} />
-        <meshStandardMaterial color="#1e293b" />
-      </mesh>
-      <mesh position={[0.1, 0.3, 0]} castShadow>
-        <boxGeometry args={[0.16, 0.58, 0.2]} />
-        <meshStandardMaterial color="#1e293b" />
-      </mesh>
-
-      {showLabel && (
-      <Html
-        position={[0, 1.85, 0]}
-        center
-        distanceFactor={20}
-        zIndexRange={[5, 0]}
-        style={{ pointerEvents: "none", userSelect: "none" }}
-      >
-        <div className="flex flex-col items-center">
-          {isActive && currentMessage && (
-            <div className="mb-1.5 bg-amber-400 text-slate-950 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xl border border-slate-900 flex items-center gap-1.5 animate-bounce font-mono whitespace-nowrap">
-              <span>💭</span>
-              <span>{currentMessage}</span>
-            </div>
-          )}
-
-          {hovered && !isActive && (cargo || competencia) && (
-            <div className="mb-1.5 max-w-[220px] bg-[#120f11]/95 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono">
-              <div className="font-bold text-amber-400 whitespace-normal">{name}</div>
-              {cargo && (
-                <div className="text-stone-400">
-                  {cargo}
-                  {funcao ? ` · ${funcao}` : ""}
-                </div>
-              )}
-              {competencia && (
-                <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
-                  Art. {competencia.artigo}
-                  {competencia.resumo ? ` — ${competencia.resumo.slice(0, 140)}` : ""}
-                </div>
-              )}
-            </div>
-          )}
-
-          <div
-            className={`flex items-center gap-1.5 px-2.5 py-0.5 rounded-md border text-[11px] font-bold shadow-lg transition-all duration-300 ${
-              isActive
-                ? "bg-amber-500 text-slate-950 border-amber-300 ring-2 ring-amber-500/40 scale-105"
-                : "bg-[#181517]/95 text-stone-200 border-stone-700/80"
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${isActive ? "bg-red-500 animate-ping" : "bg-emerald-400"}`}
-            />
-            <span className="font-mono tracking-wide whitespace-nowrap max-w-[260px] truncate">
-              {name}
-            </span>
-          </div>
+      {isActive && statusMsg && (
+        <div className="mb-1.5 bg-amber-400 text-slate-950 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-xl border border-slate-900 flex items-center gap-1.5 animate-bounce font-mono whitespace-nowrap max-w-[220px] truncate">
+          <span>💭</span>
+          <span>{statusMsg}</span>
         </div>
-      </Html>
       )}
-    </group>
+
+      {hovered && !isActive && (agent.cargo || competencia) && (
+        <div className="mb-1.5 max-w-[220px] bg-[#120f11]/95 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono">
+          <div className="font-bold text-amber-400 whitespace-normal">{agent.name}</div>
+          {agent.cargo && (
+            <div className="text-stone-400">
+              {agent.cargo}
+              {agent.funcao ? ` · ${agent.funcao}` : ""}
+            </div>
+          )}
+          {competencia && (
+            <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
+              Art. {competencia.artigo}
+              {competencia.resumo ? ` — ${competencia.resumo.slice(0, 140)}` : ""}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div
+        className={`w-10 h-10 rounded-full border-2 flex items-center justify-center text-lg shadow-lg transition-transform ${
+          isActive
+            ? "border-amber-300 ring-4 ring-amber-400/40 scale-110 animate-bounce"
+            : "border-stone-900/70"
+        }`}
+        style={{ background: agent.color }}
+      >
+        🧑‍💼
+      </div>
+      <div
+        className={`mt-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold whitespace-nowrap max-w-[150px] truncate shadow ${
+          isActive
+            ? "bg-amber-500 text-stone-950"
+            : "bg-[#181517]/95 text-stone-200 border border-stone-700/70"
+        }`}
+      >
+        {agent.name}
+      </div>
+    </div>
+  );
+};
+
+// Sala vista de cima (piso, mesas, mesa de reunião) com um avatar por
+// agente daquele prédio — entra em cena (fade) assim que a câmera termina
+// o zoom de drone para dentro do edifício selecionado no mapa.
+const OfficeScene = ({
+  buildingName,
+  agentsHere,
+  activeAgentId,
+  statusMsg,
+  competenciaByName,
+  onSelectAgent,
+}: {
+  buildingName: string;
+  agentsHere: AgentNode[];
+  activeAgentId: string | null;
+  statusMsg: string;
+  competenciaByName: Map<string, CompetenciaEntry>;
+  onSelectAgent: (id: string) => void;
+}) => {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-[#0e1a12] p-6 animate-fade-in">
+      <div className="relative w-full max-w-4xl aspect-[16/10] rounded-2xl border-[6px] border-[#5c4425] shadow-2xl overflow-hidden bg-[#d9c69a]">
+        <div
+          className="absolute inset-0 opacity-25"
+          style={{
+            backgroundImage:
+              "linear-gradient(#00000018 1px, transparent 1px), linear-gradient(90deg, #00000018 1px, transparent 1px)",
+            backgroundSize: "36px 36px",
+          }}
+        />
+
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-[#181517] text-amber-400 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/50 shadow-lg whitespace-nowrap max-w-[80%] truncate">
+          🏛️ {buildingName}
+        </div>
+
+        {DESK_POSITIONS.map((pos, i) => (
+          <div
+            key={i}
+            className="absolute -translate-x-1/2 -translate-y-1/2 w-14 h-9 rounded-md bg-[#7a4e2b] border-2 border-[#4a2f1a] shadow"
+            style={pos}
+          >
+            <div className="absolute left-1.5 top-1 w-4 h-2.5 rounded-sm bg-[#0284c7]" />
+          </div>
+        ))}
+        <div
+          className="absolute -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-[#8a552e] border-4 border-[#4a2f1a] shadow-lg"
+          style={{ left: "50%", top: "50%" }}
+        />
+
+        {agentsHere.map((agent, i) => {
+          // Distribui os avatares em fatias iguais do círculo (por índice, não
+          // só por hash) — com poucos agentes na sala, um ângulo puramente
+          // aleatório por id às vezes agrupava vários no mesmo canto.
+          const slice = (i / agentsHere.length) * Math.PI * 2;
+          const angle = slice + (hashAngle(agent.id) - 0.5) * 0.6;
+          const radius = 32 + (hashAngle(`${agent.id}r`) % 1) * 8;
+          const style: CSSProperties = {
+            left: `${50 + Math.cos(angle) * radius}%`,
+            top: `${50 + Math.sin(angle) * radius * 0.65}%`,
+          };
+          return (
+            <AvatarToken
+              key={agent.id}
+              agent={agent}
+              isActive={agent.id === activeAgentId}
+              statusMsg={agent.id === activeAgentId ? statusMsg : undefined}
+              competencia={competenciaByName.get(normalizeName(agent.title))}
+              onClick={() => onSelectAgent(agent.id)}
+              style={style}
+            />
+          );
+        })}
+      </div>
+    </div>
   );
 };
 
@@ -745,6 +552,7 @@ export default function App() {
   const [competencias, setCompetencias] = useState<CompetenciaEntry[]>([]);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
   const [campusFilterId, setCampusFilterId] = useState<string | null>(null);
+
   // "Corte" de cena: um flash rápido quando a câmera pula de um prédio para
   // outro (Reitoria <-> campus, ou campus -> campus), para reforçar a
   // sensação de mudança de cenário em vez de um sobrevoo contínuo.
@@ -753,6 +561,12 @@ export default function App() {
     setSceneFlash(true);
     setTimeout(() => setSceneFlash(false), 260);
   };
+
+  // Só revela o escritório (interior) depois que o zoom de câmera no mapa
+  // termina — dá a sensação de "a câmera entra no prédio" em vez de um corte
+  // seco direto para a sala.
+  const [officeVisible, setOfficeVisible] = useState(false);
+  const prevLocationRef = useRef<string | null>(null);
 
   useEffect(() => {
     fetch(`${bridgeUrl}/api/org-chart`)
@@ -849,23 +663,24 @@ export default function App() {
 
       // Todo agente mora fisicamente num dos 14 prédios do mapa (Reitoria
       // ou o campus a que pertence) — a posição vem das coordenadas reais
-      // desse prédio no RS, nunca de um layout arbitrário em anel.
+      // desse prédio no RS, nunca de um layout arbitrário.
       const locationId = physicalLocationId(unit.id, unitsById);
       const locationUnit = unitsById.get(locationId);
       const cityKey = locationUnit ? cityKeyFromName(locationUnit.nome) : "Reitoria";
       const [baseX, baseZ] = RS_CITY_COORDS[cityKey] ?? [0, 0];
 
-      let pos: [number, number, number];
+      let pos: [number, number];
       if (isReitoria || isCampusGabinete) {
         // marcador principal do prédio: exatamente na coordenada da cidade
-        pos = [baseX, 0, baseZ];
+        pos = [baseX, baseZ];
       } else {
         // demais agentes (Pró-Reitorias na Reitoria, diretorias/coordenações
         // expandidas num campus): espalhados perto do prédio, por um ângulo
-        // estável derivado do próprio id (nunca hardcoded)
+        // estável derivado do próprio id (nunca hardcoded) — só usado como
+        // fallback caso apareçam fora do escritório em algum momento.
         const angle = hashAngle(unit.id) * Math.PI * 2;
-        const radius = 3.2 + (hashAngle(unit.id + "r") % 1) * 1.6;
-        pos = [baseX + Math.cos(angle) * radius, 0, baseZ + Math.sin(angle) * radius];
+        const radius = 3.2 + (hashAngle(`${unit.id}r`) % 1) * 1.6;
+        pos = [baseX + Math.cos(angle) * radius, baseZ + Math.sin(angle) * radius];
       }
 
       const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
@@ -895,7 +710,7 @@ export default function App() {
   // Os 14 prédios do mapa (Reitoria + 13 campi) — sempre visíveis, com
   // posição real derivada de RS_CITY_COORDS, independentemente de qual
   // agente está ativo ou de qual campus está expandido/filtrado.
-  const mapLocations = useMemo(() => {
+  const mapLocations: MapLocation[] = useMemo(() => {
     const reitoria = unitsById.get("1.1");
     if (!reitoria) return [];
     const list = [reitoria, ...campusRoots];
@@ -914,7 +729,7 @@ export default function App() {
       return {
         id: unit.id,
         nome: unit.nome,
-        pos: [x, 0, z] as [number, number, number],
+        pos: [x, z] as [number, number],
         primaryAgentId,
       };
     });
@@ -927,10 +742,49 @@ export default function App() {
     return physicalLocationId(activeAgentId, unitsById);
   }, [activeAgentId, unitsById]);
 
-  const activeBuildingPos = useMemo(() => {
-    if (!activeLocationId) return null;
-    return mapLocations.find((l) => l.id === activeLocationId)?.pos ?? null;
-  }, [activeLocationId, mapLocations]);
+  const activeLocationUnit = useMemo(
+    () => (activeLocationId ? mapLocations.find((l) => l.id === activeLocationId) ?? null : null),
+    [activeLocationId, mapLocations],
+  );
+
+  // Agentes que "trabalham" fisicamente no prédio em foco — são eles que
+  // aparecem como avatares dentro do escritório quando a câmera entra.
+  const agentsHere = useMemo(() => {
+    if (!activeLocationId) return [];
+    return agents.filter((a) => physicalLocationId(a.id, unitsById) === activeLocationId);
+  }, [activeLocationId, agents, unitsById]);
+
+  // Máquina de estados da câmera: zoom de drone para dentro do prédio em
+  // foco (a partir da visão geral do mapa) revela o escritório só depois que
+  // a animação termina; ao trocar de PRÉDIO (não só de agente dentro dele),
+  // corta a cena com um flash em vez de deslizar sobre o mapa inteiro.
+  useEffect(() => {
+    if (!activeLocationId) {
+      setOfficeVisible(false);
+      prevLocationRef.current = null;
+      return;
+    }
+
+    const previous = prevLocationRef.current;
+    prevLocationRef.current = activeLocationId;
+    if (previous === activeLocationId) return; // mesmo prédio, outro agente: cena não muda
+
+    setOfficeVisible(false);
+    if (previous !== null) triggerSceneFlash();
+    const delay = previous === null ? 900 : 500;
+    const timer = setTimeout(() => setOfficeVisible(true), delay);
+    return () => clearTimeout(timer);
+  }, [activeLocationId]);
+
+  const handleSelectAgent = (agentId: string) => {
+    const ownerCampus = campusRoots.find((c) =>
+      (childrenByParent.get(c.id) ?? []).some((u) => u.id === agentId),
+    );
+    if (ownerCampus) {
+      setExpandedCampusId((prev) => (prev === ownerCampus.id ? null : ownerCampus.id));
+    }
+    setActiveAgentId((prev) => (prev === agentId ? null : agentId));
+  };
 
   // Execute Briefing Prompt with Strict Organogram Route & Camera Lerp Tracking
   const handleExecutePrompt = async (promptText: string) => {
@@ -1127,7 +981,7 @@ export default function App() {
           </button>
         </aside>
 
-        {/* CENTER 3D VIEWPORT CANVAS */}
+        {/* CENTER 2D MAP / OFFICE VIEWPORT */}
         <main className="flex-1 relative bg-[#120f11] overflow-hidden">
           {/* Flash de corte de cena — sobe a opacidade rapidamente e cai,
               simulando um corte de câmera ao mudar de prédio/campus */}
@@ -1136,113 +990,41 @@ export default function App() {
               sceneFlash ? "opacity-80" : "opacity-0"
             }`}
           />
-          <Canvas
-            camera={{ position: [46, 48, 46], fov: 45, near: 0.1, far: 1000 }}
-            shadows
+
+          {/* Mapa do RS — a câmera "entra" no prédio via zoom (scale) com
+              transform-origin travado na posição real do prédio em foco. */}
+          <div
+            className="absolute inset-0 transition-transform duration-[900ms] ease-in-out"
+            style={{
+              transformOrigin: activeLocationUnit ? originPercent(activeLocationUnit.pos) : "50% 50%",
+              transform: activeLocationId ? "scale(8)" : "scale(1)",
+            }}
           >
-            <color attach="background" args={["#120f11"]} />
-            <ambientLight intensity={1.2} />
-            <directionalLight
-              position={[20, 30, 15]}
-              intensity={1.8}
-              castShadow
-              shadow-mapSize={[2048, 2048]}
-              shadow-camera-left={-35}
-              shadow-camera-right={35}
-              shadow-camera-top={35}
-              shadow-camera-bottom={-35}
-              color="#fffcf7"
-            />
-            <directionalLight
-              position={[-15, 20, -10]}
-              intensity={0.6}
-              color="#dbeafe"
-            />
-
-            <RSTerrain />
-
-            {mapLocations.map((loc) => (
-              <CampusBuilding
-                key={loc.id}
-                position={loc.pos}
-                label={cityKeyFromName(loc.nome)}
-                isActive={activeLocationId === loc.id}
-                scale={loc.id === "1.1" ? 1.25 : 1}
-                onClick={() => {
-                  if (loc.id !== "1.1") {
-                    setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
-                  }
-                  setActiveAgentId((prev) =>
-                    prev === loc.primaryAgentId ? null : loc.primaryAgentId,
-                  );
-                }}
-              />
-            ))}
-
-            {activeBuildingPos && (
-              <group>
-                <ConferenceTable
-                  position={[activeBuildingPos[0] - 2.6, 0, activeBuildingPos[2] - 2.2]}
-                />
-                <LoungeArea
-                  position={[activeBuildingPos[0] + 2.6, 0, activeBuildingPos[2] - 2.2]}
-                />
-                <WorkstationDesk
-                  position={[activeBuildingPos[0] - 1.2, 0, activeBuildingPos[2] + 2.6]}
-                  rotation={Math.PI / 2}
-                />
-                <WorkstationDesk
-                  position={[activeBuildingPos[0] + 1.2, 0, activeBuildingPos[2] + 2.6]}
-                  rotation={-Math.PI / 2}
-                />
-              </group>
-            )}
-
-            {agents.map((agent) => {
-              const ownerCampus = campusRoots.find((c) =>
-                (childrenByParent.get(c.id) ?? []).some((u) => u.id === agent.id),
-              );
-              const competencia = competenciaByName.get(normalizeName(agent.title));
-              // Na visão geral (nenhum prédio em foco) só os pins dos 14
-              // prédios aparecem. Ao focar um prédio (drone-zoom), rotula
-              // somente os agentes daquele prédio — evita poluir a cena com
-              // dezenas de rótulos de prédios distantes fora do foco.
-              const showLabel =
-                activeLocationId !== null &&
-                physicalLocationId(agent.id, unitsById) === activeLocationId;
-              return (
-                <VoxelAvatar
-                  key={agent.id}
-                  name={agent.name}
-                  color={agent.color}
-                  position={agent.pos}
-                  isActive={activeAgentId === agent.id}
-                  currentMessage={
-                    activeAgentId === agent.id ? activeStatusMsg : undefined
-                  }
-                  cargo={agent.cargo}
-                  funcao={agent.funcao}
-                  competencia={competencia ?? null}
-                  showLabel={showLabel}
-                  onClick={() => {
-                    if (ownerCampus) {
-                      setExpandedCampusId((prev) =>
-                        prev === ownerCampus.id ? null : ownerCampus.id,
-                      );
-                    }
-                    setActiveAgentId((prev) => (prev === agent.id ? null : agent.id));
-                  }}
-                />
-              );
-            })}
-
-            <CameraController
-              activeAgentId={activeAgentId}
-              agents={agents}
+            <RSMap
+              locations={mapLocations}
               activeLocationId={activeLocationId}
-              onSceneChange={triggerSceneFlash}
+              onSelect={(loc) => {
+                if (loc.id !== "1.1") {
+                  setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
+                }
+                setActiveAgentId((prev) =>
+                  prev === loc.primaryAgentId ? null : loc.primaryAgentId,
+                );
+              }}
             />
-          </Canvas>
+          </div>
+
+          {/* Escritório: só aparece depois do zoom de drone terminar */}
+          {officeVisible && activeLocationUnit && (
+            <OfficeScene
+              buildingName={cityKeyFromName(activeLocationUnit.nome)}
+              agentsHere={agentsHere}
+              activeAgentId={activeAgentId}
+              statusMsg={activeStatusMsg}
+              competenciaByName={competenciaByName}
+              onSelectAgent={handleSelectAgent}
+            />
+          )}
 
           {/* Canvas Shortcut Controls */}
           <div className="absolute bottom-4 left-4 z-10 flex items-center gap-2">
