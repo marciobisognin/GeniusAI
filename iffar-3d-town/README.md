@@ -18,6 +18,7 @@
   <a href="#-visão-geral">Visão geral</a> •
   <a href="#-início-rápido">Início rápido</a> •
   <a href="#-como-usar">Como usar</a> •
+  <a href="#-camada-de-dados-institucional">Dados institucionais</a> •
   <a href="#-arquitetura">Arquitetura</a> •
   <a href="#-uso-com-llms-e-agentes-de-codificação">LLMs de codificação</a> •
   <a href="#-solução-de-problemas">Solução de problemas</a>
@@ -29,34 +30,34 @@
 
 ## ✨ Visão geral
 
-O **IFFar 3D Town** transforma uma representação mapeada do organograma do Instituto Federal Farroupilha em uma central tridimensional demonstrativa. As unidades implementadas aparecem como partes de um ambiente isométrico; após o processamento de uma demanda, a interface reproduz visualmente uma sequência de handoffs entre Reitoria, setores especializados e campi.
+O **IFFar 3D Town** transforma o organograma real do Instituto Federal Farroupilha — extraído da **Portaria Eletrônica nº 876/2026 - GRE** — em uma central tridimensional demonstrativa. A cena é montada **dinamicamente** a partir de `businesses/iffar/org-chart.yaml`: nenhuma unidade é fixa no frontend. Uma demanda em linguagem natural é classificada por um motor de regras declarativo (`routing.yaml`) que segue as competências reais do Anexo I da portaria, e a interface reproduz visualmente a cadeia de handoffs entre Reitoria, setor responsável e campus.
 
 O projeto combina uma experiência visual em **React + Three.js** com um bridge local em **Bun**. Esse bridge conecta a interface ao **Nirvana OS**, dispara o fluxo institucional e devolve os artefatos produzidos para leitura dentro da própria aplicação.
 
 > [!IMPORTANT]
-> O repositório contém uma interface funcional e um bridge configurável. Para executar orquestrações reais, você precisa apontar o arquivo `.env` para uma instalação existente do Nirvana OS e para os diretórios do negócio `iffar`.
+> O organograma e o motor de roteamento já vêm prontos para uso (Opção A). Para executar orquestrações **reais** via Nirvana OS (Opção B), aponte o `.env` para uma instalação existente do Nirvana OS e para os diretórios de execução do negócio `iffar`.
 
 <table>
 <tr>
 <td width="33%" valign="top">
 
-### 🏙️ Espaço 3D
+### 🏙️ Espaço 3D dinâmico
 
-Visualização isométrica com unidades, agentes, áreas de trabalho, câmera orbital e foco automático.
-
-</td>
-<td width="33%" valign="top">
-
-### 🧭 Roteamento institucional
-
-Demandas seguem uma cadeia visível entre Reitoria, área responsável, campus e consolidação final.
+A cena é gerada a partir de `GET /api/org-chart`: Reitoria, Pró-Reitorias e os 13 campi. Clique em um campus para expandir suas diretorias.
 
 </td>
 <td width="33%" valign="top">
 
-### 📄 Artefatos integrados
+### 🧭 Roteamento por competência real
 
-Caminhos de artefatos retornados pelo bridge podem entrar no Inbox e ser lidos sem sair da interface.
+Um motor de regras (`routing.yaml`) classifica a demanda pelas atribuições do Anexo I da Portaria 876/2026 — auditável, sem `if/else` escondido.
+
+</td>
+<td width="33%" valign="top">
+
+### 📄 Artefatos vinculados por ticket
+
+Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois que `/api/view-artifact` confirma 200.
 
 </td>
 </tr>
@@ -66,34 +67,44 @@ Caminhos de artefatos retornados pelo bridge podem entrar no Inbox e ser lidos s
 
 ## 🎯 O que você consegue fazer
 
-| Experiência                                 | O que acontece na prática                                                                    |
-| ------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| **Explorar a sede virtual**                 | Navegue pelo ambiente 3D, altere o enquadramento e identifique unidades institucionais.      |
-| **Enviar uma demanda em linguagem natural** | Digite um briefing ou use um playbook pronto para iniciar uma execução.                      |
-| **Observar o handoff entre agentes**        | A câmera reproduz a sequência devolvida pelo bridge e exibe a ação prevista naquele estágio. |
-| **Aplicar rotas por responsabilidade**      | Termos de contratos, ensino, extensão e campi direcionam a demanda para cadeias distintas.   |
-| **Acompanhar Inbox e histórico**            | Artefatos localizados pelo bridge entram no Inbox; o histórico atual é demonstrativo.        |
-| **Ler artefatos locais**                    | O bridge faz uma checagem lexical para aceitar caminhos sob os diretórios configurados.      |
+| Experiência                                  | O que acontece na prática                                                                                 |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Explorar a sede virtual**                    | Navegue pelo ambiente 3D montado a partir do organograma real; filtre por campus no cabeçalho.               |
+| **Enviar uma demanda em linguagem natural**    | Digite um briefing ou use um playbook pronto para iniciar uma execução.                                      |
+| **Observar o handoff entre agentes**           | A câmera reproduz a cadeia devolvida pelo bridge, derivada da hierarquia real do organograma.                |
+| **Aplicar rotas por competência**              | O tema da demanda (contratos, ensino, extensão, auditoria, TI, gestão de pessoas...) segue a Uorg competente conforme o Anexo I. |
+| **Ver o fundamento legal de cada passo**       | Cada handoff carrega os artigos do Anexo I que embasam a rota (transparência do roteamento).                 |
+| **Consultar o organograma por hover**          | Passe o mouse sobre uma unidade para ver cargo, função (CD/FG/FCC) e um resumo da competência.               |
+| **Acompanhar Inbox e histórico reais**         | Artefatos só entram no Inbox após confirmação; o History lista as execuções desta sessão.                    |
 
 ### Rotas demonstradas
 
 ```mermaid
 flowchart LR
     U([Usuário]) --> R[Reitoria]
-    R --> D{Natureza da demanda}
+    R --> M{{Motor de roteamento<br/>routing.yaml}}
 
-    D -->|Contratos · fiscalização · IN 05| A[Auditoria Interna]
-    D -->|Ensino · PDI · cursos| E[Pró-Reitoria de Ensino]
-    D -->|Extensão · projetos · comunidade| X[Pró-Reitoria de Extensão]
+    M -->|licitações · contratos · fiscalização| PROAD[Pró-Reitoria de Administração]
+    M -->|ensino · PDI · cursos| PROEN[Pró-Reitoria de Ensino]
+    M -->|extensão · comunidade| PROEX[Pró-Reitoria de Extensão]
+    M -->|auditoria · CGU · TCU| AUDIT[Auditoria Interna]
+    M -->|sem tema reconhecido| GAB[Chefia de Gabinete — Art. 15]
 
-    A --> C[Campus de destino]
-    E --> C
-    X --> C
+    PROAD --> C{Campus citado?}
+    PROEN --> C
+    PROEX --> C
+    C -->|sim| CX[Diretoria/Coordenação do campus]
+    C -->|não| CONS[Fluxo permanece sistêmico]
 
-    C --> S[Setor responsável]
-    S --> R2[Consolidação pela Reitoria]
+    CX --> R2[Consolidação pela Reitoria]
+    CONS --> R2
+    AUDIT --> R2
+    GAB --> R2
     R2 --> F([Artefato final])
 ```
+
+> [!NOTE]
+> Diferente da versão anterior, **contratos, licitações e fiscalização não vão mais para a Auditoria Interna** — a Auditoria é órgão de controle interno (Art. 3º do Anexo I); quem executa essas competências é a Pró-Reitoria de Administração (Arts. 57-59, 92-93).
 
 ---
 
@@ -103,13 +114,11 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 | Limite atual                                                | Impacto prático                                                                                                                                 |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Nove agentes definidos no frontend**                      | A cena não é criada dinamicamente a partir de `org-chart.yaml`.                                                                                 |
-| **Timeline reproduzida após o processo**                    | Os handoffs são animados por temporizadores depois que o bridge recebe a saída do processo Bun; não há streaming ou telemetria ao vivo.         |
-| **Histórico demonstrativo**                                 | Os itens exibidos na aba History são estáticos nesta versão.                                                                                    |
+| **Timeline reproduzida após o processo**                    | Os handoffs são animados por temporizadores depois que o bridge recebe a saída do processo Bun; não há streaming ou telemetria ao vivo (ver "Próximas evoluções").|
+| **Histórico limitado à sessão**                              | O History lista execuções reais, mas apenas as feitas nesta sessão do navegador — não há persistência entre recarregamentos.                    |
 | **Sucesso parcialmente validado**                           | A interface ainda não diferencia todos os cenários em que o processo termina com erro.                                                          |
-| **Seleção heurística de artefato**                          | O bridge procura `result.md` no diretório de ticket mais recente ou usa um caminho de fallback; isso não comprova vínculo com a execução atual. |
-| **URL de artefato fixa**                                    | Os links retornados e o indicador visual assumem `localhost:4000`, mesmo que host ou porta sejam alterados.                                     |
-| **Sem health check, autenticação ou isolamento por origem** | A raiz retorna 404 e o bridge usa CORS `*`; mantenha-o em `127.0.0.1` e não trate a API como fronteira de segurança de produção.                |
+| **Nível de detalhe da cena**                                 | Por padrão a cena mostra Reitoria + Pró-Reitorias + Gabinetes de campus (~20 prédios); diretorias/coordenações só aparecem ao expandir um campus, para não colocar as ~450 unidades na cena de uma vez. |
+| **Sem health check de autenticação nem isolamento por origem** | `/api/health` reporta status de configuração, mas o bridge continua sem autenticação e usa CORS `*`; mantenha-o em `127.0.0.1` e não o trate como fronteira de segurança de produção. |
 
 > [!CAUTION]
 > Use dados fictícios ou previamente sanitizados. O protótipo não deve processar documentos institucionais sensíveis sem endurecimento adicional do bridge, autenticação e testes de integração.
@@ -118,40 +127,21 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 ## ⚡ Início rápido
 
-### Opção A — explorar somente a interface 3D
+A cena 3D é montada a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em ambas as opções abaixo. A diferença entre elas é só se você quer orquestrações reais via Nirvana OS ou não.
 
-Use esta opção quando você quer conhecer o ambiente visual sem executar agentes do Nirvana OS.
+### Opção A — explorar organograma e roteamento, sem o Nirvana OS
 
-**Requisitos:** Node.js `^20.19.0` ou `>=22.12.0` e npm.
+Use esta opção para conhecer o ambiente visual e o motor de roteamento sem precisar de nenhuma instalação externa: `org-chart.yaml`, `routing.yaml` e `competencias.yaml` já vêm prontos no repositório, e o bridge usa `tools/stub-engine.ts` como stand-in do Nirvana OS.
 
-```bash
-git clone https://github.com/marciobisognin/GeniusAI.git
-cd GeniusAI/iffar-3d-town
-npm install --no-package-lock
-npm run dev
-```
-
-Abra [http://localhost:5173](http://localhost:5173).
-
-A interface será carregada normalmente. Os comandos que dependem do bridge informarão erro de conexão até que a opção completa seja configurada.
-
-### Opção B — executar interface + Nirvana Bridge
-
-**Requisitos:**
-
-- [Bun](https://bun.sh/) para o bridge e os scripts do projeto;
-- uma instalação funcional do Nirvana OS;
-- o negócio `iffar` com `org-chart.yaml`, `tickets/` e `outputs/`;
-- Git.
+**Requisitos:** [Bun](https://bun.sh/) e Git.
 
 ```bash
 git clone https://github.com/marciobisognin/GeniusAI.git
 cd GeniusAI/iffar-3d-town
 bun install
-cp .env.example .env
 ```
 
-Edite `.env` com os caminhos reais da sua instalação. Depois, abra dois terminais no diretório `iffar-3d-town`.
+Abra dois terminais no diretório `iffar-3d-town` (nenhum `.env` é necessário):
 
 <table>
 <tr>
@@ -180,6 +170,21 @@ Abra `http://localhost:5173`.
 </tr>
 </table>
 
+Envie um briefing pela interface: o `stub-engine.ts` grava um artefato de exemplo, o suficiente para ver o Inbox e a leitura de artefato funcionando de ponta a ponta. Nenhum parecer real é gerado nesse modo.
+
+### Opção B — orquestrações reais via Nirvana OS
+
+**Requisitos adicionais:**
+
+- uma instalação funcional do Nirvana OS;
+- o negócio `iffar` configurado na sua instalação do Nirvana OS.
+
+```bash
+cp .env.example .env
+```
+
+Edite `.env` e defina `NIRVANA_ENGINE_PATH` para o `brief-business.ts` real (opcionalmente também `IFFAR_TICKETS_DIR`/`IFFAR_OUTPUTS_DIR`, se quiser usar diretórios fora de `.data/`). Repita os dois terminais da Opção A — o bridge detecta a configuração e passa a executar o Nirvana OS de verdade.
+
 ### Verificação mínima
 
 ```bash
@@ -192,7 +197,7 @@ Resultado esperado:
 - lint sem erros;
 - build produzido em `dist/`;
 - interface acessível na porta `5173`;
-- bridge acessível na porta `4000` quando configurado.
+- `GET http://127.0.0.1:4000/api/health` responde `{"ok": true, ...}`.
 
 ---
 
@@ -215,67 +220,101 @@ Resultado esperado:
 ### 2. Escolha uma forma de entrada
 
 - **Playbook pronto:** use um dos cenários demonstrativos do painel lateral.
-- **Prompt personalizado:** descreva a demanda, o tema e o campus de destino.
+- **Prompt personalizado:** descreva a demanda, o tema e (se fizer sentido) o campus de destino.
+- **Filtro de campus:** use o seletor no cabeçalho para restringir a cena a um único campus.
 
-Exemplos:
+Exemplos (baseados nos 10 briefings de validação do roteador):
 
 ```text
-Fiscalizar o contrato de manutenção predial do Campus Alegrete conforme a IN 05/2017.
+Fiscalizar o contrato de limpeza do Campus Frederico Westphalen (IN 05/2017).
 ```
 
 ```text
-Elaborar uma análise preliminar para atualização do PDI, envolvendo a Pró-Reitoria de Ensino e o Campus Panambi.
+Atualizar o PPC do curso de Sistemas no Campus Santo Augusto.
 ```
 
 ```text
-Consolidar um relatório de projetos de extensão com impacto comunitário no Campus Santo Ângelo.
+Projeto de extensão com a comunidade em São Luiz Gonzaga.
+```
+
+```text
+Atender recomendação da CGU sobre diárias.
 ```
 
 ### 3. Acompanhe a reprodução visual
 
 1. A Reitoria recebe o briefing.
-2. O bridge identifica a área responsável pelas palavras-chave.
-3. O processo do Nirvana OS é executado.
-4. Ao término do processo, o bridge devolve uma sequência determinística.
-5. A câmera reproduz os handoffs simulados por temporizadores.
-6. Se o bridge localizar um caminho de artefato, ele entra no **Inbox**.
+2. O motor de roteamento (`routing.yaml`) pontua o texto por palavras-chave e escolhe a Uorg responsável — sem campus citado, a cadeia permanece sistêmica (não há mais fallback para um campus arbitrário).
+3. O processo configurado em `NIRVANA_ENGINE_PATH` é executado com um `ticketId` próprio da execução.
+4. Ao término, o bridge devolve a cadeia de handoff derivada da hierarquia real do organograma, com o fundamento legal (Anexo I) de cada passo.
+5. A câmera reproduz os handoffs; um passo cuja unidade não está entre os agentes exibidos no momento é pulado (com aviso no console), nunca anima o prédio errado.
+6. O bridge confirma que o artefato responde 200 antes de colocá-lo no **Inbox** e o abre automaticamente.
 
 ### 4. Abra o resultado
 
-Clique no item do Inbox. A rota `/api/view-artifact` solicita o arquivo ao bridge, que aplica uma verificação lexical de caminho em relação a `IFFAR_TICKETS_DIR` e `IFFAR_OUTPUTS_DIR` antes de servir o conteúdo como Markdown.
+Clique no item do Inbox. A rota `/api/view-artifact` solicita o arquivo ao bridge, que exige extensão `.md`, resolve symlinks (`realpathSync`) e aplica uma verificação de caminho em relação a `IFFAR_TICKETS_DIR` e `IFFAR_OUTPUTS_DIR` antes de servir o conteúdo como Markdown.
 
-Essa verificação ainda não resolve caminhos reais de links simbólicos e não restringe a extensão do arquivo. Portanto, ela reduz exposições acidentais, mas **não substitui autenticação, isolamento do processo ou uma política de acesso de produção**.
+Essa verificação reduz exposições acidentais, mas **não substitui autenticação, isolamento do processo ou uma política de acesso de produção**.
 
 > [!NOTE]
-> O roteamento atual é determinístico e baseado em palavras-chave. Ele é uma camada demonstrativa e pode ser substituído futuramente por regras declarativas derivadas do organograma.
+> `GET /api/routing` expõe as regras usadas pelo motor de classificação — é a mesma fonte que embasa o tooltip institucional e o rodapé "por que esta demanda foi para esta unidade".
 
 ---
 
 ## ⚙️ Configuração
 
-Copie `.env.example` para `.env` e altere apenas os valores locais. O arquivo `.env` não deve ser versionado.
+Copie `.env.example` para `.env` e altere apenas os valores locais. O arquivo `.env` não deve ser versionado. **Todas as variáveis abaixo têm um padrão que funciona sem editar nada** — é assim que a Opção A funciona sem instalar o Nirvana OS.
 
-| Variável               |                  Padrão | Finalidade                                                                       |
-| ---------------------- | ----------------------: | -------------------------------------------------------------------------------- |
-| `VITE_BRIDGE_URL`      | `http://localhost:4000` | URL usada pelo frontend para acessar o bridge.                                   |
-| `NIRVANA_BRIDGE_HOST`  |             `127.0.0.1` | Interface de rede do servidor. Mantenha o padrão local nesta versão.             |
-| `NIRVANA_BRIDGE_PORT`  |                  `4000` | Porta HTTP do bridge. Os links de artefatos atuais ainda assumem a porta `4000`. |
-| `NIRVANA_ENGINE_PATH`  |              sem padrão | Caminho completo de `brief-business.ts` no Nirvana OS.                           |
-| `IFFAR_ORG_CHART_PATH` |              sem padrão | Caminho completo do `org-chart.yaml` do IFFar.                                   |
-| `IFFAR_TICKETS_DIR`    |              sem padrão | Diretório onde as execuções produzem tickets.                                    |
-| `IFFAR_OUTPUTS_DIR`    |              sem padrão | Diretório de resultados consolidados.                                            |
+| Variável                  |                                Padrão | Finalidade                                                                                              |
+| ------------------------- | -------------------------------------: | --------------------------------------------------------------------------------------------------------- |
+| `VITE_BRIDGE_URL`         |                `http://localhost:4000` | URL usada pelo frontend para acessar o bridge.                                                            |
+| `NIRVANA_BRIDGE_HOST`     |                            `127.0.0.1` | Interface de rede do servidor. Mantenha o padrão local nesta versão.                                      |
+| `NIRVANA_BRIDGE_PORT`     |                                 `4000` | Porta HTTP do bridge.                                                                                     |
+| `PUBLIC_BRIDGE_URL`       |                       vazio (opcional) | URL pública para montar links de artefato; vazio usa o header `Host` da própria requisição.               |
+| `NIRVANA_ENGINE_PATH`     |            `tools/stub-engine.ts` | Caminho de `brief-business.ts` no Nirvana OS. Sem instalação real, cai no stub que só grava um artefato de exemplo. |
+| `IFFAR_ORG_CHART_PATH`    |  `businesses/iffar/org-chart.yaml` | Organograma real extraído da Portaria 876/2026 (Art. 1º), já versionado no repositório.                    |
+| `IFFAR_ROUTING_PATH`      |     `businesses/iffar/routing.yaml` | Regras declarativas de roteamento por competência (Anexo I), já versionadas no repositório.                |
+| `IFFAR_COMPETENCIAS_PATH` | `businesses/iffar/competencias.yaml` | Atribuições por artigo do Anexo I, usadas para enriquecer os tooltips da UI (opcional).                    |
+| `IFFAR_TICKETS_DIR`       |                     `.data/tickets` | Diretório onde as execuções produzem tickets; criado automaticamente se não existir.                       |
+| `IFFAR_OUTPUTS_DIR`       |                     `.data/outputs` | Diretório de resultados consolidados; criado automaticamente se não existir.                               |
 
-Exemplo conceitual:
+`NIRVANA_ENGINE_PATH`, `IFFAR_ORG_CHART_PATH` e `IFFAR_ROUTING_PATH` **precisam apontar para um arquivo que já existe** — o bridge falha ao subir (fail-fast, ver `/api/health`) se qualquer um deles estiver ausente ou incorreto, em vez de responder 503 por requisição.
+
+Exemplo para apontar para uma instalação real do Nirvana OS (Opção B):
 
 ```dotenv
 VITE_BRIDGE_URL=http://localhost:4000
 NIRVANA_BRIDGE_HOST=127.0.0.1
 NIRVANA_BRIDGE_PORT=4000
 NIRVANA_ENGINE_PATH=/home/usuario/nirvana-os/skills/businesses/scripts/brief-business.ts
-IFFAR_ORG_CHART_PATH=/home/usuario/businesses/iffar/org-chart.yaml
 IFFAR_TICKETS_DIR=/home/usuario/businesses/iffar/tickets
 IFFAR_OUTPUTS_DIR=/home/usuario/businesses/iffar/outputs
 ```
+
+---
+
+## 🏛️ Camada de dados institucional
+
+A cena e o roteamento derivam inteiramente de três arquivos versionados em `businesses/iffar/`, extraídos da **Portaria Eletrônica nº 876/2026 - GRE** (03/07/2026, processo 23873.000543/2026-09):
+
+| Arquivo             | Conteúdo                                                                              | Extraído por                        |
+| ------------------- | -------------------------------------------------------------------------------------- | ------------------------------------ |
+| `org-chart.yaml`     | As 452 unidades do Art. 1º (Reitoria + 13 campi): id, nome, cargo, função, parentesco. | `tools/extrair_organograma.py`       |
+| `competencias.yaml`  | As 120 atribuições do Anexo I: artigo, unidade e resumo (primeiro inciso).             | `tools/extrair_competencias.py`      |
+| `routing.yaml`       | 24 regras de roteamento (tema → palavras-chave → cadeia → base legal), curadoria manual. | — (mapeia negócio, não é extraído)   |
+
+Se a portaria for atualizada novamente (como a 876/2026 revogou a 398/2026), **re-execute os scripts — nunca edite `org-chart.yaml` ou `competencias.yaml` à mão**:
+
+```bash
+cd iffar-3d-town/tools
+python3 extrair_organograma.py caminho/para/nova-portaria.pdf > ../businesses/iffar/org-chart.yaml
+python3 extrair_competencias.py caminho/para/nova-portaria.pdf > ../businesses/iffar/competencias.yaml
+```
+
+Os scripts usam `pdfplumber` para ler a tabela vetorial real do PDF (não apenas texto alinhado por espaços), o que resolve com exatidão nomes de unidade quebrados em várias linhas. Depois de gerar um novo `org-chart.yaml`, confira manualmente ao menos as seções 1.1 (Reitoria), 1.9 (Frederico Westphalen) e 1.13 (São Luiz Gonzaga, estrutura reduzida) contra o PDF antes de commitar.
+
+> [!NOTE]
+> `routing.yaml` é curadoria manual (mapeia temas de negócio às Uorgs competentes) e pode ser editado diretamente — é o único dos três que não vem de extração automática.
 
 ---
 
@@ -285,15 +324,15 @@ IFFAR_OUTPUTS_DIR=/home/usuario/businesses/iffar/outputs
 flowchart TD
     UI[React 19 + Vite 8] -->|POST /api/brief| BRIDGE[Nirvana Bridge · Bun]
     UI -->|GET /api/org-chart| BRIDGE
+    UI -->|GET /api/routing| BRIDGE
+    UI -->|GET /api/competencias| BRIDGE
     UI -->|GET /api/view-artifact| BRIDGE
 
-    BRIDGE -->|spawn bun| ENGINE[Nirvana OS CLI]
-    BRIDGE --> ORG[(org-chart.yaml)]
-    ENGINE --> TICKETS[(tickets/)]
-    ENGINE --> OUTPUTS[(outputs/)]
+    BRIDGE -->|carrega no boot| DATA[(org-chart.yaml<br/>routing.yaml<br/>competencias.yaml)]
+    BRIDGE -->|spawn bun + ticketId| ENGINE[Nirvana OS CLI]
+    ENGINE --> TICKETS[(tickets/ticketId/result.md)]
     TICKETS --> BRIDGE
-    OUTPUTS --> BRIDGE
-    BRIDGE -->|sequência + links| UI
+    BRIDGE -->|sequência + base legal + links| UI
 ```
 
 <table>
@@ -328,10 +367,11 @@ flowchart TD
 ### Orquestração
 
 - briefing em linguagem natural
-- classificação por responsabilidade
-- sequência de handoffs
+- classificação por competência (score de keywords × prioridade)
+- cadeia de handoff derivada da hierarquia real (não hardcoded)
+- resolução por nome com fallback para estrutura reduzida (campi menores)
 - atualização visual da câmera
-- resultado enviado ao Inbox
+- resultado vinculado por ticket, enviado ao Inbox só após confirmação
 
 </td>
 </tr>
@@ -339,11 +379,14 @@ flowchart TD
 
 ### Endpoints locais
 
-| Método | Endpoint                      | Uso                                                                                  |
-| ------ | ----------------------------- | ------------------------------------------------------------------------------------ |
-| `POST` | `/api/brief`                  | Recebe `{ "problem": "..." }`, executa o fluxo e devolve sequência e artefatos.      |
-| `GET`  | `/api/org-chart`              | Lê o organograma configurado em `IFFAR_ORG_CHART_PATH`.                              |
-| `GET`  | `/api/view-artifact?file=...` | Serve o conteúdo com tipo Markdown após uma checagem lexical do caminho configurado. |
+| Método | Endpoint                      | Uso                                                                                          |
+| ------ | ------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `POST` | `/api/brief`                  | Recebe `{ "problem": "..." }`, executa o fluxo e devolve sequência, `ticketId` e artefatos.      |
+| `GET`  | `/api/org-chart`              | Serve o `org-chart.yaml` carregado no boot.                                                     |
+| `GET`  | `/api/routing`                | Serve as regras de `routing.yaml` — transparência de "por que esta demanda foi para esta unidade". |
+| `GET`  | `/api/competencias`           | Serve `competencias.yaml` (enriquecimento dos tooltips institucionais).                          |
+| `GET`  | `/api/view-artifact?file=...` | Serve o conteúdo com tipo Markdown; exige extensão `.md` e resolve symlinks antes da checagem.   |
+| `GET`  | `/api/health`                 | Retorna `{ ok, engine, orgChart, unidades, rules, competencias }` — status real de configuração. |
 
 ### Estrutura do projeto
 
@@ -356,8 +399,16 @@ iffar-3d-town/
 │   ├── App.css             # estilos específicos da aplicação
 │   ├── index.css           # estilos globais e Tailwind
 │   └── main.tsx            # entrada do React
+├── businesses/iffar/       # camada de dados institucional (versionada)
+│   ├── org-chart.yaml      # estrutura real (Portaria 876/2026, Art. 1º)
+│   ├── competencias.yaml   # atribuições reais (Anexo I)
+│   └── routing.yaml        # regras de roteamento por competência
+├── tools/                  # scripts de (re-)extração a partir do PDF da portaria
+│   ├── extrair_organograma.py
+│   ├── extrair_competencias.py
+│   └── stub-engine.ts      # stand-in do Nirvana OS para a Opção A
 ├── .env.example            # contrato de configuração local
-├── nirvana-bridge.ts       # API local e conexão com Nirvana OS
+├── nirvana-bridge.ts       # API local, motor de roteamento e conexão com Nirvana OS
 ├── package.json            # scripts e dependências
 ├── vite.config.ts          # Vite + React + Tailwind
 └── README.md               # guia visual e operacional
@@ -694,8 +745,8 @@ Depois do meu aceite, implemente e execute os gates do README.
 ## 🔐 Segurança e privacidade
 
 - O bridge usa `127.0.0.1` por padrão; não o exponha publicamente sem autenticação, proxy e revisão de segurança.
-- A rota de artefatos faz uma checagem lexical sob `IFFAR_TICKETS_DIR` ou `IFFAR_OUTPUTS_DIR`, mas ainda não resolve links simbólicos nem restringe extensões.
-- O bridge não possui autenticação e responde com CORS `*`; mantenha o host em `127.0.0.1`.
+- A rota de artefatos exige extensão `.md`, resolve symlinks (`realpathSync`) e checa o caminho sob `IFFAR_TICKETS_DIR` ou `IFFAR_OUTPUTS_DIR` antes de servir o conteúdo.
+- O bridge não possui autenticação e responde com CORS `*`; mantenha o host em `127.0.0.1`. `/api/health` reporta status de configuração, não é um mecanismo de autenticação.
 - Nunca coloque tokens, chaves, credenciais ou caminhos pessoais no repositório.
 - Não versione `.env`, logs, outputs de execução ou documentos institucionais sensíveis.
 - Revise o conteúdo dos artefatos antes de compartilhá-los fora do ambiente autorizado.
@@ -715,23 +766,30 @@ Depois do meu aceite, implemente e execute os gates do README.
 </details>
 
 <details>
-<summary><strong>O bridge responde que NIRVANA_ENGINE_PATH não existe</strong></summary>
+<summary><strong>O bridge sai imediatamente com "Configuração incompleta — abortando inicialização"</strong></summary>
 
-Abra `.env` e informe o caminho completo de `brief-business.ts`. Verifique o caminho no mesmo sistema operacional em que o bridge está rodando.
+Esse é o boot fail-fast: o bridge nunca sobe com configuração incompleta (evita responder 503 por requisição). A mensagem lista exatamente qual variável falta ou aponta para um caminho inexistente — `NIRVANA_ENGINE_PATH`, `IFFAR_ORG_CHART_PATH` ou `IFFAR_ROUTING_PATH`. Se você não editou `.env`, confirme que `tools/stub-engine.ts` e `businesses/iffar/*.yaml` continuam no lugar (são os padrões usados quando as variáveis não são definidas).
 
 </details>
 
 <details>
-<summary><strong>O organograma não carrega</strong></summary>
+<summary><strong>Quero rodar orquestrações reais, não o stub-engine</strong></summary>
 
-Confirme que `IFFAR_ORG_CHART_PATH` aponta para um arquivo YAML existente e legível.
+Defina `NIRVANA_ENGINE_PATH` no `.env` apontando para o `brief-business.ts` de uma instalação real do Nirvana OS. Sem essa variável, o bridge usa `tools/stub-engine.ts`, que só grava um artefato de exemplo — suficiente para explorar a interface, não para orquestração real.
+
+</details>
+
+<details>
+<summary><strong>O organograma não carrega ("ORGANOGRAMA OFFLINE" no cabeçalho)</strong></summary>
+
+Confirme que o bridge está rodando e que `VITE_BRIDGE_URL` aponta para o endereço correto. `GET /api/health` deve responder `{"ok": true, ...}`; se não responder, veja o log do bridge para a causa do fail-fast.
 
 </details>
 
 <details>
 <summary><strong>O artefato retorna 404</strong></summary>
 
-O arquivo precisa existir dentro de `IFFAR_TICKETS_DIR` ou `IFFAR_OUTPUTS_DIR`. Arquivos externos são bloqueados intencionalmente.
+O arquivo precisa existir dentro de `IFFAR_TICKETS_DIR` ou `IFFAR_OUTPUTS_DIR`, com extensão `.md`. Caminhos externos ou outras extensões são bloqueados intencionalmente.
 
 </details>
 
@@ -753,9 +811,9 @@ Use Node.js `^20.19.0` ou `>=22.12.0`, conforme exigido pelo Vite 8 utilizado no
 
 ## 🗺️ Próximas evoluções possíveis
 
-- organograma carregado dinamicamente em vez de agentes fixos no frontend;
-- regras de roteamento declarativas e auditáveis;
-- testes automatizados para bridge e classificação de demandas;
+- timeline por eventos reais (`events.jsonl` + SSE ou WebSocket) em vez de temporizadores após o fim do processo;
+- persistência de Inbox/History entre recarregamentos (hoje é por sessão do navegador);
+- testes automatizados para o motor de classificação e para a extração do PDF;
 - code splitting da cena 3D;
 - autenticação para cenários além do uso local;
 - telemetria de handoffs e tempo de execução;

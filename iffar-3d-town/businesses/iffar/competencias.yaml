@@ -1,0 +1,729 @@
+meta:
+  fonte: Portaria Eletrônica nº 876/2026 - GRE, Anexo I
+  extraido_em: '2026-07-24'
+  gerado_por: tools/extrair_competencias.py (não editar à mão)
+competencias:
+- artigo: 1
+  unidade_titulo: todas as unidades organizacionais do IFFar
+  slug: todas-as-unidades-organizacionais-do-iffar
+  resumo: I - assegurar o seu funcionamento democrático, garantindo a autonomia e a participação de todos
+    os envolvidos em suas atividades;
+  total_incisos: 6
+- artigo: 2
+  unidade_titulo: Conselho Superior - Consup
+  slug: conselho-superior-consup
+  resumo: I - aprovar as diretrizes para atuação do Instituto Federal Farroupilha e zelar pela execução
+    de sua política educacional;
+  total_incisos: 11
+- artigo: 3
+  unidade_titulo: Auditoria Interna
+  slug: auditoria-interna
+  resumo: I - acompanhar o cumprimento das metas do Plano Plurianual, visando a comprovar a conformidade
+    de sua execução;
+  total_incisos: 13
+- artigo: 4
+  unidade_titulo: Colégio de Dirigentes - Codir
+  slug: colegio-de-dirigentes-codir
+  resumo: I - apreciar e recomendar a distribuição interna de recursos;
+  total_incisos: 6
+- artigo: 5
+  unidade_titulo: Comissão de Ética - CE
+  slug: comissao-de-etica-ce
+  resumo: I - atuar como instância consultiva do(a) Reitor(a) e dos servidores do Instituto Federal Farroupilha;
+  total_incisos: 25
+- artigo: 6
+  unidade_titulo: Comissão Interna de Supervisão do Plano de Carreira dos Servidores Técnico-
+  slug: comissao-interna-de-supervisao-do-plano-de-carreira-dos-servidores-tecnico
+  resumo: I - acompanhar a implantação do Plano de Carreira instituído pela Lei Nº 11.091, de 12 de janeiro
+    de 2005, em todas as suas etapas, bem como o trabalho da Comissão de Enquadramento;
+  total_incisos: 10
+- artigo: 7
+  unidade_titulo: Comissão Permanente de Pessoal Docente - CPPD
+  slug: comissao-permanente-de-pessoal-docente-cppd
+  resumo: I - elaborar e sugerir alterações no Regulamento Interno da Comissão;
+  total_incisos: 4
+- artigo: 8
+  unidade_titulo: Unidade Correcional Instituída - UCI
+  slug: unidade-correcional-instituida-uci
+  resumo: I - planejar, dirigir, orientar, supervisionar, avaliar e controlar atividades de apuração no
+    âmbito do Instituto Federal Farroupilha;
+  total_incisos: 4
+- artigo: 9
+  unidade_titulo: Comissão Própria de Avaliação - CPA
+  slug: comissao-propria-de-avaliacao-cpa
+  resumo: I - elaborar o projeto de autoavaliação da instituição;
+  total_incisos: 12
+- artigo: 10
+  unidade_titulo: Comitê de Tecnologia da Informação - CTI
+  slug: comite-de-tecnologia-da-informacao-cti
+  resumo: I - propor a Política de Tecnologia da Informação, considerando o Planejamento Estratégico do
+    Instituto Federal Farroupilha, para melhoria contínua da gestão, em alinhamento à missão, às estratégias
+    e às metas da instituição;
+  total_incisos: 21
+- artigo: 11
+  unidade_titulo: Ouvidoria
+  slug: ouvidoria
+  resumo: I - receber, examinar e encaminhar reclamações, sugestões, elogios e denúncias, referentes ao
+    desenvolvimento das atividades exercidas pelos servidores e discentes do Instituto Federal Farroupilha;
+  total_incisos: 8
+- artigo: 12
+  unidade_titulo: Procuradoria Federal
+  slug: procuradoria-federal
+  resumo: I - exercer assessoria administrativa relacionada a matérias jurídicas;
+  total_incisos: 5
+- artigo: 13
+  unidade_titulo: Serviço de Informação ao Cidadão
+  slug: servico-de-informacao-ao-cidadao
+  resumo: I - assegurar o cumprimento das normas relativas ao acesso à informação de forma eﬁciente e
+    adequada aos objetivos estabelecidos na lei;
+  total_incisos: 5
+- artigo: 14
+  unidade_titulo: Gabinete do(a) Reitor(a) e Uorgs vinculadas
+  slug: gabinete-do-a-reitor-a-e-uorgs-vinculadas
+  resumo: I - organizar, assistir, coordenar, fomentar e articular a ação política e administrativa da
+    Reitoria, prestando assistência técnico-administrativa ao(à) Reitor(a), por meio de suas unidades.
+  total_incisos: 1
+- artigo: 15
+  unidade_titulo: Cheﬁa de Gabinete do(a) Reitor(a)
+  slug: che-a-de-gabinete-do-a-reitor-a
+  resumo: I - assistir o(a) Reitor(a) no seu relacionamento institucional e administrativo em suas representações
+    política e social;
+  total_incisos: 8
+- artigo: 16
+  unidade_titulo: Secretaria de Comunicação - Secom
+  slug: secretaria-de-comunicacao-secom
+  resumo: I - prestar assessoria de comunicação para a Reitoria do Instituto Federal Farroupilha;
+  total_incisos: 21
+- artigo: 17
+  unidade_titulo: Secretaria Executiva - SEE
+  slug: secretaria-executiva-see
+  resumo: I - organizar documentos oﬁciais do Gabinete;
+  total_incisos: 9
+- artigo: 18
+  unidade_titulo: Diretoria de Governança, Riscos e Controles - DGRC
+  slug: diretoria-de-governanca-riscos-e-controles-dgrc
+  resumo: I - avaliar, direcionar e monitorar a administração do Instituto Federal Farroupilha na condução
+    de políticas públicas e prestação de serviços de interesse da sociedade;
+  total_incisos: 11
+- artigo: 19
+  unidade_titulo: Coordenação de Governança e Gestão da Integridade - CGGI
+  slug: coordenacao-de-governanca-e-gestao-da-integridade-cggi
+  resumo: I - assessorar a Diretoria de Governança, Riscos e Controles, fornecendo-lhe suporte operacional
+    nas atividades relacionadas à gestão de riscos e promoção da integridade;
+  total_incisos: 6
+- artigo: 20
+  unidade_titulo: Coordenação de Centro de Referência
+  slug: coordenacao-de-centro-de-referencia
+  resumo: I - acompanhar, supervisionar e avaliar a execução dos planos, programas e projetos do Centro
+    de Referência, propondo, com base na avaliação de resultados, a adoção de providências relativas à
+    sua reformulação;
+  total_incisos: 29
+- artigo: 21
+  unidade_titulo: Pró-Reitoria de Desenvolvimento Institucional - PRDI e Uorgs vinculadas
+  slug: pro-reitoria-de-desenvolvimento-institucional-prdi-e-uorgs-vinculadas
+  resumo: I - promover a integração entre a Reitoria e os campi,
+  total_incisos: 10
+- artigo: 22
+  unidade_titulo: Diretoria de Gestão de Pessoas - DGP
+  slug: diretoria-de-gestao-de-pessoas-dgp
+  resumo: I - realizar o planejamento e a avaliação da Política de Gestão de Pessoas do Instituto Federal
+    Farroupilha e responsabilizar-se pela supervisão e execução de suas diretrizes;
+  total_incisos: 17
+- artigo: 23
+  unidade_titulo: Coordenação de Administração de Pessoal - CAP
+  slug: coordenacao-de-administracao-de-pessoal-cap
+  resumo: I - coordenar as ações de registro de informações de servidores nos sistemas de controle e operações
+    de processamento da folha de pagamento;
+  total_incisos: 12
+- artigo: 24
+  unidade_titulo: Coordenação de Desenvolvimento de Pessoas - CDP
+  slug: coordenacao-de-desenvolvimento-de-pessoas-cdp
+  resumo: I - coordenar ações de aspecto qualitativo dos servidores, investindo no potencial humano e
+    promovendo a capacitação e desenvolvimento pessoal, proﬁssional e gerencial de recursos humanos da
+    instituição;
+  total_incisos: 10
+- artigo: 25
+  unidade_titulo: Coordenação de Gestão de Pessoas - CGP (Reitoria)
+  slug: coordenacao-de-gestao-de-pessoas-cgp-reitoria
+  resumo: I - colaborar na elaboração, supervisão, execução e avaliação da política de gestão de pessoas,
+    desde o recrutamento e seleção, na manutenção das rotinas administrativas, no desenvolvimento humano,
+    na capacitação, na avaliação de desempenho, na aposentadoria e saúde e qualidade de vida dos servidores;
+  total_incisos: 25
+- artigo: 26
+  unidade_titulo: Núcleo de Aposentadoria e Pensões - NAP
+  slug: nucleo-de-aposentadoria-e-pensoes-nap
+  resumo: I - encaminhar processos de aposentadoria e pensão civil, bem como suas respectivas alterações
+    e revisão de proventos;
+  total_incisos: 5
+- artigo: 27
+  unidade_titulo: Núcleo de Saúde e Segurança do Trabalho - NSST
+  slug: nucleo-de-saude-e-seguranca-do-trabalho-nsst
+  resumo: I - propor políticas, projetos e ações que assegurem a melhoria de vida, da saúde e da segurança
+    dos servidores.
+  total_incisos: 15
+- artigo: 28
+  unidade_titulo: Diretoria de Planejamento e Desenvolvimento Institucional - DPDI(Reitoria)
+  slug: diretoria-de-planejamento-e-desenvolvimento-institucional-dpdi-reitoria
+  resumo: I - coordenar e supervisionar as atividades das coordenações, dos setores e unidades a ela vinculados
+    e, quando necessário, emitir parecer para qualiﬁcação das atividades;
+  total_incisos: 16
+- artigo: 29
+  unidade_titulo: Coordenação de Avaliação Institucional - Cain
+  slug: coordenacao-de-avaliacao-institucional-cain
+  resumo: 'I - apoiar as ações da Comissão Própria de Avaliação - CPA e dos Núcleos de Autoavaliação das
+    Unidades: a) gerenciar e guardar o material produzido pela CPA, relatórios, processos e demais documentos;
+    b) acompanhar: os processos de Autoavaliação, os prazos e ações propostos no relatório de Autoavaliação,
+    as devolutivas realizadas após os processos de Autoavaliação; c) analisar os relatórios de Autoavaliação
+    produzidos pela CPA; d) auxiliar no planejamento da Avaliação institucional e suas etapas correspondentes
+    (avaliação interna docente, avaliação interna discente, acompanhamento de egressos); e) promover formações,
+    eventos, encontros para fortalecimento da CPA e Núcleos; f) organizar os processos de eleição da CPA
+    e dos Núcleos.'
+  total_incisos: 7
+- artigo: 30
+  unidade_titulo: Coordenação de Gestão Documental - CGD
+  slug: coordenacao-de-gestao-documental-cgd
+  resumo: I - planejar, coordenar, supervisionar, executar e avaliar as atividades de gestão de documentos
+    do Instituto Federal Farroupilha, em conjunto com os demais proﬁssionais da área;
+  total_incisos: 15
+- artigo: 31
+  unidade_titulo: Unidade de Gestão de Documentos - UGD (Reitoria)
+  slug: unidade-de-gestao-de-documentos-ugd-reitoria
+  resumo: I - enviar correspondências da Reitoria a entidades públicas e privadas e a pessoas físicas;
+  total_incisos: 7
+- artigo: 32
+  unidade_titulo: Pesquisa Institucional - PI
+  slug: pesquisa-institucional-pi
+  resumo: I - protocolar e acompanhar processos de Autorização (Informar Curso Existente Presencial),
+    Reconhecimento e Renovação de Reconhecimento de Cursos, Credenciamento e Recredenciamento da Instituição
+    no sistema e-MEC;
+  total_incisos: 16
+- artigo: 33
+  unidade_titulo: Diretoria de Tecnologia da Informação - DTI
+  slug: diretoria-de-tecnologia-da-informacao-dti
+  resumo: I - planejar e manter, em conjunto com as áreas correlatas e o Comitê Gestor de Tecnologia da
+    Informação - CGTI, o Plano Diretor de Tecnologia da Informação - PDTI;
+  total_incisos: 16
+- artigo: 34
+  unidade_titulo: Coordenação de Sistemas de Informação (Reitoria) - CSI
+  slug: coordenacao-de-sistemas-de-informacao-reitoria-csi
+  resumo: I - apoiar a instituição em decisões relacionadas à tecnologia da informação;
+  total_incisos: 12
+- artigo: 35
+  unidade_titulo: Comitê Gestor de Segurança da Informação - CGSI
+  slug: comite-gestor-de-seguranca-da-informacao-cgsi
+  resumo: I - deﬁnir e (aprovar) futuras alterações à Política de Segurança da Informação;
+  total_incisos: 6
+- artigo: 36
+  unidade_titulo: Comitê Gestor de Tecnologia da Informação - CGTI
+  slug: comite-gestor-de-tecnologia-da-informacao-cgti
+  resumo: I - propor e acompanhar as políticas de Tecnologia da Informação, considerando o Planejamento
+    Estratégico do IFFar, para melhoria contínua da gestão, em alinhamento à missão, às estratégias e
+    às metas da instituição;
+  total_incisos: 18
+- artigo: 37
+  unidade_titulo: Núcleo de Educação e Gestão Ambiental Institucional - Nugea
+  slug: nucleo-de-educacao-e-gestao-ambiental-institucional-nugea
+  resumo: I - executar a Política Ambiental Institucional;
+  total_incisos: 7
+- artigo: 38
+  unidade_titulo: Pró-Reitoria de Administração - Proad e Uorgs vinculadas
+  slug: pro-reitoria-de-administracao-proad-e-uorgs-vinculadas
+  resumo: null
+  total_incisos: 0
+- artigo: 39
+  unidade_titulo: Coordenação de Engenharia e Arquitetura - CEA
+  slug: coordenacao-de-engenharia-e-arquitetura-cea
+  resumo: null
+  total_incisos: 0
+- artigo: 40
+  unidade_titulo: Coordenação de Engenharia e Arquitetura - CEA
+  slug: coordenacao-de-engenharia-e-arquitetura-cea
+  resumo: I - elaborar planos e projetos associados à arquitetura em todas as suas etapas, deﬁnindo materiais,
+    acabamentos, técnicas, metodologias e analisando dados e informações;
+  total_incisos: 5
+- artigo: 41
+  unidade_titulo: Coordenação de Engenharia e Arquitetura - CEA
+  slug: coordenacao-de-engenharia-e-arquitetura-cea
+  resumo: I - desenvolver projetos de engenharia;
+  total_incisos: 6
+- artigo: 42
+  unidade_titulo: Coordenação de Engenharia e Arquitetura - CEA
+  slug: coordenacao-de-engenharia-e-arquitetura-cea
+  resumo: I - realizar levantamentos topográﬁcos e planialtimétricos;
+  total_incisos: 6
+- artigo: 43
+  unidade_titulo: Coordenação de Engenharia e Arquitetura - CEA
+  slug: coordenacao-de-engenharia-e-arquitetura-cea
+  resumo: I - elaborar projetos de sistemas eletromecânicos;
+  total_incisos: 6
+- artigo: 44
+  unidade_titulo: Pró-Reitoria de Administração quanto à gestão centralizada das atividades
+  slug: pro-reitoria-de-administracao-quanto-a-gestao-centralizada-das-atividades
+  resumo: I - propor e orientar as atividades dos proﬁssionais de engenharia, de modo dimensionado, em
+    conjunto com a CEA, responsável pela supervisão e acompanhamento das atividades;
+  total_incisos: 13
+- artigo: 45
+  unidade_titulo: Coordenação de Engenharia e Arquitetura quanto à gestão centralizada das
+  slug: coordenacao-de-engenharia-e-arquitetura-quanto-a-gestao-centralizada-das
+  resumo: I - receber as demandas de projetos previstas no Plano Anual de Engenharia (Paeng) e distribuir
+    aos responsáveis técnicos, nos campi e na Reitoria, por meio do Sistema Integrado de Gestão (SIG);
+  total_incisos: 10
+- artigo: 46
+  unidade_titulo: Coordenação de Engenharia e Arquitetura quanto à gestão centralizada das
+  slug: coordenacao-de-engenharia-e-arquitetura-quanto-a-gestao-centralizada-das
+  resumo: null
+  total_incisos: 0
+- artigo: 47
+  unidade_titulo: Coordenação de Engenharia e Arquitetura quanto à gestão centralizada das
+  slug: coordenacao-de-engenharia-e-arquitetura-quanto-a-gestao-centralizada-das
+  resumo: null
+  total_incisos: 0
+- artigo: 48
+  unidade_titulo: proﬁssionais de engenharia do Instituto Federal Farroupilha
+  slug: pro-ssionais-de-engenharia-do-instituto-federal-farroupilha
+  resumo: I - receber as demandas da Pró-Reitoria de Administração (Proad) e da Coordenação de Engenharia
+    e Arquitetura (CEA) e atendê-las no prazo programado, salvo quando houver impossibilidade devidamente
+    justiﬁcada;
+  total_incisos: 8
+- artigo: 49
+  unidade_titulo: proﬁssionais de engenharia do Instituto Federal Farroupilha
+  slug: pro-ssionais-de-engenharia-do-instituto-federal-farroupilha
+  resumo: null
+  total_incisos: 0
+- artigo: 50
+  unidade_titulo: proﬁssionais de engenharia do Instituto Federal Farroupilha
+  slug: pro-ssionais-de-engenharia-do-instituto-federal-farroupilha
+  resumo: null
+  total_incisos: 0
+- artigo: 51
+  unidade_titulo: Diretoria de Administração, Orçamento e Finanças - DAOF
+  slug: diretoria-de-administracao-orcamento-e-financas-daof
+  resumo: I - acompanhar o desenvolvimento e execução das rotinas administrativas da Pró-Reitoria;
+  total_incisos: 32
+- artigo: 52
+  unidade_titulo: Coordenação de Administração, Almoxarifado e Patrimônio - CAAP
+  slug: coordenacao-de-administracao-almoxarifado-e-patrimonio-caap
+  resumo: I - auxiliar a Diretoria de Administração, Orçamento e Finanças nas demandas solicitadas;
+  total_incisos: 22
+- artigo: 53
+  unidade_titulo: Setor de Almoxarifado e Patrimônio
+  slug: setor-de-almoxarifado-e-patrimonio
+  resumo: I - realizar a administração, o armazenamento e a movimentação de materiais de estoque e de
+    bens móveis;
+  total_incisos: 26
+- artigo: 54
+  unidade_titulo: Coordenação de Contabilidade - CC
+  slug: coordenacao-de-contabilidade-cc
+  resumo: I - realizar o acompanhamento dos Auditores Contábeis (Órgão e UGs);
+  total_incisos: 27
+- artigo: 55
+  unidade_titulo: Coordenação de Orçamento e Finanças - COF (Reitoria)
+  slug: coordenacao-de-orcamento-e-financas-cof-reitoria
+  resumo: I- elaborar relatório referente à execução orçamentária e ﬁnanceira e ao atendimento de metas
+    do órgão;
+  total_incisos: 22
+- artigo: 56
+  unidade_titulo: Setor de Prestação de Contas
+  slug: setor-de-prestacao-de-contas
+  resumo: I - gerenciar, controlar e monitorar as prestações de contas do Instituto Federal Farroupilha
+    e enviar aos Órgãos concedentes;
+  total_incisos: 11
+- artigo: 57
+  unidade_titulo: Diretoria de Compras, Licitações e Contratos - DCLC
+  slug: diretoria-de-compras-licitacoes-e-contratos-dclc
+  resumo: I - acompanhar o desenvolvimento e execução das rotinas administrativas da Pró-Reitoria;
+  total_incisos: 21
+- artigo: 58
+  unidade_titulo: Coordenação de Compras e Licitações - CCL
+  slug: coordenacao-de-compras-e-licitacoes-ccl
+  resumo: I - elaborar diretrizes e indicadores sistêmicos relacionados à organização, à execução e ao
+    controle das licitações no âmbito da Reitoria;
+  total_incisos: 28
+- artigo: 59
+  unidade_titulo: Coordenação de Contratos e Convênios
+  slug: coordenacao-de-contratos-e-convenios
+  resumo: I - orientar a realização de Gestão Administrativa dos Contratos pelos campi;
+  total_incisos: 27
+- artigo: 60
+  unidade_titulo: Coordenação de Licitações e Contratos
+  slug: coordenacao-de-licitacoes-e-contratos
+  resumo: I - primar pela eﬁciência e eﬁcácia nos processos administrativos relacionados a compras, licitações
+    e contratos;
+  total_incisos: 23
+- artigo: 61
+  unidade_titulo: Pró-Reitoria de Ensino - Proen e Uorgs vinculadas
+  slug: pro-reitoria-de-ensino-proen-e-uorgs-vinculadas
+  resumo: null
+  total_incisos: 0
+- artigo: 62
+  unidade_titulo: Diretoria de Assistência Estudantil - DAE
+  slug: diretoria-de-assistencia-estudantil-dae
+  resumo: I - zelar e fazer cumprir a Política de Assistência Estudantil institucional e os demais programas
+    e regulamentos de assistência voltados ao público discente da Instituição;
+  total_incisos: 20
+- artigo: 63
+  unidade_titulo: Diretoria de Educação a Distância - Dead
+  slug: diretoria-de-educacao-a-distancia-dead
+  resumo: I- articular, coordenar, supervisionar e fazer executar as políticas voltadas à Educação a Distância;
+  total_incisos: 25
+- artigo: 64
+  unidade_titulo: Diretoria de Ensino - DE
+  slug: diretoria-de-ensino-de
+  resumo: I - responder pela Pró-Reitoria de Ensino como substituto legal no impedimento do(a) Pró- Reitor(a)
+    de Ensino;
+  total_incisos: 13
+- artigo: 65
+  unidade_titulo: Coordenação de Apoio a Pessoas com Necessidades Educacionais Especíﬁcas
+  slug: coordenacao-de-apoio-a-pessoas-com-necessidades-educacionais-especi-cas
+  resumo: I - elaborar documentos institucionais articulados à Política de Diversidade e Inclusão do IFFar,
+    com foco na inclusão de pessoas com NEE;
+  total_incisos: 6
+- artigo: 66
+  unidade_titulo: Coordenação de Ações Aﬁrmativas (Reitoria)
+  slug: coordenacao-de-acoes-a-rmativas-reitoria
+  resumo: I - elaborar documentos institucionais articulados à Política de Diversidade e Inclusão do IFFar,
+    com foco nas relações étnico-raciais e de gênero e diversidade sexual;
+  total_incisos: 6
+- artigo: 67
+  unidade_titulo: Coordenação de Assessoria Pedagógica
+  slug: coordenacao-de-assessoria-pedagogica
+  resumo: I - assessorar no planejamento, no acompanhamento, na avaliação da proposta pedagógica da instituição
+    e na implementação de políticas de ensino que viabilizem a operacionalização de atividades curriculares
+    dos diversos níveis, formas e modalidades da educação proﬁssional técnica e tecnológica - atendendo
+    aos princípios da legalidade e da eticidade, norteado pelo regimento geral e estatutário do Instituto
+    Federal Farroupilha;
+  total_incisos: 42
+- artigo: 68
+  unidade_titulo: Coordenação de Programas Educacionais
+  slug: coordenacao-de-programas-educacionais
+  resumo: I - planejar, orientar, acompanhar e avaliar os procedimentos dos Programas da Pró-Reitoria
+    de Ensino, viabilizando a operacionalização de atividades, atendendo os princípios da legalidade e
+    da eticidade;
+  total_incisos: 29
+- artigo: 69
+  unidade_titulo: Coordenação de Registros e Diplomas
+  slug: coordenacao-de-registros-e-diplomas
+  resumo: I - planejar, orientar, acompanhar e avaliar os procedimentos dos Setores de Registros Acadêmicos,
+    viabilizando a operacionalização de atividades nos campi e atendendo aos princípios da legalidade
+    e da eticidade, norteado pelo regimento geral e estatutário do Instituto Federal Farroupilha;
+  total_incisos: 13
+- artigo: 70
+  unidade_titulo: Diretoria de Graduação
+  slug: diretoria-de-graduacao
+  resumo: I - assessorar no Planejamento, na orientação, no acompanhamento, na avaliação da proposta pedagógica
+    da instituição e na implementação da política de ensino que viabilize a operacionalização de atividades
+    dos cursos de graduação, atendendo sempre aos princípios da legalidade e da eticidade, norteado pelo
+    regimento geral e estatutário do Instituto Federal Farroupilha;
+  total_incisos: 21
+- artigo: 71
+  unidade_titulo: Pró-Reitoria de Pesquisa, Pós-Graduação e Inovação e Uorgs vinculadas
+  slug: pro-reitoria-de-pesquisa-pos-graduacao-e-inovacao-e-uorgs-vinculadas
+  resumo: null
+  total_incisos: 0
+- artigo: 72
+  unidade_titulo: Diretoria de Pesquisa, Pós-Graduação e Inovação
+  slug: diretoria-de-pesquisa-pos-graduacao-e-inovacao
+  resumo: I - assessorar o(a) Pró-Reitor(a) de Pesquisa, Pós-Graduação e Inovação na elaboração das políticas
+    referentes às atividades de pesquisa, pós-graduação e inovação;
+  total_incisos: 17
+- artigo: 73
+  unidade_titulo: Coordenação de Inovação Tecnológica
+  slug: coordenacao-de-inovacao-tecnologica
+  resumo: I - zelar pela manutenção da política institucional de estímulo à proteção das criações, licenciamento,
+    inovação e outras formas de transferência de tecnologia;
+  total_incisos: 10
+- artigo: 74
+  unidade_titulo: Coordenação de Pesquisa
+  slug: coordenacao-de-pesquisa
+  resumo: 'I - desenvolver com a comunidade acadêmica: a) as propostas de normativas gerais da pesquisa;
+    b) as políticas de pesquisa; c) os programas de bolsas de iniciação cientíﬁca institucional;'
+  total_incisos: 10
+- artigo: 75
+  unidade_titulo: Coordenação de Pós-Graduação
+  slug: coordenacao-de-pos-graduacao
+  resumo: 'I - desenvolver com a comunidade acadêmica: a) as propostas de normativas gerais da pós-graduação;
+    b) as políticas de pós-graduação;'
+  total_incisos: 13
+- artigo: 76
+  unidade_titulo: Pró-Reitoria de Extensão e suas Uorgs vinculadas
+  slug: pro-reitoria-de-extensao-e-suas-uorgs-vinculadas
+  resumo: null
+  total_incisos: 0
+- artigo: 77
+  unidade_titulo: Diretoria de Extensão - DEX
+  slug: diretoria-de-extensao-dex
+  resumo: I - auxiliar na elaboração, na coordenação e na implementação de políticas de extensão;
+  total_incisos: 9
+- artigo: 78
+  unidade_titulo: Coordenação de Extensão Tecnológica
+  slug: coordenacao-de-extensao-tecnologica
+  resumo: I - propor, implementar e desenvolver políticas institucionais das diretrizes da extensão tecnológica
+    e da produção, com base nas Dimensões Operativas da Extensão deﬁnidas no âmbito do Fórum Nacional
+    de Pró-Reitores de Extensão para a Rede Federal de Ensino Proﬁssional e Tecnológico - RFEPT;
+  total_incisos: 10
+- artigo: 79
+  unidade_titulo: Coordenação de Programas Sociais
+  slug: coordenacao-de-programas-sociais
+  resumo: I - elaborar e promover o desenvolvimento de políticas e ações institucionais de natureza social
+    que promovam a inclusão de comunidades em situação de vulnerabilidade econômica e social;
+  total_incisos: 10
+- artigo: 80
+  unidade_titulo: Coordenação de Relações Institucionais
+  slug: coordenacao-de-relacoes-institucionais
+  resumo: I - propor políticas institucionais no que se refere ao desenvolvimento de ações de relações
+    externas ao Instituto Federal Farroupilha;
+  total_incisos: 9
+- artigo: 81
+  unidade_titulo: Colegiado de Campus
+  slug: colegiado-de-campus
+  resumo: 'I - apreciar: a) projetos de novos cursos e alterações dos cursos existentes; b) a proposta
+    de calendário letivo anual, em concordância com as diretrizes estabelecidas; c) a oferta anual de
+    vagas do campus, de acordo com diretrizes estabelecidas; d) o Relatório Anual de Gestão do campus;
+    e) o funcionamento dos demais órgãos colegiados de cursos do campus. f) propostas de atualização do
+    Regimento Interno do campus, após realização de Assembleia Geral;'
+  total_incisos: 9
+- artigo: 82
+  unidade_titulo: Gabinete do(a) Diretor(a) Geral
+  slug: gabinete-do-a-diretor-a-geral
+  resumo: I - administrar, coordenar e superintender todas as atividades do campus, assessorado por diretorias,
+    coordenações e assessorias, conforme o quadro de funções;
+  total_incisos: 27
+- artigo: 83
+  unidade_titulo: Diretoria de Planejamento e Desenvolvimento Institucional (campus)
+  slug: diretoria-de-planejamento-e-desenvolvimento-institucional-campus
+  resumo: I - coordenar e supervisionar as atividades de Planejamento e Desenvolvimento Institucional
+    do campus, Gestão de Pessoas do campus, Tecnologia de Informação do campus e da Gestão Documental
+    do campus;
+  total_incisos: 24
+- artigo: 84
+  unidade_titulo: Coordenação de Gestão de Pessoas (campus)
+  slug: coordenacao-de-gestao-de-pessoas-campus
+  resumo: I - colaborar na elaboração, na supervisão, na execução e na avaliação da política de gestão
+    de pessoas, desde o recrutamento e seleção, bem como na manutenção das rotinas administrativas, no
+    desenvolvimento humano, na capacitação, na avaliação de desempenho, na aposentadoria e na saúde e
+    qualidade de vida dos servidores;
+  total_incisos: 25
+- artigo: 85
+  unidade_titulo: Setor de Gestão de Pessoas
+  slug: setor-de-gestao-de-pessoas
+  resumo: I - prestar assessoramento à Coordenação de Gestão de Pessoas do Campus, no que tange aos procedimentos
+    e encaminhamentos em relação à vida funcional dos servidores;
+  total_incisos: 8
+- artigo: 86
+  unidade_titulo: Coordenação de Tecnologia da Informação (campus)
+  slug: coordenacao-de-tecnologia-da-informacao-campus
+  resumo: I - Representar o campus no Comitê de Tecnologia da Informação e contribuir para as discussões
+    relacionadas ao Plano Diretor de Tecnologia da Informação (PDTI);
+  total_incisos: 15
+- artigo: 87
+  unidade_titulo: Unidade de Gestão de Documentos (campus)
+  slug: unidade-de-gestao-de-documentos-campus
+  resumo: I - enviar correspondências da Reitoria às entidades públicas e privadas e pessoas físicas;
+  total_incisos: 6
+- artigo: 88
+  unidade_titulo: Diretoria de Administração - DAD
+  slug: diretoria-de-administracao-dad
+  resumo: I - propor a elaboração, planejamento e a execução das atividades de sua Diretoria;
+  total_incisos: 20
+- artigo: 89
+  unidade_titulo: Coordenação de Almoxarifado e Patrimônio
+  slug: coordenacao-de-almoxarifado-e-patrimonio
+  resumo: I -auxiliar a Diretoria de Administração nas demandas solicitadas;
+  total_incisos: 33
+- artigo: 90
+  unidade_titulo: Coordenação de Infraestrutura
+  slug: coordenacao-de-infraestrutura
+  resumo: I - gerenciar, supervisionar e monitorar as atividades de engenharia e frotas no âmbito do campus;
+  total_incisos: 26
+- artigo: 91
+  unidade_titulo: Setor de Infraestrutura
+  slug: setor-de-infraestrutura
+  resumo: I - promover e assegurar a manutenção de prédios, máquinas e equipamentos, bem como a conservação
+    e adequação de todos os ambientes do campus;
+  total_incisos: 2
+- artigo: 92
+  unidade_titulo: Coordenação de Licitações e Contratos
+  slug: coordenacao-de-licitacoes-e-contratos
+  resumo: I - primar pela qualidade dos processos administrativos;
+  total_incisos: 29
+- artigo: 93
+  unidade_titulo: Setor de Licitações e Contratos
+  slug: setor-de-licitacoes-e-contratos
+  resumo: I - orientar e/ou auxiliar os servidores do campus quanto à emissão de justiﬁcativas plausíveis
+    para possibilitar legalmente a compra/aquisição e/ou contratação de serviços, por meio do procedimento
+    licitatório;
+  total_incisos: 29
+- artigo: 94
+  unidade_titulo: Coordenação de Orçamento e Finanças (campus)
+  slug: coordenacao-de-orcamento-e-financas-campus
+  resumo: I - acompanhar o desenvolvimento e execução das rotinas administrativas da Coordenação;
+  total_incisos: 29
+- artigo: 95
+  unidade_titulo: Setor de Orçamento e Finanças
+  slug: setor-de-orcamento-e-financas
+  resumo: I - executar o orçamento do campus através da realização de empenhos, apropriações, pagamentos
+    e demais lançamentos, conforme legislação vigente;
+  total_incisos: 16
+- artigo: 96
+  unidade_titulo: Diretoria de Ensino (campus)
+  slug: diretoria-de-ensino-campus
+  resumo: I - planejar, orientar, acompanhar e avaliar a proposta pedagógica da instituição, bem como
+    implementar política de ensino que viabilize a operacionalização de atividades curriculares dos diversos
+    níveis, formas, graus e modalidades da Educação Proﬁssional Técnica e Tecnológica, atendendo os princípios
+    da legalidade e da eticidade, norteado pelo regimento geral e estatutário do Instituto Federal Farroupilha;
+  total_incisos: 20
+- artigo: 97
+  unidade_titulo: biblioteca
+  slug: biblioteca
+  resumo: I - coordenar as atividades inerentes à biblioteca em conformidade com a atribuição previstas
+    para o exercício proﬁssional;
+  total_incisos: 37
+- artigo: 98
+  unidade_titulo: Coordenação de Ações Aﬁrmativas (campus)
+  slug: coordenacao-de-acoes-a-rmativas-campus
+  resumo: I - elaborar documentos institucionais articulados à Política de Diversidade e Inclusão do IFFar,
+    com foco nas relações étnico-raciais e de gênero e diversidade sexual;
+  total_incisos: 6
+- artigo: 99
+  unidade_titulo: Coordenação de Assistência Estudantil (campus) - CAE
+  slug: coordenacao-de-assistencia-estudantil-campus-cae
+  resumo: I - colaborar para a efetiva execução da Política de Assistência Estudantil do Instituto Federal
+    Farroupilha, por meio do diálogo direto com a Direção de Ensino, Direção de Administração e Planejamento,
+    Coordenações de Cursos Superiores, Coordenações de Eixo-Tecnológicos, Coordenação de PROEJA, Coordenação
+    de Ações Aﬁrmativas e demais Núcleos que a compõem;
+  total_incisos: 26
+- artigo: 100
+  unidade_titulo: Setor de Assistência Estudantil
+  slug: setor-de-assistencia-estudantil
+  resumo: I - assessorar a Coordenação de Assistência Estudantil do campus, a ﬁm de garantir o cumprimento
+    da Política Nacional de Assistência Estudantil/PNAES;
+  total_incisos: 2
+- artigo: 101
+  unidade_titulo: Coordenação Geral de Ensino (campus)
+  slug: coordenacao-geral-de-ensino-campus
+  resumo: I - assessorar diretamente a Direção de Ensino no planejamento, orientação, acompanhamento,
+    implementação e avaliação da proposta pedagógica da instituição, bem como agir de forma que viabilize
+    a operacionalização de atividades curriculares dos diversos níveis, formas, graus e modalidades da
+    Educação Proﬁssional Técnica e Tecnológica;
+  total_incisos: 11
+- artigo: 102
+  unidade_titulo: Coordenação de Educação a Distância
+  slug: coordenacao-de-educacao-a-distancia
+  resumo: I - colaborar para a efetiva execução da Educação a Distância - EaD do Instituto Federal Farroupilha,
+    por meio do diálogo direto com a Diretoria de Ensino, o Núcleo Pedagógico Integrado, com as coordenações
+    de cursos e de eixos tecnológicos e com a Coordenação Geral de Ensino;
+  total_incisos: 21
+- artigo: 103
+  unidade_titulo: Coordenação de Curso
+  slug: coordenacao-de-curso
+  resumo: I - assessorar no planejamento, orientação, acompanhamento, implementação e avaliação da proposta
+    pedagógica da instituição, bem como agir de forma que viabilize a operacionalização de atividades
+    curriculares do curso;
+  total_incisos: 52
+- artigo: 104
+  unidade_titulo: Coordenações de cursos da modalidade PROEJA
+  slug: coordenacoes-de-cursos-da-modalidade-proeja
+  resumo: I - planejar, em conjunto com a Diretoria de Ensino e a Direção Geral, a oferta dos cursos PROEJA
+    Médio, PROEJA FIC e CERTIFIC;
+  total_incisos: 15
+- artigo: 105
+  unidade_titulo: Setor de Assessoria Pedagógica
+  slug: setor-de-assessoria-pedagogica
+  resumo: I - acompanhar e garantir a execução das atividades letivas em consonância com a Proposta Pedagógica
+    do Instituto Federal Farroupilha;
+  total_incisos: 34
+- artigo: 106
+  unidade_titulo: Setor de Assessoria Pedagógica
+  slug: setor-de-assessoria-pedagogica
+  resumo: I - responsabilizar-se pela guarda, sigilo e atualização dos arquivos pertinentes ao setor;
+  total_incisos: 14
+- artigo: 107
+  unidade_titulo: Diretoria de Pesquisa, Extensão e Produção - DPEP
+  slug: diretoria-de-pesquisa-extensao-e-producao-dpep
+  resumo: I - acompanhar as atividades referentes à Extensão, Produção, Pesquisa, Pós-Graduação e Inovação
+    no campus;
+  total_incisos: 14
+- artigo: 108
+  unidade_titulo: Coordenação de Extensão
+  slug: coordenacao-de-extensao
+  resumo: I - auxiliar na elaboração, coordenação e implementação de Políticas de Extensão no campus,
+    com base nas Dimensões Operativas da Extensão para a Rede Federal de Ensino Proﬁssional e Tecnológico
+    - RFEPT;
+  total_incisos: 12
+- artigo: 109
+  unidade_titulo: Setor de Estágios
+  slug: setor-de-estagios
+  resumo: I - promover o atendimento aos estudantes no encaminhamento de estágios curriculares, nas modalidades
+    obrigatório e não-obrigatório;
+  total_incisos: 14
+- artigo: 110
+  unidade_titulo: Coordenação de Extensão e Produção
+  slug: coordenacao-de-extensao-e-producao
+  resumo: I - auxiliar na elaboração, coordenação e implementação de Políticas de extensão e produção
+    no campus, com base nas Dimensões Operativas da Extensão para a Rede Federal de Ensino Proﬁssional
+    e Tecnológico - RFEPT;
+  total_incisos: 13
+- artigo: 111
+  unidade_titulo: Coordenação de Pesquisa, Pós-Graduação e Inovação
+  slug: coordenacao-de-pesquisa-pos-graduacao-e-inovacao
+  resumo: I - administrar e representar a Coordenação de Pesquisa no campus;
+  total_incisos: 20
+- artigo: 112
+  unidade_titulo: Coordenação de Produção
+  slug: coordenacao-de-producao
+  resumo: I - auxiliar na elaboração, coordenação e implementação de políticas de produção no campus,
+    com base nas Dimensões Operativas da Extensão para a Rede Federal de Ensino Proﬁssional e Tecnológico
+    - RFEPT;
+  total_incisos: 8
+- artigo: 113
+  unidade_titulo: Setor de Produção
+  slug: setor-de-producao
+  resumo: I - auxiliar a Coordenação de Produção no desenvolvimento de Políticas de produção no campus,
+    com base nas Dimensões Operativas da Extensão para a Rede Federal de Ensino Proﬁssional e Tecnológico
+    - RFEPT;
+  total_incisos: 8
+- artigo: 114
+  unidade_titulo: Coordenação de Ensino, Pesquisa e Extensão
+  slug: coordenacao-de-ensino-pesquisa-e-extensao
+  resumo: I - assessorar diretamente a Direção de Ensino no planejamento, orientação, acompanhamento,
+    implementação e avaliação da proposta pedagógica da instituição, de modo a viabilizar a operacionalização
+    de atividades curriculares dos diversos níveis, formas, graus e modalidades da Educação Proﬁssional
+    Técnica e Tecnológica;
+  total_incisos: 21
+- artigo: 115
+  unidade_titulo: Coordenação de Administração, Planejamento e Desenvolvimento
+  slug: coordenacao-de-administracao-planejamento-e-desenvolvimento
+  resumo: I - coordenar e supervisionar as atividades dos setores a ela vinculados e, quando necessário,
+    emitir parecer para qualiﬁcação das atividades;
+  total_incisos: 13
+- artigo: 116
+  unidade_titulo: Diretoria de Ensino, Pesquisa e Extensão
+  slug: diretoria-de-ensino-pesquisa-e-extensao
+  resumo: I - planejar, orientar, acompanhar e avaliar a proposta pedagógica da instituição, bem como
+    implementar política de ensino que viabilize a operacionalização de atividades curriculares dos diversos
+    níveis, formas, graus e modalidades da Educação Proﬁssional Técnica e Tecnológica, atendendo os princípios
+    da legalidade e da eticidade, norteado pelo regimento geral e estatutário do Instituto Federal Farroupilha;
+  total_incisos: 34
+- artigo: 117
+  unidade_titulo: Coordenação de Pesquisa, Extensão e Produção
+  slug: coordenacao-de-pesquisa-extensao-e-producao
+  resumo: I - auxiliar na elaboração, coordenação e implementação de Políticas de Extensão e de produção
+    no campus, com base nas Dimensões Operativas da Extensão para a Rede Federal de Ensino Proﬁssional
+    e Tecnológico - RFEPT;
+  total_incisos: 47
+- artigo: 118
+  unidade_titulo: Diretoria de Administração, Planejamento e Desenvolvimento Institucional
+  slug: diretoria-de-administracao-planejamento-e-desenvolvimento-institucional
+  resumo: I - propor a elaboração, planejamento e a execução das atividades de sua Diretoria;
+  total_incisos: 44
+- artigo: 119
+  unidade_titulo: Coordenação de Administração, Orçamento e Finanças
+  slug: coordenacao-de-administracao-orcamento-e-financas
+  resumo: I - acompanhar o desenvolvimento e execução das rotinas administrativas da Coordenação;
+  total_incisos: 35
+- artigo: 120
+  unidade_titulo: Coordenação de Planejamento e Desenvolvimento Institucional
+  slug: coordenacao-de-planejamento-e-desenvolvimento-institucional
+  resumo: I - coordenar as atividades de planejamento institucional do campus, em consonância com o Plano
+    de Desenvolvimento Institucional (PDI) e demais instrumentos estratégicos;
+  total_incisos: 13
