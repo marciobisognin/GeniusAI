@@ -442,6 +442,28 @@ Reitoria
 
 Sem `NIRVANA_ENGINE_PATH` configurado, quem gera o artefato é o `tools/stub-engine.ts` (ver [Início rápido](#-início-rápido)) — por isso o parecer no GIF se identifica como simulação. Apontando `NIRVANA_ENGINE_PATH` para uma instalação real do Nirvana OS, o mesmo fluxo dispara a elaboração de verdade.
 
+### 🎥 Vídeo: mudança de cenário entre Reitoria e campus
+
+O vídeo abaixo é uma segunda gravação real da interface, desta vez do playbook **"Fiscalização de Contrato IN 05"** — um caso que passa por mais de um prédio, para mostrar o corte de cenário na prática:
+
+<video src="./src/assets/demo-fiscalizacao.webm" controls muted width="100%"></video>
+
+```
+Reitoria (recebe o briefing)
+  → Pró-Reitoria de Administração
+    → Diretoria de Compras, Licitações e Contratos
+      ⇢ corte de cenário: câmera sai da Reitoria
+  → Campus Frederico Westphalen — Gabinete Do(a) Diretor(a) Geral
+    → Diretoria de Administração
+      ⇢ corte de cenário: câmera volta para a Reitoria
+  → Reitoria (parecer final)
+```
+
+Repare no flash de corte de cena exatamente nos dois momentos em que a cadeia muda de prédio (Reitoria → Frederico Westphalen e de volta) — trocar de agente **dentro** do mesmo prédio continua uma transição suave, sem corte.
+
+> [!NOTE]
+> Se o seu visualizador de markdown não renderizar o `<video>` inline (alguns leitores de README fora do github.com não suportam a tag), baixe ou abra `src/assets/demo-fiscalizacao.webm` diretamente.
+
 ---
 
 ## ⚙️ Configuração
