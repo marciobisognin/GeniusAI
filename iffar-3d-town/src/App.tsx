@@ -77,46 +77,134 @@ function colorForCargo(cargo?: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// GEOGRAFIA REAL DO RIO GRANDE DO SUL
+//
+// Coordenadas reais (lat, long) da Reitoria (Santa Maria) e dos 13 campi,
+// projetadas em um plano (x, z) equirretangular centrado na região onde o
+// IFFar atua. O contorno do estado (RS_OUTLINE) vem do shapefile público do
+// IBGE (via github.com/giuliano-macedo/geodata-br-states), simplificado por
+// Douglas-Peucker e projetado com a mesma transformação — por isso os
+// prédios caem no lugar geograficamente certo dentro do contorno real do RS,
+// não em posições arbitrárias.
+// ---------------------------------------------------------------------------
+
+// nome (sem "Campus ") -> posição real no plano (lat/long projetadas com
+// centro em -28.5715,-55.2411 e escala 10.29 un/grau de longitude,
+// 11.55 un/grau de latitude — a mesma transformação usada no contorno)
+const RS_CITY_COORDS: Record<string, [number, number]> = {
+  Reitoria: [14.83, 12.84],
+  Alegrete: [-5.66, 14.0],
+  "Frederico Westphalen": [19.0, -14.0],
+  Jaguari: [5.67, 10.69],
+  "Júlio de Castilhos": [16.04, 7.57],
+  Panambi: [17.9, -3.22],
+  "Santa Rosa": [7.82, -8.09],
+  Santiago: [3.85, 7.16],
+  "Santo Augusto": [15.06, -8.32],
+  "Santo Ângelo": [10.2, -3.33],
+  "São Borja": [-7.85, 1.03],
+  "São Luiz Gonzaga": [2.88, -1.89],
+  "São Vicente do Sul": [5.91, 13.03],
+  Uruguaiana: [-19.0, 13.67],
+};
+
+// Contorno simplificado do RS (76 pontos), mesma projeção acima.
+const RS_OUTLINE: [number, number][] = [
+  [56.89, 8.71], [45.98, 29.36], [32.56, 41.7], [33.2, 38.89], [32.2, 37.21],
+  [34.87, 38.06], [40.92, 33.59], [41.93, 28.76], [46.7, 25.11], [46.54, 20.56],
+  [48.01, 22.06], [47.79, 18.75], [44.36, 21.53], [40.59, 16.5], [40.61, 20.01],
+  [42.66, 20.71], [40.56, 22.95], [40.73, 25.88], [39.89, 23.81], [39.1, 29.06],
+  [34.05, 31.75], [33.03, 36.04], [31.02, 36.73], [30.77, 38.15], [31.98, 38.71],
+  [32.18, 38.94], [32.18, 39.08], [31.8, 38.76], [31.1, 39.13], [30.79, 40.19],
+  [32.03, 39.12], [32.49, 41.72], [30.19, 43.77], [26.87, 52.48], [18.97, 59.83],
+  [17.54, 58.64], [18.67, 52.76], [20.36, 52.41], [21.75, 48.76], [25.62, 49.55],
+  [27.32, 45.68], [26.94, 41.26], [22.19, 47.19], [19.06, 46.38], [15.39, 40.51],
+  [6.74, 33.32], [0.02, 31.06], [-3.47, 26.12], [-7.91, 28.99], [-8.05, 25.58],
+  [-16.1, 17.71], [-18.82, 17.5], [-20.34, 19.85], [-24.72, 18.73], [-12.11, 5.82],
+  [-6.54, -2.42], [-4.69, -1.68], [-5.46, -3.79], [2.12, -8.23], [4.38, -11.98],
+  [9.85, -12.98], [14.04, -16.69], [16.45, -15.6], [19.21, -17.1], [19.86, -15.63],
+  [22.76, -17.22], [23.29, -15.59], [31.63, -14.99], [42.73, -8.54], [47.49, -2.08],
+  [56.34, -1.29], [57.08, 0.62], [54.59, 1.81], [54.31, 6.31], [52.12, 7.83],
+  [56.89, 8.71],
+];
+
+function cityKeyFromName(nome: string): string {
+  return nome.replace(/^Campus\s+/i, "").trim();
+}
+
+// Toda unidade tem um local físico real: a Reitoria (Santa Maria) ou o
+// campus a que pertence — sobe a cadeia de pais até achar um dos dois, para
+// saber em qual prédio do mapa a câmera deve entrar.
+function physicalLocationId(unitId: string, unitsById: Map<string, OrgUnit>): string {
+  let current = unitsById.get(unitId);
+  while (current) {
+    if (current.id === "1.1" || CAMPUS_ROOT_RE.test(current.id)) return current.id;
+    if (!current.parent) return "1.1";
+    current = unitsById.get(current.parent);
+  }
+  return "1.1";
+}
+
+// ---------------------------------------------------------------------------
 // DYNAMIC CAMERA CONTROLLER
 // ---------------------------------------------------------------------------
 
+// Câmera "drone": quando o agente ativo muda de PRÉDIO (Reitoria <-> campus,
+// ou de um campus para outro), a câmera corta para uma posição de aproximação
+// bem alta acima do novo prédio (mudança de cenário) e então desce em zoom
+// até o escritório — em vez de sobrevoar em linha reta por cima do mapa
+// inteiro. Trocar de agente DENTRO do mesmo prédio continua um lerp suave.
 const CameraController = ({
   activeAgentId,
   agents,
+  activeLocationId,
+  onSceneChange,
 }: {
   activeAgentId: string | null;
   agents: AgentNode[];
+  activeLocationId: string | null;
+  onSceneChange: () => void;
 }) => {
   const controlsRef = useRef<any>(null);
+  const lastLocationRef = useRef<string | null>(null);
 
   useFrame((state, delta) => {
     if (!controlsRef.current) return;
 
     if (activeAgentId) {
-      const agent = agents.find((a) =>
-        activeAgentId.toLowerCase().includes(a.id.toLowerCase()),
-      );
+      const agent = agents.find((a) => a.id === activeAgentId);
       if (agent) {
-        const targetPos = new THREE.Vector3(
-          agent.pos[0],
-          agent.pos[1] + 0.8,
-          agent.pos[2],
-        );
-        controlsRef.current.target.lerp(targetPos, delta * 3.5);
+        if (activeLocationId && lastLocationRef.current !== activeLocationId) {
+          const wasAnotherLocation = lastLocationRef.current !== null;
+          lastLocationRef.current = activeLocationId;
+          if (wasAnotherLocation) {
+            // mudança de cenário: corta para uma aproximação alta acima do
+            // novo prédio antes de descer, em vez de deslizar por cima do
+            // mapa inteiro de um campus para o outro.
+            state.camera.position.set(agent.pos[0] + 3, 26, agent.pos[2] + 3);
+            controlsRef.current.target.set(agent.pos[0], 2, agent.pos[2]);
+            onSceneChange();
+          }
+        }
 
+        const targetPos = new THREE.Vector3(agent.pos[0], 1.2, agent.pos[2]);
+        controlsRef.current.target.lerp(targetPos, delta * 3.2);
+
+        // zoom "drone": desce quase em cima do prédio, câmera baixa e perto
         const desiredCamPos = new THREE.Vector3(
-          agent.pos[0] + 12,
-          agent.pos[1] + 12,
-          agent.pos[2] + 12,
+          agent.pos[0] + 6,
+          6.5,
+          agent.pos[2] + 6,
         );
-        state.camera.position.lerp(desiredCamPos, delta * 3.5);
+        state.camera.position.lerp(desiredCamPos, delta * 3.2);
       }
     } else {
+      lastLocationRef.current = null;
       const centerTarget = new THREE.Vector3(0, 0, 0);
-      controlsRef.current.target.lerp(centerTarget, delta * 2.5);
+      controlsRef.current.target.lerp(centerTarget, delta * 2.2);
 
-      const overviewCamPos = new THREE.Vector3(22, 22, 22);
-      state.camera.position.lerp(overviewCamPos, delta * 2.5);
+      const overviewCamPos = new THREE.Vector3(46, 48, 46);
+      state.camera.position.lerp(overviewCamPos, delta * 2.2);
     }
 
     controlsRef.current.update();
@@ -129,8 +217,8 @@ const CameraController = ({
       enableRotate={true}
       enablePan={true}
       maxPolarAngle={Math.PI / 2.1}
-      minDistance={6}
-      maxDistance={70}
+      minDistance={4}
+      maxDistance={120}
     />
   );
 };
@@ -139,51 +227,106 @@ const CameraController = ({
 // 3D SCENERY COMPONENTS
 // ---------------------------------------------------------------------------
 
-const OfficeFloorAndWalls = () => {
+// Terreno estilizado do Rio Grande do Sul: o contorno real do estado
+// (RS_OUTLINE, do IBGE) extrudado como um "tabuleiro", para que os prédios
+// caiam na posição geográfica certa dentro da silhueta reconhecível do RS.
+const RSTerrain = () => {
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    RS_OUTLINE.forEach(([x, z], i) => {
+      if (i === 0) shape.moveTo(x, z);
+      else shape.lineTo(x, z);
+    });
+    return new THREE.ExtrudeGeometry(shape, {
+      depth: 0.6,
+      bevelEnabled: true,
+      bevelThickness: 0.15,
+      bevelSize: 0.15,
+      bevelSegments: 2,
+    });
+  }, []);
+
+  const edgePoints = useMemo(
+    () => RS_OUTLINE.map(([x, z]) => new THREE.Vector3(x, 0.62, z)),
+    [],
+  );
+
   return (
-    <group>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
-        <planeGeometry args={[32, 22]} />
-        <meshStandardMaterial color="#c4b29c" roughness={0.5} />
+    <group rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]}>
+      <mesh geometry={geometry} receiveShadow castShadow rotation={[0, 0, 0]}>
+        <meshStandardMaterial color="#2f6b3a" roughness={0.85} />
       </mesh>
+      <line>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            args={[new Float32Array(edgePoints.flatMap((p) => [p.x, p.y, p.z])), 3]}
+          />
+        </bufferGeometry>
+        <lineBasicMaterial color="#f59e0b" linewidth={2} />
+      </line>
+    </group>
+  );
+};
 
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -0.01, 0]}
-        receiveShadow
-      >
-        <planeGeometry args={[32.6, 22.6]} />
-        <meshStandardMaterial color="#2d2421" />
+// Prédio estilizado (verde e vermelho) de um campus ou da Reitoria,
+// posicionado na coordenada geográfica real. `scale` destaca a Reitoria.
+const CampusBuilding = ({
+  position,
+  label,
+  isActive,
+  scale = 1,
+  onClick,
+}: {
+  position: [number, number, number];
+  label: string;
+  isActive: boolean;
+  scale?: number;
+  onClick?: () => void;
+}) => {
+  return (
+    <group
+      position={position}
+      scale={scale}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+    >
+      {/* base do prédio */}
+      <mesh position={[0, 1.1, 0]} castShadow receiveShadow>
+        <boxGeometry args={[3.2, 2.2, 2.6]} />
+        <meshStandardMaterial color="#166534" roughness={0.6} />
       </mesh>
+      {/* faixa/aceso vermelho */}
+      <mesh position={[0, 0.35, 1.32]}>
+        <boxGeometry args={[3.2, 0.6, 0.04]} />
+        <meshStandardMaterial color="#b91c1c" />
+      </mesh>
+      {/* telhado vermelho em duas águas */}
+      <mesh position={[0, 2.55, 0]} rotation={[0, Math.PI / 4, 0]} castShadow>
+        <coneGeometry args={[2.5, 1.4, 4]} />
+        <meshStandardMaterial color="#dc2626" roughness={0.5} />
+      </mesh>
+      {/* bandeirinha de destaque quando ativo */}
+      {isActive && (
+        <mesh position={[0, 4.2, 0]}>
+          <cylinderGeometry args={[0.04, 0.04, 1.6]} />
+          <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.6} />
+        </mesh>
+      )}
 
-      <mesh position={[0, 2.0, -11]} receiveShadow castShadow>
-        <boxGeometry args={[32, 4.0, 0.4]} />
-        <meshStandardMaterial color="#4a4245" />
-      </mesh>
-      <mesh position={[0, 4.1, -11]}>
-        <boxGeometry args={[32.2, 0.2, 0.5]} />
-        <meshStandardMaterial color="#6b5f63" />
-      </mesh>
-
-      <mesh position={[-16, 2.0, 0]} receiveShadow castShadow>
-        <boxGeometry args={[0.4, 4.0, 22]} />
-        <meshStandardMaterial color="#4a4245" />
-      </mesh>
-
-      <mesh position={[-5, 1.8, -4]} receiveShadow castShadow>
-        <boxGeometry args={[0.3, 3.6, 14]} />
-        <meshStandardMaterial color="#4a4245" />
-      </mesh>
-      <mesh position={[-5, 2.2, -4]}>
-        <boxGeometry args={[0.32, 2.0, 7]} />
-        <meshPhysicalMaterial
-          color="#94a3b8"
-          transmission={0.8}
-          transparent
-          opacity={0.35}
-          roughness={0.1}
-        />
-      </mesh>
+      <Html position={[0, 3.9, 0]} center distanceFactor={26} style={{ pointerEvents: "none" }}>
+        <div
+          className={`px-2 py-0.5 rounded-md border text-[10px] font-mono font-bold whitespace-nowrap shadow-lg ${
+            isActive
+              ? "bg-amber-500 text-stone-950 border-amber-300"
+              : "bg-[#181517]/90 text-emerald-300 border-emerald-700/60"
+          }`}
+        >
+          🏛️ {label}
+        </div>
+      </Html>
     </group>
   );
 };
@@ -598,6 +741,14 @@ export default function App() {
   const [competencias, setCompetencias] = useState<CompetenciaEntry[]>([]);
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
   const [campusFilterId, setCampusFilterId] = useState<string | null>(null);
+  // "Corte" de cena: um flash rápido quando a câmera pula de um prédio para
+  // outro (Reitoria <-> campus, ou campus -> campus), para reforçar a
+  // sensação de mudança de cenário em vez de um sobrevoo contínuo.
+  const [sceneFlash, setSceneFlash] = useState(false);
+  const triggerSceneFlash = () => {
+    setSceneFlash(true);
+    setTimeout(() => setSceneFlash(false), 260);
+  };
 
   useEffect(() => {
     fetch(`${bridgeUrl}/api/org-chart`)
@@ -688,42 +839,29 @@ export default function App() {
       }
     }
 
-    const RING_RADIUS = campusRoots.length > 0 ? Math.min(6 + campusRoots.length * 0.35, 9.5) : 8;
-    const CENTER_RADIUS = 3.2;
-    let proIdx = 0;
-    let campusIdx = 0;
-    const positionById = new Map<string, [number, number, number]>();
-
     return list.map((unit) => {
       const isReitoria = unit.id === "1.1";
       const isCampusGabinete = campusRoots.some((c) => c.id === unit.parent);
-      const isProReitoria = proReitorias.includes(unit);
 
-      let pos: [number, number, number] = [0, 0, 0];
-      if (isReitoria) {
-        pos = [0, 0, 0];
-      } else if (isProReitoria) {
-        const angle = (proIdx / Math.max(proReitorias.length, 1)) * Math.PI * 2;
-        pos = [
-          Math.cos(angle) * CENTER_RADIUS,
-          0,
-          Math.sin(angle) * CENTER_RADIUS,
-        ];
-        proIdx++;
-      } else if (isCampusGabinete) {
-        const angle = (campusIdx / Math.max(campusRoots.length, 1)) * Math.PI * 2;
-        pos = [
-          Math.cos(angle) * RING_RADIUS,
-          0,
-          Math.sin(angle) * RING_RADIUS,
-        ];
-        campusIdx++;
+      // Todo agente mora fisicamente num dos 14 prédios do mapa (Reitoria
+      // ou o campus a que pertence) — a posição vem das coordenadas reais
+      // desse prédio no RS, nunca de um layout arbitrário em anel.
+      const locationId = physicalLocationId(unit.id, unitsById);
+      const locationUnit = unitsById.get(locationId);
+      const cityKey = locationUnit ? cityKeyFromName(locationUnit.nome) : "Reitoria";
+      const [baseX, baseZ] = RS_CITY_COORDS[cityKey] ?? [0, 0];
+
+      let pos: [number, number, number];
+      if (isReitoria || isCampusGabinete) {
+        // marcador principal do prédio: exatamente na coordenada da cidade
+        pos = [baseX, 0, baseZ];
       } else {
-        // filhos expandidos de um campus: espalhados perto do gabinete pai,
-        // por um ângulo estável derivado do próprio id (nunca hardcoded)
-        const base = positionById.get(unit.parent ?? "") ?? [0, 0, 0];
+        // demais agentes (Pró-Reitorias na Reitoria, diretorias/coordenações
+        // expandidas num campus): espalhados perto do prédio, por um ângulo
+        // estável derivado do próprio id (nunca hardcoded)
         const angle = hashAngle(unit.id) * Math.PI * 2;
-        pos = [base[0] + Math.cos(angle) * 2.6, 0, base[2] + Math.sin(angle) * 2.6];
+        const radius = 3.2 + (hashAngle(unit.id + "r") % 1) * 1.6;
+        pos = [baseX + Math.cos(angle) * radius, 0, baseZ + Math.sin(angle) * radius];
       }
 
       const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
@@ -744,10 +882,49 @@ export default function App() {
         cargo: unit.cargo,
         funcao: unit.funcao,
       };
-      positionById.set(unit.id, pos);
       return node;
     });
   }, [orgUnits, unitsById, childrenByParent, campusRoots, expandedCampusId, campusFilterId]);
+
+  // Os 14 prédios do mapa (Reitoria + 13 campi) — sempre visíveis, com
+  // posição real derivada de RS_CITY_COORDS, independentemente de qual
+  // agente está ativo ou de qual campus está expandido/filtrado.
+  const mapLocations = useMemo(() => {
+    const reitoria = unitsById.get("1.1");
+    if (!reitoria) return [];
+    const list = [reitoria, ...campusRoots];
+    return list.map((unit) => {
+      const cityKey = cityKeyFromName(unit.nome);
+      const [x, z] = RS_CITY_COORDS[cityKey] ?? [0, 0];
+      // O prédio no mapa representa a unidade-sede fisicamente ali (a
+      // Reitoria em si, ou o Gabinete do(a) Diretor(a) Geral do campus) —
+      // é esse id que precisa existir em `agents` para a câmera focar.
+      const primaryAgentId =
+        unit.id === "1.1"
+          ? "1.1"
+          : ((childrenByParent.get(unit.id) ?? []).find((u) =>
+              normalizeName(u.nome).includes("gabinete"),
+            )?.id ?? unit.id);
+      return {
+        id: unit.id,
+        nome: unit.nome,
+        pos: [x, 0, z] as [number, number, number],
+        primaryAgentId,
+      };
+    });
+  }, [unitsById, campusRoots, childrenByParent]);
+
+  // Local físico (prédio) do agente ativo — usado pela câmera para saber
+  // aonde "voar" e para decidir se houve mudança de cenário (novo prédio).
+  const activeLocationId = useMemo(() => {
+    if (!activeAgentId) return null;
+    return physicalLocationId(activeAgentId, unitsById);
+  }, [activeAgentId, unitsById]);
+
+  const activeBuildingPos = useMemo(() => {
+    if (!activeLocationId) return null;
+    return mapLocations.find((l) => l.id === activeLocationId)?.pos ?? null;
+  }, [activeLocationId, mapLocations]);
 
   // Execute Briefing Prompt with Strict Organogram Route & Camera Lerp Tracking
   const handleExecutePrompt = async (promptText: string) => {
@@ -946,8 +1123,15 @@ export default function App() {
 
         {/* CENTER 3D VIEWPORT CANVAS */}
         <main className="flex-1 relative bg-[#120f11] overflow-hidden">
+          {/* Flash de corte de cena — sobe a opacidade rapidamente e cai,
+              simulando um corte de câmera ao mudar de prédio/campus */}
+          <div
+            className={`pointer-events-none absolute inset-0 z-30 bg-white transition-opacity duration-150 ${
+              sceneFlash ? "opacity-80" : "opacity-0"
+            }`}
+          />
           <Canvas
-            camera={{ position: [22, 22, 22], fov: 45, near: 0.1, far: 1000 }}
+            camera={{ position: [46, 48, 46], fov: 45, near: 0.1, far: 1000 }}
             shadows
           >
             <color attach="background" args={["#120f11"]} />
@@ -957,6 +1141,10 @@ export default function App() {
               intensity={1.8}
               castShadow
               shadow-mapSize={[2048, 2048]}
+              shadow-camera-left={-35}
+              shadow-camera-right={35}
+              shadow-camera-top={35}
+              shadow-camera-bottom={-35}
               color="#fffcf7"
             />
             <directionalLight
@@ -964,19 +1152,45 @@ export default function App() {
               intensity={0.6}
               color="#dbeafe"
             />
-            <pointLight
-              position={[0, 8, 0]}
-              intensity={1.0}
-              color="#fbbf24"
-              distance={15}
-            />
 
-            <OfficeFloorAndWalls />
+            <RSTerrain />
 
-            <ConferenceTable position={[-7.5, 0, -4.5]} />
-            <LoungeArea position={[7.5, 0, -4.5]} />
-            <WorkstationDesk position={[0, 0, -2.2]} rotation={Math.PI / 2} />
-            <WorkstationDesk position={[0, 0, 2.2]} rotation={-Math.PI / 2} />
+            {mapLocations.map((loc) => (
+              <CampusBuilding
+                key={loc.id}
+                position={loc.pos}
+                label={cityKeyFromName(loc.nome)}
+                isActive={activeLocationId === loc.id}
+                scale={loc.id === "1.1" ? 1.25 : 1}
+                onClick={() => {
+                  if (loc.id !== "1.1") {
+                    setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
+                  }
+                  setActiveAgentId((prev) =>
+                    prev === loc.primaryAgentId ? null : loc.primaryAgentId,
+                  );
+                }}
+              />
+            ))}
+
+            {activeBuildingPos && (
+              <group>
+                <ConferenceTable
+                  position={[activeBuildingPos[0] - 2.6, 0, activeBuildingPos[2] - 2.2]}
+                />
+                <LoungeArea
+                  position={[activeBuildingPos[0] + 2.6, 0, activeBuildingPos[2] - 2.2]}
+                />
+                <WorkstationDesk
+                  position={[activeBuildingPos[0] - 1.2, 0, activeBuildingPos[2] + 2.6]}
+                  rotation={Math.PI / 2}
+                />
+                <WorkstationDesk
+                  position={[activeBuildingPos[0] + 1.2, 0, activeBuildingPos[2] + 2.6]}
+                  rotation={-Math.PI / 2}
+                />
+              </group>
+            )}
 
             {agents.map((agent) => {
               const ownerCampus = campusRoots.find((c) =>
@@ -1008,7 +1222,12 @@ export default function App() {
               );
             })}
 
-            <CameraController activeAgentId={activeAgentId} agents={agents} />
+            <CameraController
+              activeAgentId={activeAgentId}
+              agents={agents}
+              activeLocationId={activeLocationId}
+              onSceneChange={triggerSceneFlash}
+            />
           </Canvas>
 
           {/* Canvas Shortcut Controls */}
