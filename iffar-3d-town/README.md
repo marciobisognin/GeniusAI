@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — estilo [Gather Town](https://www.gather.town/pt/virtual-office) — com um corte de cenário sempre que a cadeia muda de campus.
+A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — estilo [Gather Town](https://www.gather.town/pt/virtual-office), com mesa e cadeira para cada agente, divisórias entre repartições, sofá, quadros na parede, estante e plantas — com um corte de cenário sempre que a cadeia muda de campus.
 
 </td>
 <td width="33%" valign="top">

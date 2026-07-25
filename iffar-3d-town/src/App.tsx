@@ -255,12 +255,96 @@ const RSMap = ({
 // INTERIOR DO ESCRITÓRIO (ESTILO GATHER.TOWN — SALA VISTA DE CIMA)
 // ---------------------------------------------------------------------------
 
-const DESK_POSITIONS: CSSProperties[] = [
-  { left: "16%", top: "72%" },
-  { left: "84%", top: "72%" },
-  { left: "16%", top: "24%" },
-  { left: "84%", top: "24%" },
-];
+// Mobília do escritório — mesa com cadeira, sofá, quadro na parede, planta e
+// estante — desenhadas em CSS/2D, no mesmo espírito de móveis do Gather Town.
+const DeskPod = ({ style }: { style: CSSProperties }) => (
+  <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-0" style={style}>
+    <div className="relative w-16 h-10 rounded-md bg-[#7a4e2b] border-2 border-[#4a2f1a] shadow-md">
+      <div className="absolute left-1.5 top-1 w-5 h-3 rounded-sm bg-[#0284c7] border border-[#075985]" />
+      <div className="absolute right-1.5 top-1.5 w-2 h-2 rounded-full bg-emerald-500 border border-emerald-800" />
+      <div className="absolute right-1.5 top-4 w-2.5 h-1 rounded-sm bg-stone-200/80" />
+    </div>
+    <div className="w-3.5 h-3.5 rounded-sm bg-[#44403c] border border-[#1c1917] shadow mt-0.5" />
+  </div>
+);
+
+const Sofa = ({ style }: { style: CSSProperties }) => (
+  <div className="absolute -translate-x-1/2 -translate-y-1/2 flex gap-0.5 z-0" style={style}>
+    <div className="w-5 h-9 rounded-md bg-[#1e3a5f] border-2 border-[#0f2942] shadow" />
+    <div className="w-5 h-9 rounded-md bg-[#1e3a5f] border-2 border-[#0f2942] shadow" />
+    <div className="w-5 h-9 rounded-md bg-[#1e3a5f] border-2 border-[#0f2942] shadow" />
+  </div>
+);
+
+const CoffeeTable = ({ style }: { style: CSSProperties }) => (
+  <div
+    className="absolute -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-[#5c4425] border-2 border-[#3a2b16] shadow z-0"
+    style={style}
+  />
+);
+
+const WallFrame = ({ style }: { style: CSSProperties }) => (
+  <div
+    className="absolute -translate-x-1/2 w-9 h-6 rounded-sm bg-[#3f3121] border-2 border-[#1c1710] shadow-md p-0.5 z-0"
+    style={style}
+  >
+    <div className="w-full h-full rounded-[1px] bg-gradient-to-br from-sky-200 via-emerald-200 to-amber-100" />
+  </div>
+);
+
+const Plant = ({ style }: { style: CSSProperties }) => (
+  <div className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-0" style={style}>
+    <div className="w-7 h-7 rounded-full bg-emerald-700 border-2 border-emerald-900 shadow" />
+    <div className="w-4 h-3 bg-[#7c4a2d] border border-[#4a2f1a] rounded-b-sm -mt-1" />
+  </div>
+);
+
+const Bookshelf = ({ style }: { style: CSSProperties }) => (
+  <div
+    className="absolute -translate-x-1/2 flex gap-0.5 p-0.5 rounded-sm bg-[#5c4425] border-2 border-[#3a2b16] shadow z-0"
+    style={style}
+  >
+    {[0, 1, 2, 3, 4].map((i) => (
+      <div key={i} className={`w-1.5 h-6 rounded-[1px] ${i % 2 === 0 ? "bg-red-800" : "bg-sky-800"}`} />
+    ))}
+  </div>
+);
+
+// Divisória baixa entre mesas — separa visualmente as "repartições"
+// (cada pró-reitoria/diretoria) dentro do mesmo escritório aberto.
+const Partition = ({ style }: { style: CSSProperties }) => (
+  <div className="absolute bg-[#413a2f] border border-black/40 rounded-sm shadow-sm z-0" style={style} />
+);
+
+// Uma mesa (com cadeira) por agente, organizadas em grade na metade inferior
+// da sala — devolve também a posição do avatar (logo acima da própria mesa)
+// e a posição da divisória entre uma mesa e a seguinte da mesma fileira.
+function workstationLayout(count: number) {
+  const total = Math.max(1, count);
+  const cols = Math.max(1, Math.min(4, Math.ceil(Math.sqrt(total))));
+  const rows = Math.max(1, Math.ceil(total / cols));
+  return Array.from({ length: total }, (_, i) => {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const colsInRow = Math.min(cols, total - row * cols);
+    const slotWidth = 62 / colsInRow;
+    const deskLeft = 19 + (col + 0.5) * slotWidth;
+    const deskTop = 58 + row * (30 / rows);
+    return {
+      deskStyle: { left: `${deskLeft}%`, top: `${deskTop}%` } as CSSProperties,
+      avatarStyle: { left: `${deskLeft}%`, top: `${deskTop - 11}%` } as CSSProperties,
+      partitionStyle:
+        col > 0
+          ? ({
+              left: `${deskLeft - slotWidth / 2}%`,
+              top: `${deskTop - 8}%`,
+              width: "2px",
+              height: "13%",
+            } as CSSProperties)
+          : null,
+    };
+  });
+}
 
 const AvatarToken = ({
   agent,
@@ -353,6 +437,8 @@ const OfficeScene = ({
   competenciaByName: Map<string, CompetenciaEntry>;
   onSelectAgent: (id: string) => void;
 }) => {
+  const workstations = workstationLayout(agentsHere.length);
+
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-[#0e1a12] p-6 animate-fade-in">
       <div className="relative w-full max-w-4xl aspect-[16/10] rounded-2xl border-[6px] border-[#5c4425] shadow-2xl overflow-hidden bg-[#d9c69a]">
@@ -365,47 +451,67 @@ const OfficeScene = ({
           }}
         />
 
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 bg-[#181517] text-amber-400 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/50 shadow-lg whitespace-nowrap max-w-[80%] truncate">
+        {/* Parede de fundo: quadros decorativos + divisória entre o corredor
+            de mesas e a área de reunião/estar */}
+        <WallFrame style={{ left: "20%", top: "5%" }} />
+        <WallFrame style={{ left: "36%", top: "5%" }} />
+        <WallFrame style={{ left: "64%", top: "5%" }} />
+        <WallFrame style={{ left: "80%", top: "5%" }} />
+        <Partition style={{ left: "8%", top: "50%", width: "84%", height: "2px" }} />
+
+        {/* Materiais de escritório: estante e plantas nos cantos */}
+        <Bookshelf style={{ left: "9%", top: "16%" }} />
+        <Plant style={{ left: "5%", top: "88%" }} />
+        <Plant style={{ left: "95%", top: "88%" }} />
+
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 bg-[#181517] text-amber-400 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/50 shadow-lg whitespace-nowrap max-w-[80%] truncate">
           🏛️ {buildingName}
         </div>
 
-        {DESK_POSITIONS.map((pos, i) => (
-          <div
-            key={i}
-            className="absolute -translate-x-1/2 -translate-y-1/2 w-14 h-9 rounded-md bg-[#7a4e2b] border-2 border-[#4a2f1a] shadow"
-            style={pos}
-          >
-            <div className="absolute left-1.5 top-1 w-4 h-2.5 rounded-sm bg-[#0284c7]" />
-          </div>
-        ))}
+        {/* Área de estar: sofá + mesa de centro, no canto oposto à estante */}
+        <Sofa style={{ left: "85%", top: "16%" }} />
+        <CoffeeTable style={{ left: "85%", top: "26%" }} />
+
+        {/* Mesa de reunião central, com tapete por baixo */}
+        <div
+          className="absolute -translate-x-1/2 -translate-y-1/2 w-28 h-28 rounded-full bg-[#8a552e]/20"
+          style={{ left: "48%", top: "32%" }}
+        />
         <div
           className="absolute -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-[#8a552e] border-4 border-[#4a2f1a] shadow-lg"
-          style={{ left: "50%", top: "50%" }}
+          style={{ left: "48%", top: "32%" }}
         />
-
-        {agentsHere.map((agent, i) => {
-          // Distribui os avatares em fatias iguais do círculo (por índice, não
-          // só por hash) — com poucos agentes na sala, um ângulo puramente
-          // aleatório por id às vezes agrupava vários no mesmo canto.
-          const slice = (i / agentsHere.length) * Math.PI * 2;
-          const angle = slice + (hashAngle(agent.id) - 0.5) * 0.6;
-          const radius = 32 + (hashAngle(`${agent.id}r`) % 1) * 8;
-          const style: CSSProperties = {
-            left: `${50 + Math.cos(angle) * radius}%`,
-            top: `${50 + Math.sin(angle) * radius * 0.65}%`,
-          };
+        {[0, 60, 120, 180, 240, 300].map((deg) => {
+          const rad = (deg * Math.PI) / 180;
           return (
-            <AvatarToken
-              key={agent.id}
-              agent={agent}
-              isActive={agent.id === activeAgentId}
-              statusMsg={agent.id === activeAgentId ? statusMsg : undefined}
-              competencia={competenciaByName.get(normalizeName(agent.title))}
-              onClick={() => onSelectAgent(agent.id)}
-              style={style}
+            <div
+              key={deg}
+              className="absolute -translate-x-1/2 -translate-y-1/2 w-3 h-3 rounded-sm bg-[#44403c] border border-[#1c1917] shadow z-0"
+              style={{ left: `${48 + Math.cos(rad) * 13}%`, top: `${32 + Math.sin(rad) * 13}%` }}
             />
           );
         })}
+
+        {/* Mesas de trabalho (uma por agente), cadeira embaixo e divisórias
+            entre "repartições" vizinhas na mesma fileira */}
+        {workstations.map((w, i) => (
+          <div key={`desk-${i}`}>
+            <DeskPod style={w.deskStyle} />
+            {w.partitionStyle && <Partition style={w.partitionStyle} />}
+          </div>
+        ))}
+
+        {agentsHere.map((agent, i) => (
+          <AvatarToken
+            key={agent.id}
+            agent={agent}
+            isActive={agent.id === activeAgentId}
+            statusMsg={agent.id === activeAgentId ? statusMsg : undefined}
+            competencia={competenciaByName.get(normalizeName(agent.title))}
+            onClick={() => onSelectAgent(agent.id)}
+            style={workstations[i].avatarStyle}
+          />
+        ))}
       </div>
     </div>
   );
