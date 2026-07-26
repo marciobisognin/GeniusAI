@@ -9,7 +9,7 @@
 <p>
   <img src="https://img.shields.io/badge/status-protótipo_demonstrativo-F59E0B?style=for-the-badge" alt="Status: protótipo demonstrativo" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=111827" alt="React 19" />
-  <img src="https://img.shields.io/badge/SVG%20%2B%20CSS-2D-111827?style=for-the-badge" alt="Mapa e escritório em SVG + CSS 2D" />
+  <img src="https://img.shields.io/badge/Canvas-pixel_art-111827?style=for-the-badge" alt="Escritório em pixel art (canvas)" />
   <img src="https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 8" />
   <img src="https://img.shields.io/badge/Bun-bridge-FBF0DF?style=for-the-badge&logo=bun&logoColor=111827" alt="Bridge em Bun" />
 </p>
@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — estilo [Gather Town](https://www.gather.town/pt/virtual-office), com mesa e cadeira para cada agente, divisórias entre repartições, sofá, quadros na parede, estante e plantas — com um corte de cenário sempre que a cadeia muda de campus.
+A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — um andar em **pixel art renderizado em canvas**, no espírito do [Gather Town](https://www.gather.town/pt/virtual-office): corredor central, uma **sala com porta própria para cada repartição** (Pró-Reitoria/Diretoria), sala de reunião com mesa e cadeiras, sofá, quadros na parede, estante e plantas, e um **sprite de personagem** (não um ícone genérico) para cada agente — com um corte de cenário sempre que a cadeia muda de campus.
 
 </td>
 <td width="33%" valign="top">
@@ -548,7 +548,8 @@ flowchart TD
 
 - React 19
 - TypeScript 6
-- SVG + CSS 2D (mapa e escritório)
+- SVG 2D (mapa do RS)
+- Canvas 2D em pixel art (escritório — `src/OfficeCanvas.tsx`)
 - Tailwind CSS 4
 - Lucide React
 
@@ -680,7 +681,7 @@ Tarefa:
 [DESCREVA A ALTERAÇÃO]
 
 Restrições:
-- Preserve React + TypeScript + Bun (mapa/escritório em SVG + CSS 2D, sem engine 3D).
+- Preserve React + TypeScript + Bun (mapa em SVG, escritório em canvas 2D pixel art, sem engine 3D).
 - Não exponha segredos nem caminhos locais reais.
 - Não versione .env, node_modules, dist, tickets ou outputs.
 - Mantenha o bridge limitado a 127.0.0.1 por padrão.
