@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // pessoas (comissões, colegiados) se juntam numa única sala compartilhada —
 // do contrário a Reitoria teria uma dezena de salas de uma pessoa só.
 // Intercaladas entre as salas de trabalho, espaços de convivência (Estar,
-// Copa, Reunião) dão um ar mais humano e próximo do dia a dia real de uma
+// Copa, Reunião, Zen) dão um ar mais humano e próximo do dia a dia real de uma
 // instituição de ensino.
 //
 // Quando a demanda passa de uma unidade para outra DENTRO do mesmo prédio,
@@ -107,7 +107,7 @@ function hash01(id: string): number {
 // --------------------------- PLANTA -----------------------------------------
 
 interface Zone {
-  kind: "office" | "pod" | "lounge" | "meeting" | "break";
+  kind: "office" | "pod" | "lounge" | "meeting" | "break" | "zen";
   x: number;
   y: number;
   w: number;
@@ -304,7 +304,7 @@ function buildPlan(agents: Agent[]): Plan {
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
-  // 5) Reunião — sempre ao final da fileira
+  // 5) Reunião
   const meetingX = cursorX;
   zones.push({
     kind: "meeting",
@@ -317,6 +317,22 @@ function buildPlan(agents: Agent[]): Plan {
     doorX: meetingX + SOCIAL_W / 2,
     floorA: C.meetA,
     floorB: C.meetB,
+  });
+  cursorX += SOCIAL_W + ZONE_GAP;
+
+  // 6) Zen — cantinho de descompressão, sempre ao final da fileira
+  const zenX = cursorX;
+  zones.push({
+    kind: "zen",
+    x: zenX,
+    y: ZONE_TOP,
+    w: SOCIAL_W,
+    h: rowH,
+    label: "Zen",
+    agentIds: [],
+    doorX: zenX + SOCIAL_W / 2,
+    floorA: "#dee6d6",
+    floorB: "#d2dbc8",
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
@@ -469,6 +485,41 @@ function roundTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: nu
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
   ctx.fill();
+}
+
+// Almofada de chão, para a sala zen — sem encosto, mais baixa que uma
+// cadeira, para reforçar o clima informal do cantinho de descompressão.
+function cushion(ctx: CanvasRenderingContext2D, cx: number, cy: number, color: string) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = "rgba(0,0,0,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 9, 13, 5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = color;
+  roundRectPath(ctx, x - 12, y - 9, 24, 20, 6);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.25)";
+  ctx.fillRect(x - 8, y - 4, 16, 3);
+}
+
+// Pequena fonte/lago de pedras, o centro do cantinho zen.
+function pond(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = "#9aa89a";
+  ctx.beginPath();
+  ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#bcd8d2";
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "rgba(255,255,255,0.45)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(x, y - 2, r * 0.5, 0.3, 2.6);
+  ctx.stroke();
 }
 
 // Cadeira de escritório vista de cima (base + encosto), sem ninguém sentado.
@@ -843,6 +894,24 @@ export const OfficeCanvas = ({
         }
         frame(ctx, z.x + 1.6, z.y + z.h - 1.3, "#cfe0f5");
         plant(ctx, z.x + z.w - 1.3, z.y + z.h - 1.3);
+      }
+
+      // Zen — cantinho de descompressão: almofadas em volta de uma
+      // fonte, com bem menos móveis que as outras salas de propósito
+      for (const z of plan.zones) {
+        if (z.kind !== "zen") continue;
+        const cx = z.x + z.w / 2;
+        const cy = z.y + z.h - 5.6;
+        pond(ctx, cx, cy, 30);
+        const cushionColors = ["#e08a5b", "#6fae7f", "#d0a24f", "#7f95c9"];
+        cushionColors.forEach((color, i) => {
+          const a = (i / cushionColors.length) * Math.PI * 2 + Math.PI / 4;
+          cushion(ctx, cx + Math.cos(a) * 3.3, cy + Math.sin(a) * 2.9, color);
+        });
+        plant(ctx, z.x + 1.3, z.y + z.h - 1.3);
+        plant(ctx, z.x + z.w - 1.3, z.y + z.h - 1.3);
+        plant(ctx, z.x + 1.3, z.y + z.h - 9.6);
+        plant(ctx, z.x + z.w - 1.3, z.y + z.h - 9.6);
       }
 
       // Mesas + pessoas sentadas
