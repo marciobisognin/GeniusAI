@@ -4,17 +4,21 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0, COM O ORGANOGRAMA
 // COMPLETO DO PRÉDIO
 //
-// Um corredor central corre por cima de uma fileira de SALAS DE VERDADE —
-// paredes nos 4 lados, com a porta voltada para o corredor — cada uma com
-// sua própria cor de piso, como nas salas do Gather 2.0. Cada repartição
-// direta da Reitoria/do campus (Pró-Reitoria, Diretoria, Comissão...) ganha
-// sua sala; a chefia (Gabinete do(a) Reitor(a)/Diretor(a) Geral, com seus
-// assessores diretos) fica na sala maior, à esquerda. Repartições de 1-2
-// pessoas (comissões, colegiados) se juntam numa única sala compartilhada —
+// Um prédio único e contínuo — sem paredes cortando o andar em caixas
+// separadas. Cada repartição direta da Reitoria/do campus (Pró-Reitoria,
+// Diretoria, Comissão...) ganha sua própria área, lado a lado num só
+// corredor; o limite entre uma e outra é só a cor do piso e a mobília, como
+// nas salas de referência do Gather 2.0 — nunca uma parede de verdade. Isso
+// é o que faz o andar inteiro ler como um único ambiente fluido, e não uma
+// fileira de escritórios desconectados. A chefia (Gabinete do(a)
+// Reitor(a)/Diretor(a) Geral, com seus assessores diretos) fica na maior
+// área, à esquerda, com mobília mais completa (quadros, sofá, estante) —
+// isso já basta para dizer "essa sala é diferente". Repartições de 1-2
+// pessoas (comissões, colegiados) se juntam numa única área compartilhada —
 // do contrário a Reitoria teria uma dezena de salas de uma pessoa só.
-// Intercaladas entre as salas de trabalho, espaços de convivência (Estar,
-// Copa, Reunião, Zen) dão um ar mais humano e próximo do dia a dia real de uma
-// instituição de ensino.
+// Intercalados entre as áreas de trabalho, espaços de convivência (Estar,
+// Copa, Reunião, Zen) dão um ar mais humano e próximo do dia a dia real de
+// uma instituição de ensino.
 //
 // Quando a demanda passa de uma unidade para outra DENTRO do mesmo prédio,
 // um mensageiro anda pelo corredor entre as duas repartições — como no
@@ -56,9 +60,6 @@ const C = {
   loungeB: "#e4e9f2",
   meetA: "#c9d2d8",
   meetB: "#c1cbd2",
-  wallTop: "#efe6d3",
-  wallFace: "#c3b393",
-  wallShadow: "#95866a",
   deskTop: "#f4f3ef",
   deskEdge: "#cdcbc4",
   chair: "#4a5578",
@@ -138,7 +139,7 @@ const START_X = 2;
 const START_Y = 2;
 const CORRIDOR_H = 3;
 const ZONE_TOP = START_Y + CORRIDOR_H;
-const ZONE_GAP = 1.6;
+const ZONE_GAP = 0.7;
 const DESK_COL_W = 4.9;
 const DESK_ROW_H = 5.0;
 const ZONE_PAD_X = 1.4;
@@ -383,25 +384,6 @@ function roundRectPath(
   ctx.lineTo(x, y + r);
   ctx.quadraticCurveTo(x, y, x + r, y);
   ctx.closePath();
-}
-
-// Parede com face visível: topo claro + face + sombra na base.
-function wallH(ctx: CanvasRenderingContext2D, x: number, y: number, wTiles: number) {
-  const t = TILE * 0.5;
-  ctx.fillStyle = C.wallShadow;
-  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t);
-  ctx.fillStyle = C.wallFace;
-  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t * 0.7);
-  ctx.fillStyle = C.wallTop;
-  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t * 0.35);
-}
-
-function wallV(ctx: CanvasRenderingContext2D, x: number, y: number, hTiles: number) {
-  const t = TILE * 0.45;
-  ctx.fillStyle = C.wallShadow;
-  ctx.fillRect(x * TILE, y * TILE, t, hTiles * TILE);
-  ctx.fillStyle = C.wallFace;
-  ctx.fillRect(x * TILE, y * TILE, t * 0.65, hTiles * TILE);
 }
 
 // Divisória baixa de baia (separa estações dentro da ilha aberta)
@@ -818,20 +800,12 @@ export const OfficeCanvas = ({
         checker(ctx, z.x, z.y, z.w, z.h, z.floorA, z.floorB);
       }
 
-      // Toda sala é uma sala de verdade: paredes nos 4 lados, com a porta
-      // no topo (voltada para o corredor) e a parede de fundo sólida —
-      // é isso que faz o andar ler como um conjunto de escritórios, não
-      // uma única planta contínua.
-      for (const z of plan.zones) {
-        wallV(ctx, z.x, z.y, z.h);
-        wallV(ctx, z.x + z.w - 0.45, z.y, z.h);
-        wallH(ctx, z.x, z.y + z.h - 0.5, z.w);
-        const doorHalf = 1;
-        wallH(ctx, z.x, z.y, z.doorX - doorHalf - z.x);
-        wallH(ctx, z.doorX + doorHalf, z.y, z.x + z.w - (z.doorX + doorHalf));
-      }
-
-      // Decoração da sala da chefia, contra a parede de fundo
+      // Decoração da sala da chefia — sem paredes: o piso lilás e a
+      // mobília mais completa (quadros, sofá, estante) já bastam para
+      // dizer "essa sala é diferente", como nas salas de referência, que
+      // nunca fecham uma sala com paredes de verdade — só cor de piso e
+      // móveis marcam o limite, para o andar inteiro ler como um único
+      // prédio contínuo, não uma fileira de caixas separadas.
       for (const z of plan.zones) {
         if (z.kind !== "office") continue;
         frame(ctx, z.x + 3.2, z.y + z.h - 5.6, "#9fd0c4");
