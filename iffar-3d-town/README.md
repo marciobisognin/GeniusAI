@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo, sem paredes cortando o andar em caixas separadas, com uma **área própria por repartição** distinguida só pela cor do piso e pela mobília, e um **sprite sentado à mesa** para cada agente.
+O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo sobre **piso de tábua corrida creme**, com uma **ilha de carpete pastel por repartição** — sem paredes cortando o andar — e um **sprite sentado à mesa** para cada agente, na cadeira azul-marinho da referência.
 
 </td>
 <td width="33%" valign="top">
@@ -66,9 +66,9 @@ Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois 
 <tr>
 <td colspan="3" valign="top">
 
-### 🔦 Holofote na zona que está resolvendo a demanda
+### 🔦 Foco suave na área que está resolvendo a demanda
 
-Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o andar inteiro continua visível, tudo escurece e só a zona responsável é reacendida dentro de um cartão claro — a mesma leitura de foco do Gather 2.0. Você vê *quem* está trabalhando sem perder *onde* aquilo está na instituição. O corte de cena com flash ficou reservado para o que é de fato uma troca de lugar: quando a cadeia muda de prédio (Reitoria ↔ campus).
+Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o andar inteiro continua visível e legível — ele apenas recua um pouco, e a área responsável ganha por cima um **cartão creme** com moldura clara, a mesma leitura de foco discreta do Gather 2.0 (nada de holofote de palco sobre um andar apagado). Você vê *quem* está trabalhando sem perder *onde* aquilo está na instituição. O corte de cena com flash ficou reservado para o que é de fato uma troca de lugar: quando a cadeia muda de prédio (Reitoria ↔ campus).
 
 </td>
 </tr>
@@ -77,9 +77,9 @@ Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o anda
 
 ### 🚶 Um andar só, com uma sala por repartição — e um mensageiro que anda até lá
 
-Cada prédio (Reitoria e os 13 campi) mostra **todo o organograma daquela unidade física** — não apenas os cargos de topo — organizado por **repartição real**, lado a lado num único andar contínuo: sem paredes entre uma área e outra, só a cor do piso (verde, lilás, azul, pêssego...) e a mobília marcando onde uma repartição termina e a próxima começa — como nas salas de referência do Gather 2.0, para que o prédio inteiro leia como um único ambiente fluido, e não uma fileira de escritórios desconectados. O Gabinete ocupa a maior área, à esquerda, com mobília mais completa (quadros, sofá, estante); cada Pró-Reitoria/Diretoria/Coordenação tem a sua; repartições muito pequenas (um ou dois cargos, comum em conselhos e comissões) são agrupadas numa área compartilhada de "Colegiados e Comissões" para não virar uma sequência de salinhas de uma pessoa só. Intercalados entre as áreas de trabalho, quatro **espaços de convivência** — Estar (sofás e mesa de centro), Copa (mesinhas de café), Reunião (mesa redonda grande) e Zen (almofadas em volta de uma fonte, para uma pausa de descompressão) — dão um ar mais humano e próximo do dia a dia real de uma instituição de ensino.
+Cada prédio (Reitoria e os 13 campi) mostra **todo o organograma daquela unidade física** — não apenas os cargos de topo — organizado por **repartição real**, lado a lado num único andar contínuo: sem paredes entre uma área e outra, todo o andar assenta sobre o mesmo **piso de tábua corrida creme**, e é a **cor do carpete** de cada ilha (cinza-sálvia, lilás, azul, areia, verde-água...) junto com a mobília que marca onde uma repartição termina e a próxima começa — a paleta e as proporções foram amostradas quadro a quadro do vídeo do Gather 2.0, para que o prédio inteiro leia como um ambiente humano e fluido, e não como uma planta industrial. O Gabinete ocupa a maior área, à esquerda, com mobília mais completa (quadros, sofá, estante); cada Pró-Reitoria/Diretoria/Coordenação tem a sua; repartições muito pequenas (um ou dois cargos, comum em conselhos e comissões) são agrupadas numa área compartilhada de "Colegiados e Comissões" para não virar uma sequência de salinhas de uma pessoa só. Intercalados entre as áreas de trabalho, quatro **espaços de convivência** — Estar (sofás e mesa de centro), Copa (mesinhas de café), Reunião (mesa redonda grande) e Zen (almofadas em volta de uma fonte, para uma pausa de descompressão) — dão um ar mais humano e próximo do dia a dia real de uma instituição de ensino. Todos os avatares **respiram de leve** o tempo todo (defasados entre si) e os cursores piscam nas telas, então o andar nunca parece congelado.
 
-Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: um avatar-mensageiro com uma correspondência sai da sala de origem, passa pela porta, atravessa o corredor e entra na sala de destino — o holofote circular o acompanha durante o trajeto e só vira o cartão retangular da nova sala quando ele chega. A câmera rola junto, como uma torcida acompanhando o trajeto.
+Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: um avatar-mensageiro com um envelope sai da área de origem, atravessa o corredor de tábua corrida e chega à área de destino — um halo quente o acompanha durante o trajeto e só vira o cartão da nova área quando ele chega. A câmera rola junto, como uma torcida acompanhando o trajeto.
 
 </td>
 </tr>
