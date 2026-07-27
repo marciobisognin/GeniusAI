@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — um andar em **pixel art renderizado em canvas**, modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): **planta aberta** com zonas delimitadas por cor de piso, ilha de mesas com divisórias de baia para as Pró-Reitorias/Diretorias, sala fechada só para o Gabinete, área de estar e sala de reunião — e um **sprite sentado à mesa, visto por trás**, para cada agente.
+O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — planta aberta modelada no [Gather 2.0](https://www.gather.town/pt/virtual-office), com zonas por cor de piso, ilha de mesas com divisórias, sala fechada só para o Gabinete e um **sprite sentado à mesa** para cada agente.
 
 </td>
 <td width="33%" valign="top">
@@ -74,7 +74,7 @@ Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o anda
 </tr>
 </table>
 
-<img src="./src/assets/mapa-rs-overview.png" alt="Mapa 2D do Rio Grande do Sul com o contorno oficial do estado e 14 prédios verdes de telhado vermelho, desenhados de cima, posicionados na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
+<img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em pixel art: oceano azul com ondas, o contorno oficial do estado em verde com a Lagoa dos Patos, e 14 sprites de prédio de fachada verde e telhado vermelho na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
 
 ---
 
@@ -557,8 +557,7 @@ flowchart TD
 
 - React 19
 - TypeScript 6
-- SVG 2D (mapa do RS)
-- Canvas 2D em pixel art (escritório — `src/OfficeCanvas.tsx`)
+- Canvas 2D em pixel art (mapa — `src/MapCanvas.tsx`; escritório — `src/OfficeCanvas.tsx`)
 - Tailwind CSS 4
 - Lucide React
 
@@ -690,7 +689,7 @@ Tarefa:
 [DESCREVA A ALTERAÇÃO]
 
 Restrições:
-- Preserve React + TypeScript + Bun (mapa em SVG, escritório em canvas 2D pixel art, sem engine 3D).
+- Preserve React + TypeScript + Bun (mapa e escritório em canvas 2D pixel art, sem engine 3D).
 - Não exponha segredos nem caminhos locais reais.
 - Não versione .env, node_modules, dist, tickets ou outputs.
 - Mantenha o bridge limitado a 127.0.0.1 por padrão.

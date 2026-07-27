@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { parse as parseYaml } from "yaml";
 import { OfficeCanvas } from "./OfficeCanvas";
+import { MapCanvas } from "./MapCanvas";
+import { RS_CITY_COORDS, cityKeyFromName } from "./geo";
 
 // Types
 
@@ -81,84 +83,6 @@ function colorForCargo(cargo?: string): string {
   return "#84cc16";
 }
 
-// ---------------------------------------------------------------------------
-// GEOGRAFIA REAL DO RIO GRANDE DO SUL
-//
-// Coordenadas reais (lat, long) da Reitoria (Santa Maria) e dos 13 campi,
-// projetadas em um plano (x, z) equirretangular centrado na região onde o
-// IFFar atua. O contorno do estado (RS_OUTLINE) vem do shapefile público do
-// IBGE (via github.com/giuliano-macedo/geodata-br-states), simplificado por
-// Douglas-Peucker e projetado com a mesma transformação — por isso os
-// prédios caem no lugar geograficamente certo dentro do contorno real do RS,
-// não em posições arbitrárias. O mapa é desenhado em 2D, direto nesse plano
-// (x = longitude projetada, z = latitude projetada — norte fica para cima
-// sem precisar inverter nada, já que z cresce para o sul nessa projeção).
-// ---------------------------------------------------------------------------
-
-// nome (sem "Campus ") -> posição real no plano (lat/long projetadas com
-// centro em -28.5715,-55.2411 e escala 10.29 un/grau de longitude,
-// 11.55 un/grau de latitude — a mesma transformação usada no contorno)
-const RS_CITY_COORDS: Record<string, [number, number]> = {
-  Reitoria: [14.83, 12.84],
-  Alegrete: [-5.66, 14.0],
-  "Frederico Westphalen": [19.0, -14.0],
-  Jaguari: [5.67, 10.69],
-  "Júlio de Castilhos": [16.04, 7.57],
-  Panambi: [17.9, -3.22],
-  "Santa Rosa": [7.82, -8.09],
-  Santiago: [3.85, 7.16],
-  "Santo Augusto": [15.06, -8.32],
-  "Santo Ângelo": [10.2, -3.33],
-  "São Borja": [-7.85, 1.03],
-  "São Luiz Gonzaga": [2.88, -1.89],
-  "São Vicente do Sul": [5.91, 13.03],
-  Uruguaiana: [-19.0, 13.67],
-};
-
-// Contorno simplificado do RS (76 pontos), mesma projeção acima.
-const RS_OUTLINE: [number, number][] = [
-  [56.89, 8.71], [45.98, 29.36], [32.56, 41.7], [33.2, 38.89], [32.2, 37.21],
-  [34.87, 38.06], [40.92, 33.59], [41.93, 28.76], [46.7, 25.11], [46.54, 20.56],
-  [48.01, 22.06], [47.79, 18.75], [44.36, 21.53], [40.59, 16.5], [40.61, 20.01],
-  [42.66, 20.71], [40.56, 22.95], [40.73, 25.88], [39.89, 23.81], [39.1, 29.06],
-  [34.05, 31.75], [33.03, 36.04], [31.02, 36.73], [30.77, 38.15], [31.98, 38.71],
-  [32.18, 38.94], [32.18, 39.08], [31.8, 38.76], [31.1, 39.13], [30.79, 40.19],
-  [32.03, 39.12], [32.49, 41.72], [30.19, 43.77], [26.87, 52.48], [18.97, 59.83],
-  [17.54, 58.64], [18.67, 52.76], [20.36, 52.41], [21.75, 48.76], [25.62, 49.55],
-  [27.32, 45.68], [26.94, 41.26], [22.19, 47.19], [19.06, 46.38], [15.39, 40.51],
-  [6.74, 33.32], [0.02, 31.06], [-3.47, 26.12], [-7.91, 28.99], [-8.05, 25.58],
-  [-16.1, 17.71], [-18.82, 17.5], [-20.34, 19.85], [-24.72, 18.73], [-12.11, 5.82],
-  [-6.54, -2.42], [-4.69, -1.68], [-5.46, -3.79], [2.12, -8.23], [4.38, -11.98],
-  [9.85, -12.98], [14.04, -16.69], [16.45, -15.6], [19.21, -17.1], [19.86, -15.63],
-  [22.76, -17.22], [23.29, -15.59], [31.63, -14.99], [42.73, -8.54], [47.49, -2.08],
-  [56.34, -1.29], [57.08, 0.62], [54.59, 1.81], [54.31, 6.31], [52.12, 7.83],
-  [56.89, 8.71],
-];
-
-// Retângulo (com folga) que envolve o contorno do RS + todos os prédios —
-// vira o viewBox do mapa e a base para os percentuais de transform-origin
-// usados no zoom de câmera para dentro de cada prédio.
-const MAP_BOUNDS = (() => {
-  const xs = [...RS_OUTLINE.map((p) => p[0]), ...Object.values(RS_CITY_COORDS).map((p) => p[0])];
-  const zs = [...RS_OUTLINE.map((p) => p[1]), ...Object.values(RS_CITY_COORDS).map((p) => p[1])];
-  const pad = 8;
-  const minX = Math.min(...xs) - pad;
-  const maxX = Math.max(...xs) + pad;
-  const minZ = Math.min(...zs) - pad;
-  const maxZ = Math.max(...zs) + pad;
-  return { minX, minZ, width: maxX - minX, height: maxZ - minZ };
-})();
-
-function originPercent([x, z]: [number, number]): string {
-  const left = ((x - MAP_BOUNDS.minX) / MAP_BOUNDS.width) * 100;
-  const top = ((z - MAP_BOUNDS.minZ) / MAP_BOUNDS.height) * 100;
-  return `${left}% ${top}%`;
-}
-
-function cityKeyFromName(nome: string): string {
-  return nome.replace(/^Campus\s+/i, "").trim();
-}
-
 // Toda unidade tem um local físico real: a Reitoria (Santa Maria) ou o
 // campus a que pertence — sobe a cadeia de pais até achar um dos dois, para
 // saber em qual prédio do mapa a câmera deve entrar.
@@ -171,86 +95,6 @@ function physicalLocationId(unitId: string, unitsById: Map<string, OrgUnit>): st
   }
   return "1.1";
 }
-
-// ---------------------------------------------------------------------------
-// MAPA 2D DO RS (ESTILO "DESENHO", TOPO)
-// ---------------------------------------------------------------------------
-
-// Ícone estilizado (visto de cima) de um prédio — corpo verde, telhado
-// vermelho, sempre nas mesmas cores institucionais do IFFar.
-const BuildingIcon = ({ isActive, big }: { isActive: boolean; big?: boolean }) => {
-  const s = big ? 1.4 : 1;
-  return (
-    <g transform={`scale(${s})`}>
-      {isActive && (
-        <circle r={4.4} fill="#f59e0b" opacity={0.22}>
-          <animate attributeName="r" values="3.6;5.2;3.6" dur="1.6s" repeatCount="indefinite" />
-        </circle>
-      )}
-      <rect x={-2.1} y={-1.5} width={4.2} height={3} rx={0.35} fill="#166534" stroke="#0a1f0f" strokeWidth={0.18} />
-      <polygon points="-2.5,-1.5 2.5,-1.5 0,-3.5" fill="#dc2626" stroke="#7f1d1d" strokeWidth={0.15} />
-      <rect x={-1.4} y={-0.6} width={0.8} height={0.8} fill="#b91c1c" opacity={0.85} />
-      <rect x={0.6} y={-0.6} width={0.8} height={0.8} fill="#b91c1c" opacity={0.85} />
-      <rect x={-0.35} y={0.3} width={0.7} height={1.2} fill="#7c2d12" />
-      {isActive && <circle cy={-4.3} r={0.4} fill="#f59e0b" />}
-    </g>
-  );
-};
-
-// Mapa do Rio Grande do Sul: contorno real do estado (RS_OUTLINE, do IBGE) +
-// um prédio estilizado por local (Reitoria + 13 campi), cada um na posição
-// geográfica correta. Estilo top-down, no espírito de um "virtual office"
-// (gather.town): edifícios simples sobre um mapa, sem perspectiva 3D.
-const RSMap = ({
-  locations,
-  activeLocationId,
-  onSelect,
-}: {
-  locations: MapLocation[];
-  activeLocationId: string | null;
-  onSelect: (loc: MapLocation) => void;
-}) => {
-  const outlinePoints = useMemo(() => RS_OUTLINE.map(([x, z]) => `${x},${z}`).join(" "), []);
-
-  return (
-    <svg
-      viewBox={`${MAP_BOUNDS.minX} ${MAP_BOUNDS.minZ} ${MAP_BOUNDS.width} ${MAP_BOUNDS.height}`}
-      className="w-full h-full"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <defs>
-        <pattern id="rs-grid" width={4} height={4} patternUnits="userSpaceOnUse">
-          <path d="M 4 0 L 0 0 0 4" fill="none" stroke="#ffffff" strokeOpacity={0.05} strokeWidth={0.15} />
-        </pattern>
-      </defs>
-      <polygon points={outlinePoints} fill="#1f4d29" stroke="#f59e0b" strokeWidth={0.5} strokeLinejoin="round" />
-      <polygon points={outlinePoints} fill="url(#rs-grid)" />
-      {locations.map((loc) => (
-        <g
-          key={loc.id}
-          transform={`translate(${loc.pos[0]} ${loc.pos[1]})`}
-          onClick={() => onSelect(loc)}
-          className="cursor-pointer"
-        >
-          <BuildingIcon isActive={activeLocationId === loc.id} big={loc.id === "1.1"} />
-          <text
-            y={loc.id === "1.1" ? 5.6 : 4.7}
-            textAnchor="middle"
-            fontSize={loc.id === "1.1" ? 1.9 : 1.4}
-            fontWeight={700}
-            fill="#fef9ec"
-            stroke="#0a0a0a"
-            strokeWidth={0.28}
-            paintOrder="stroke"
-            fontFamily="monospace"
-          >
-            {cityKeyFromName(loc.nome)}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-};
 
 // ---------------------------------------------------------------------------
 // ARTIFACT VIEWER MODAL COMPONENT (IN-APP DOCUMENT READER)
@@ -602,6 +446,16 @@ export default function App() {
   // foco (a partir da visão geral do mapa) revela o escritório só depois que
   // a animação termina; ao trocar de PRÉDIO (não só de agente dentro dele),
   // corta a cena com um flash em vez de deslizar sobre o mapa inteiro.
+  // Rota da demanda sobre o mapa: registrada no momento do salto entre
+  // prédios e mantida por alguns segundos, independente de qual prédio está
+  // em foco — assim o tracejado aparece na transição e também se o usuário
+  // voltar à visão geral (ou quando a câmera sai no fim da execução).
+  const [mapRoute, setMapRoute] = useState<{
+    from: [number, number];
+    to: [number, number];
+  } | null>(null);
+  const routeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   useEffect(() => {
     if (!activeLocationId) {
       setOfficeVisible(false);
@@ -614,11 +468,20 @@ export default function App() {
     if (previous === activeLocationId) return; // mesmo prédio, outro agente: cena não muda
 
     setOfficeVisible(false);
-    if (previous !== null) triggerSceneFlash();
+    if (previous !== null) {
+      triggerSceneFlash();
+      const fromLoc = mapLocations.find((l) => l.id === previous);
+      const toLoc = mapLocations.find((l) => l.id === activeLocationId);
+      if (fromLoc && toLoc) {
+        setMapRoute({ from: fromLoc.pos, to: toLoc.pos });
+        if (routeTimerRef.current) clearTimeout(routeTimerRef.current);
+        routeTimerRef.current = setTimeout(() => setMapRoute(null), 8000);
+      }
+    }
     const delay = previous === null ? 900 : 500;
     const timer = setTimeout(() => setOfficeVisible(true), delay);
     return () => clearTimeout(timer);
-  }, [activeLocationId]);
+  }, [activeLocationId, mapLocations]);
 
   const handleSelectAgent = (agentId: string) => {
     const ownerCampus = campusRoots.find((c) =>
@@ -838,28 +701,21 @@ export default function App() {
             }`}
           />
 
-          {/* Mapa do RS — a câmera "entra" no prédio via zoom (scale) com
-              transform-origin travado na posição real do prédio em foco. */}
-          <div
-            className="absolute inset-0 transition-transform duration-[900ms] ease-in-out"
-            style={{
-              transformOrigin: activeLocationUnit ? originPercent(activeLocationUnit.pos) : "50% 50%",
-              transform: activeLocationId ? "scale(4)" : "scale(1)",
+          {/* Mapa do RS em pixel art — o próprio MapCanvas cuida do zoom de
+              câmera até o prédio em foco (origem travada no pixel exato). */}
+          <MapCanvas
+            locations={mapLocations}
+            activeLocationId={activeLocationId}
+            route={mapRoute}
+            onSelect={(loc) => {
+              if (loc.id !== "1.1") {
+                setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
+              }
+              setActiveAgentId((prev) =>
+                prev === loc.primaryAgentId ? null : loc.primaryAgentId,
+              );
             }}
-          >
-            <RSMap
-              locations={mapLocations}
-              activeLocationId={activeLocationId}
-              onSelect={(loc) => {
-                if (loc.id !== "1.1") {
-                  setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
-                }
-                setActiveAgentId((prev) =>
-                  prev === loc.primaryAgentId ? null : loc.primaryAgentId,
-                );
-              }}
-            />
-          </div>
+          />
 
           {/* Escritório: só aparece depois do zoom de drone terminar */}
           {officeVisible && activeLocationUnit && (
