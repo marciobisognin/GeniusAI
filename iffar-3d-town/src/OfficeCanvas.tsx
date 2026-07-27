@@ -1,18 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // ---------------------------------------------------------------------------
-// ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0
+// ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0, COM O ORGANOGRAMA
+// COMPLETO DO PRÉDIO
 //
 // Planta aberta, como no Gather 2.0: um piso de circulação creme com "ilhas"
-// de zonas delimitadas por COR DE PISO (não por paredes). As Pró-Reitorias /
-// Diretorias sentam juntas numa ilha de mesas com divisórias baixas de baia;
-// só a unidade-sede (Reitoria ou Gabinete do(a) Diretor(a) Geral) ganha uma
-// sala fechada com paredes de verdade. Complementam a planta uma área de
-// estar e uma sala de reunião.
+// de zonas delimitadas por COR DE PISO (não por paredes). Cada repartição
+// direta da Reitoria/do campus (Pró-Reitoria, Diretoria, Comissão...) senta
+// junto numa ilha de mesas com divisórias baixas de baia; só a chefia
+// (Gabinete do(a) Reitor(a)/Diretor(a) Geral, com seus assessores diretos)
+// ganha uma sala fechada com paredes de verdade. Repartições de 1-2 pessoas
+// (comissões, colegiados) se juntam numa única sala compartilhada — do
+// contrário a Reitoria teria uma dezena de salas de uma pessoa só.
 //
-// Quando uma tarefa está sendo resolvida, a câmera NÃO corta de cena: o andar
-// inteiro continua visível, tudo escurece e a zona ativa é redesenhada em
-// brilho total dentro de um cartão claro — o "holofote" do Gather 2.0.
+// Quando a demanda passa de uma unidade para outra DENTRO do mesmo prédio,
+// um mensageiro anda pelo corredor entre as duas repartições — como no
+// vídeo do Gather — em vez de a cena simplesmente saltar. Só quando a
+// demanda muda de PRÉDIO (Reitoria <-> campus) é que a cena corta (isso já
+// acontece um nível acima, no mapa).
 // ---------------------------------------------------------------------------
 
 interface OfficeAgent {
@@ -22,6 +27,9 @@ interface OfficeAgent {
   color: string;
   cargo?: string;
   funcao?: string;
+  groupId: string;
+  groupLabel: string;
+  isHead: boolean;
 }
 
 interface CompetenciaLike {
@@ -64,12 +72,14 @@ const C = {
   skin: "#e8b98a",
   divider: "#dfd8c6",
   dividerEdge: "#bdb49d",
+  courier: "#f59e0b",
 } as const;
 
 // Cores de tampo para personalizar as estações (como no vídeo, onde uma mesa
 // é verde-menta, outra laranja) — escolhidas de forma estável pelo id.
 const DESK_ACCENTS = ["#f4f3ef", "#cfe9df", "#f5dcc2", "#dfe3f5", "#f7e2e2", "#e2eecd"];
 const SCREEN_COLORS = ["#4f7fd0", "#d06fa8", "#4fae8f", "#d9a24f", "#6f7fd0"];
+const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a"];
 
 function hash01(id: string): number {
   let h = 0;
@@ -87,6 +97,7 @@ interface Zone {
   h: number;
   label?: string;
   agentIds: string[];
+  doorX: number; // ponto de entrada/saída no corredor, em tiles
 }
 
 interface Seat {
@@ -101,77 +112,168 @@ interface Plan {
   seats: Seat[];
   totalW: number;
   totalH: number;
+  corridorY: number;
 }
 
-const OFFICE = { x: 2, y: 2, w: 11, h: 11 };
-const POD_W = 15;
-const POD_H = 11;
-const POD_X0 = 15;
-const POD_GAP = 1;
-const SEATS_PER_POD = 6;
-// espaçamento entre estações: precisa caber a plaquinha de nome sem colidir
-// com a estação vizinha (nomes de unidade do IFFar são longos)
-const COL_STEP = 4.9;
-const ROW_STEP = 5.0;
+const START_X = 2;
+const START_Y = 2;
+const CORRIDOR_H = 3;
+const ZONE_TOP = START_Y + CORRIDOR_H;
+const ZONE_GAP = 1.6;
+const DESK_COL_W = 4.9;
+const DESK_ROW_H = 5.0;
+const ZONE_PAD_X = 1.4;
+const ZONE_PAD_TOP = 2.6;
+const ZONE_PAD_BOTTOM = 1.2;
+
+function gridFor(n: number) {
+  const cols = Math.max(1, Math.min(3, Math.ceil(Math.sqrt(Math.max(1, n)))));
+  const rows = Math.max(1, Math.ceil(Math.max(1, n) / cols));
+  return { cols, rows };
+}
+
+function zoneSize(n: number) {
+  const { cols, rows } = gridFor(n);
+  return {
+    cols,
+    rows,
+    w: ZONE_PAD_X * 2 + cols * DESK_COL_W,
+    h: ZONE_PAD_TOP + ZONE_PAD_BOTTOM + rows * DESK_ROW_H,
+  };
+}
+
+interface DeptGroup {
+  groupId: string;
+  groupLabel: string;
+  agentIds: string[];
+}
+
+// Agrupa as unidades não-chefia pela repartição a que pertencem (já
+// calculada em App.tsx via departmentOf) e funde repartições de até 2
+// pessoas numa única sala compartilhada de comissões/colegiados — do
+// contrário a Reitoria teria uma dezena de salas de uma pessoa só.
+function buildDepartments(agents: Agent[]): { head: Agent[]; depts: DeptGroup[] } {
+  const head = agents.filter((a) => a.isHead);
+  const byGroup = new Map<string, DeptGroup>();
+  for (const a of agents) {
+    if (a.isHead) continue;
+    let g = byGroup.get(a.groupId);
+    if (!g) {
+      g = { groupId: a.groupId, groupLabel: a.groupLabel, agentIds: [] };
+      byGroup.set(a.groupId, g);
+    }
+    g.agentIds.push(a.id);
+  }
+
+  const dedicated: DeptGroup[] = [];
+  const sharedIds: string[] = [];
+  for (const g of byGroup.values()) {
+    if (g.agentIds.length <= 2) sharedIds.push(...g.agentIds);
+    else dedicated.push(g);
+  }
+  dedicated.sort((a, b) => b.agentIds.length - a.agentIds.length || a.groupLabel.localeCompare(b.groupLabel));
+
+  const depts = [...dedicated];
+  if (sharedIds.length > 0) {
+    depts.push({ groupId: "__shared__", groupLabel: "Colegiados e Comissões", agentIds: sharedIds });
+  }
+  return { head, depts };
+}
+
+function placeSeats(members: Agent[], zone: Zone, cols: number, topPad: number, seats: Seat[], zoneIndex: number) {
+  members.forEach((a, i) => {
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    seats.push({
+      agentId: a.id,
+      deskX: zone.x + ZONE_PAD_X + col * DESK_COL_W + DESK_COL_W / 2 - 0.3,
+      deskY: zone.y + topPad + row * DESK_ROW_H,
+      zoneIndex,
+    });
+  });
+}
 
 function buildPlan(agents: Agent[]): Plan {
+  const { head, depts } = buildDepartments(agents);
   const zones: Zone[] = [];
   const seats: Seat[] = [];
+  let cursorX = START_X;
 
-  // 1) Sala fechada da unidade-sede (primeiro agente da lista)
-  const head = agents[0];
-  const officeZone: Zone = {
+  // 1) sala fechada da chefia (Gabinete + assessoria direta)
+  const headSize = zoneSize(head.length || 1);
+  const headW = Math.max(headSize.w, 11);
+  const headH = Math.max(headSize.h, 11);
+  const headZone: Zone = {
     kind: "office",
-    ...OFFICE,
-    label: head ? "Gabinete" : undefined,
-    agentIds: head ? [head.id] : [],
+    x: cursorX,
+    y: ZONE_TOP,
+    w: headW,
+    h: headH,
+    label: "Gabinete",
+    agentIds: head.map((a) => a.id),
+    doorX: cursorX + headW / 2,
   };
-  zones.push(officeZone);
-  if (head) {
-    seats.push({
-      agentId: head.id,
-      deskX: OFFICE.x + OFFICE.w / 2,
-      deskY: OFFICE.y + 3.4,
-      zoneIndex: 0,
-    });
-  }
+  zones.push(headZone);
+  placeSeats(head, headZone, headSize.cols, 3.6, seats, 0);
+  cursorX += headW + ZONE_GAP;
 
-  // 2) Ilhas de mesas abertas para as demais unidades
-  const rest = agents.slice(1);
-  const nPods = Math.ceil(rest.length / SEATS_PER_POD);
-  for (let p = 0; p < nPods; p++) {
-    const px = POD_X0 + p * (POD_W + POD_GAP);
-    const members = rest.slice(p * SEATS_PER_POD, (p + 1) * SEATS_PER_POD);
+  // 2) uma ilha aberta por repartição
+  for (const dept of depts) {
+    const size = zoneSize(dept.agentIds.length);
     const zoneIndex = zones.length;
-    zones.push({
+    const z: Zone = {
       kind: "pod",
-      x: px,
-      y: OFFICE.y,
-      w: POD_W,
-      h: POD_H,
-      label: nPods > 1 ? `Equipe ${p + 1}` : "Pró-Reitorias e Diretorias",
-      agentIds: members.map((a) => a.id),
-    });
-    members.forEach((a, i) => {
-      const col = i % 3;
-      const row = Math.floor(i / 3);
-      seats.push({
-        agentId: a.id,
-        deskX: px + 2.6 + col * COL_STEP,
-        deskY: OFFICE.y + 1.7 + row * ROW_STEP,
-        zoneIndex,
-      });
-    });
+      x: cursorX,
+      y: ZONE_TOP,
+      w: size.w,
+      h: size.h,
+      label: dept.groupLabel,
+      agentIds: dept.agentIds,
+      doorX: cursorX + size.w / 2,
+    };
+    zones.push(z);
+    const members = dept.agentIds
+      .map((id) => agents.find((a) => a.id === id))
+      .filter((a): a is Agent => Boolean(a));
+    placeSeats(members, z, size.cols, ZONE_PAD_TOP, seats, zoneIndex);
+    cursorX += size.w + ZONE_GAP;
   }
 
-  const contentRight = nPods > 0 ? POD_X0 + nPods * (POD_W + POD_GAP) : POD_X0;
-  const totalW = Math.max(contentRight, 32) + 2;
+  const rowH = Math.max(headH, ...zones.slice(1).map((z) => z.h), 11);
 
-  // 3) Zonas de convívio, na faixa de baixo
-  zones.push({ kind: "lounge", x: 2, y: 14, w: 13, h: 11, label: "Estar", agentIds: [] });
-  zones.push({ kind: "meeting", x: 17, y: 14, w: 13, h: 11, label: "Reunião", agentIds: [] });
+  // 3) estar + reunião, sempre ao final da fileira
+  const loungeX = cursorX;
+  zones.push({
+    kind: "lounge",
+    x: loungeX,
+    y: ZONE_TOP,
+    w: 13,
+    h: rowH,
+    label: "Estar",
+    agentIds: [],
+    doorX: loungeX + 6.5,
+  });
+  cursorX += 13 + ZONE_GAP;
+  const meetingX = cursorX;
+  zones.push({
+    kind: "meeting",
+    x: meetingX,
+    y: ZONE_TOP,
+    w: 13,
+    h: rowH,
+    label: "Reunião",
+    agentIds: [],
+    doorX: meetingX + 6.5,
+  });
+  cursorX += 13 + ZONE_GAP;
 
-  return { zones, seats, totalW, totalH: 27 };
+  return {
+    zones,
+    seats,
+    totalW: cursorX + 1,
+    totalH: ZONE_TOP + rowH + 2,
+    corridorY: START_Y + CORRIDOR_H / 2,
+  };
 }
 
 // --------------------------- DESENHO ----------------------------------------
@@ -389,8 +491,6 @@ function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: numbe
 
 // Pessoa SENTADA vista por trás: vemos a nuca/cabelo, os ombros e o encosto
 // da cadeira — é assim que aparecem as pessoas trabalhando no Gather 2.0.
-const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a"];
-
 function seatedPerson(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -434,6 +534,93 @@ function seatedPerson(
   }
 }
 
+// Mensageiro: figura de pé, vista de trás, com as pernas alternando — quem
+// carrega a demanda de uma repartição para outra pelo corredor. A cor da
+// camisa é a do cargo de destino, então já anuncia quem vai recebê-la.
+function drawWalker(ctx: CanvasRenderingContext2D, x: number, y: number, shirt: string, t: number) {
+  const legPhase = Math.floor(t * 6) % 2;
+
+  ctx.fillStyle = "rgba(0,0,0,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 8, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#26221d";
+  if (legPhase === 0) {
+    ctx.fillRect(x - 6, y - 11, 4, 10);
+    ctx.fillRect(x + 2, y - 9, 4, 8);
+  } else {
+    ctx.fillRect(x - 6, y - 9, 4, 8);
+    ctx.fillRect(x + 2, y - 11, 4, 10);
+  }
+
+  ctx.fillStyle = shirt;
+  ctx.fillRect(x - 8, y - 23, 16, 13);
+
+  ctx.fillStyle = "#2b1a0e";
+  ctx.fillRect(x - 6, y - 31, 12, 9);
+
+  // pastinha/envelope com a demanda, na mão
+  ctx.fillStyle = C.courier;
+  ctx.fillRect(x + 6, y - 20, 8, 10);
+  ctx.fillStyle = "#b45309";
+  ctx.fillRect(x + 6, y - 20, 8, 2);
+}
+
+// --------------------------- MOVIMENTO --------------------------------------
+
+interface Point {
+  x: number;
+  y: number;
+}
+
+interface WalkState {
+  path: Point[];
+  segLens: number[];
+  totalLen: number;
+  startTs: number;
+  duration: number;
+  color: string;
+}
+
+function buildWalk(from: Seat, to: Seat, zones: Zone[], corridorY: number, color: string): WalkState {
+  const fromZone = zones[from.zoneIndex];
+  const toZone = zones[to.zoneIndex];
+  const path: Point[] = [
+    { x: from.deskX, y: from.deskY + 0.6 },
+    { x: fromZone.doorX, y: corridorY },
+    { x: toZone.doorX, y: corridorY },
+    { x: to.deskX, y: to.deskY + 0.6 },
+  ];
+  const segLens: number[] = [];
+  let totalLen = 0;
+  for (let i = 0; i < path.length - 1; i++) {
+    const len = Math.hypot(path[i + 1].x - path[i].x, path[i + 1].y - path[i].y);
+    segLens.push(len);
+    totalLen += len;
+  }
+  const SPEED = 9; // tiles por segundo
+  return { path, segLens, totalLen, startTs: 0, duration: Math.max(500, (totalLen / SPEED) * 1000), color };
+}
+
+function walkPosition(walk: WalkState, elapsedMs: number): Point & { done: boolean } {
+  const frac = Math.min(1, elapsedMs / walk.duration);
+  const dist = frac * walk.totalLen;
+  let acc = 0;
+  for (let i = 0; i < walk.segLens.length; i++) {
+    const segLen = walk.segLens[i];
+    if (dist <= acc + segLen || i === walk.segLens.length - 1) {
+      const segFrac = segLen > 0 ? (dist - acc) / segLen : 1;
+      const a = walk.path[i];
+      const b = walk.path[i + 1];
+      return { x: a.x + (b.x - a.x) * segFrac, y: a.y + (b.y - a.y) * segFrac, done: frac >= 1 };
+    }
+    acc += segLen;
+  }
+  const last = walk.path[walk.path.length - 1];
+  return { x: last.x, y: last.y, done: true };
+}
+
 // --------------------------- COMPONENTE -------------------------------------
 
 export const OfficeCanvas = ({
@@ -450,6 +637,7 @@ export const OfficeCanvas = ({
   onSelectAgent: (id: string) => void;
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const zoneRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const plan = useMemo(() => buildPlan(agents), [agents]);
@@ -460,13 +648,55 @@ export const OfficeCanvas = ({
     return m;
   }, [plan]);
 
-  // Zona do agente ativo — é ela que recebe o holofote.
+  // Id "visualmente" ativo: acompanha activeAgentId, mas com atraso — só
+  // troca quando o mensageiro TERMINA de andar até a nova sala. Enquanto o
+  // trajeto acontece, a sala de origem continua com o holofote (é para lá
+  // que o visual ainda "pertence"), e quem se move pelo corredor é só o
+  // mensageiro.
+  const [visualActiveId, setVisualActiveId] = useState<string | null>(activeAgentId);
+  const walkRef = useRef<WalkState | null>(null);
+  const prevSeatRef = useRef<Seat | null>(null);
+
+  useEffect(() => {
+    const newSeat = activeAgentId ? (seatById.get(activeAgentId) ?? null) : null;
+    const oldSeat = prevSeatRef.current;
+    prevSeatRef.current = newSeat;
+
+    if (newSeat && oldSeat && oldSeat.agentId !== newSeat.agentId) {
+      const color = agents.find((a) => a.id === newSeat.agentId)?.color ?? "#f59e0b";
+      const walk = buildWalk(oldSeat, newSeat, plan.zones, plan.corridorY, color);
+      walk.startTs = performance.now();
+      walkRef.current = walk;
+      const timer = setTimeout(() => setVisualActiveId(activeAgentId), walk.duration);
+      // acompanha a sala de destino assim que o trajeto começa — a câmera
+      // (o scroll) e o mensageiro se movem juntos, como uma câmera de jogo.
+      zoneRefs.current[newSeat.zoneIndex]?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+      return () => clearTimeout(timer);
+    }
+
+    walkRef.current = null;
+    setVisualActiveId(activeAgentId);
+    if (newSeat) {
+      zoneRefs.current[newSeat.zoneIndex]?.scrollIntoView({
+        behavior: "smooth",
+        inline: "center",
+        block: "nearest",
+      });
+    }
+  }, [activeAgentId, seatById, plan, agents]);
+
+  // Zona "visualmente" ativa — é ela que recebe o holofote quando não há
+  // mensageiro em trânsito.
   const activeZone = useMemo(() => {
-    if (!activeAgentId) return null;
-    const seat = seatById.get(activeAgentId);
+    if (!visualActiveId) return null;
+    const seat = seatById.get(visualActiveId);
     if (!seat) return null;
     return plan.zones[seat.zoneIndex] ?? null;
-  }, [activeAgentId, seatById, plan]);
+  }, [visualActiveId, seatById, plan]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -477,8 +707,7 @@ export const OfficeCanvas = ({
     canvas.height = plan.totalH * TILE;
     ctx.imageSmoothingEnabled = false;
 
-    const drawScene = (t: number) => {
-      // piso de circulação (creme), cobrindo o andar inteiro
+    const drawScene = (t: number, walkerPos: Point | null, walkerColor: string) => {
       checker(ctx, 0, 0, plan.totalW, plan.totalH, C.circA, C.circB);
 
       for (const z of plan.zones) {
@@ -488,34 +717,34 @@ export const OfficeCanvas = ({
         if (z.kind === "meeting") checker(ctx, z.x, z.y, z.w, z.h, C.meetA, C.meetB);
       }
 
-      // Só a sala-sede tem paredes de verdade (com vão de porta embaixo)
+      // Só a sala da chefia tem paredes de verdade (com vão de porta embaixo)
       for (const z of plan.zones) {
         if (z.kind !== "office") continue;
         wallH(ctx, z.x, z.y, z.w);
         wallV(ctx, z.x, z.y, z.h);
         wallV(ctx, z.x + z.w - 0.45, z.y, z.h);
-        const doorC = z.x + z.w / 2;
-        wallH(ctx, z.x, z.y + z.h - 0.5, doorC - 1 - z.x);
-        wallH(ctx, doorC + 1, z.y + z.h - 0.5, z.x + z.w - (doorC + 1));
-        // sala de chefia mobiliada: quadros, sofá de apoio, estante e plantas
+        const doorHalf = 1;
+        wallH(ctx, z.x, z.y + z.h - 0.5, z.doorX - doorHalf - z.x);
+        wallH(ctx, z.doorX + doorHalf, z.y + z.h - 0.5, z.x + z.w - (z.doorX + doorHalf));
         frame(ctx, z.x + 3.2, z.y + 0.9, "#9fd0c4");
-        frame(ctx, z.x + 7.8, z.y + 0.9, "#e0c08a");
-        sofa(ctx, z.x + z.w / 2, z.y + 7.6, true);
-        roundTable(ctx, z.x + z.w / 2, z.y + 9.1, 15);
-        shelf(ctx, z.x + 2.6, z.y + 5.6);
+        frame(ctx, z.x + z.w - 3.2, z.y + 0.9, "#e0c08a");
+        sofa(ctx, z.x + z.w / 2, z.y + z.h - 3.4, true);
+        shelf(ctx, z.x + 2.2, z.y + z.h - 2.2);
         plant(ctx, z.x + 1.3, z.y + 2.2);
         plant(ctx, z.x + z.w - 1.3, z.y + 2.2);
-        plant(ctx, z.x + z.w - 1.3, z.y + 6.4);
       }
 
       // Ilhas de mesas: divisórias baixas entre as estações
       for (const z of plan.zones) {
         if (z.kind !== "pod") continue;
-        for (let c = 1; c < 3; c++) {
-          divider(ctx, z.x + 0.25 + c * COL_STEP, z.y + 0.5, 3.8, true);
-          divider(ctx, z.x + 0.25 + c * COL_STEP, z.y + 0.5 + ROW_STEP, 3.8, true);
+        const cols = Math.max(1, Math.round((z.w - ZONE_PAD_X * 2) / DESK_COL_W));
+        const rows = Math.max(1, Math.round((z.h - ZONE_PAD_TOP - ZONE_PAD_BOTTOM) / DESK_ROW_H));
+        for (let c = 1; c < cols; c++) {
+          divider(ctx, z.x + ZONE_PAD_X - 0.15 + c * DESK_COL_W, z.y + ZONE_PAD_TOP - 1.9, z.h - ZONE_PAD_TOP - 0.3, true);
         }
-        divider(ctx, z.x + 0.4, z.y + ROW_STEP - 0.6, z.w - 0.8, false);
+        for (let r = 1; r < rows; r++) {
+          divider(ctx, z.x + ZONE_PAD_X - 0.3, z.y + ZONE_PAD_TOP - 1.9 + r * DESK_ROW_H, z.w - ZONE_PAD_X * 2 + 0.3, false);
+        }
         plant(ctx, z.x + z.w - 0.9, z.y + z.h - 1);
         plant(ctx, z.x + 0.9, z.y + z.h - 1);
       }
@@ -528,7 +757,7 @@ export const OfficeCanvas = ({
         roundTable(ctx, z.x + z.w / 2, z.y + 5.2, 22);
         shelf(ctx, z.x + z.w / 2, z.y + z.h - 1.2);
         plant(ctx, z.x + z.w - 1.4, z.y + 1.6);
-        plant(ctx, z.x + z.w - 1.4, z.y + 7.4);
+        plant(ctx, z.x + z.w - 1.4, z.y + z.h - 2.6);
       }
 
       // Reunião
@@ -551,27 +780,38 @@ export const OfficeCanvas = ({
         if (!agent) continue;
         const seed = hash01(agent.id);
         desk(ctx, seat.deskX, seat.deskY, seed);
-        // encostado na mesa (não flutuando abaixo dela)
-        seatedPerson(
-          ctx,
-          seat.deskX,
-          seat.deskY + 1.6,
-          agent.color,
-          seed,
-          agent.id === activeAgentId,
-          t,
-        );
+        seatedPerson(ctx, seat.deskX, seat.deskY + 1.6, agent.color, seed, agent.id === visualActiveId, t);
       }
+
+      if (walkerPos) drawWalker(ctx, walkerPos.x * TILE, walkerPos.y * TILE, walkerColor, t);
     };
 
     let raf = 0;
     const render = (ms: number) => {
       const t = ms / 1000;
-      drawScene(t);
+      const walk = walkRef.current;
+      let walkerPos: Point | null = null;
+      if (walk) {
+        const p = walkPosition(walk, ms - walk.startTs);
+        walkerPos = { x: p.x, y: p.y };
+        if (p.done) walkRef.current = null;
+      }
 
-      // HOLOFOTE: escurece o andar inteiro e reacende só a zona ativa,
-      // dentro de um cartão claro de cantos arredondados.
-      if (activeZone) {
+      drawScene(t, walkerPos, walk?.color ?? "#f59e0b");
+
+      // HOLOFOTE: escurece o andar inteiro e reacende só a área ativa —
+      // um círculo seguindo o mensageiro em trânsito, ou o retângulo da
+      // zona quando ninguém está andando.
+      if (walkerPos) {
+        ctx.fillStyle = "rgba(28,24,18,0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(walkerPos.x * TILE, walkerPos.y * TILE, 3.4 * TILE, 0, Math.PI * 2);
+        ctx.clip();
+        drawScene(t, walkerPos, walk?.color ?? "#f59e0b");
+        ctx.restore();
+      } else if (activeZone) {
         ctx.fillStyle = "rgba(28,24,18,0.6)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -584,7 +824,7 @@ export const OfficeCanvas = ({
         ctx.save();
         roundRectPath(ctx, rx, ry, rw, rh, 14);
         ctx.clip();
-        drawScene(t);
+        drawScene(t, null, "#f59e0b");
         ctx.restore();
 
         ctx.strokeStyle = "#fdf6e6";
@@ -593,11 +833,11 @@ export const OfficeCanvas = ({
         ctx.stroke();
       }
 
-      if (activeAgentId) raf = requestAnimationFrame(render);
+      if (visualActiveId || walkerPos) raf = requestAnimationFrame(render);
     };
     raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [plan, agents, activeAgentId, activeZone]);
+  }, [plan, agents, visualActiveId, activeZone]);
 
   const handlePointer = (e: React.MouseEvent<HTMLCanvasElement>, click: boolean) => {
     const canvas = canvasRef.current;
@@ -619,6 +859,7 @@ export const OfficeCanvas = ({
 
   const hovered = hoveredId ? agents.find((a) => a.id === hoveredId) : null;
   const hoveredSeat = hoveredId ? seatById.get(hoveredId) : null;
+  const visualActiveSeat = visualActiveId ? seatById.get(visualActiveId) : null;
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-[#171b17] p-4 animate-fade-in">
@@ -626,10 +867,7 @@ export const OfficeCanvas = ({
         className="relative max-w-full max-h-full overflow-auto rounded-2xl border-[6px] border-[#8a7a5c] shadow-2xl"
         style={{ lineHeight: 0 }}
       >
-        <div
-          className="relative"
-          style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}
-        >
+        <div className="relative" style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}>
           <canvas
             ref={canvasRef}
             style={{ width: plan.totalW * TILE, height: plan.totalH * TILE, imageRendering: "pixelated" }}
@@ -643,8 +881,19 @@ export const OfficeCanvas = ({
             🏛️ {buildingName}
           </div>
 
-          {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") —
-              flutua dentro da zona, para não colidir com o título do prédio */}
+          {/* âncoras invisíveis por zona — usadas só para o scrollIntoView */}
+          {plan.zones.map((z, i) => (
+            <div
+              key={`anchor-${i}`}
+              ref={(el) => {
+                zoneRefs.current[i] = el;
+              }}
+              className="absolute pointer-events-none"
+              style={{ left: z.x * TILE, top: z.y * TILE, width: z.w * TILE, height: z.h * TILE }}
+            />
+          ))}
+
+          {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") */}
           {plan.zones.map((z, i) =>
             z.label ? (
               <div
@@ -652,9 +901,9 @@ export const OfficeCanvas = ({
                 className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
                   activeZone && activeZone !== z ? "opacity-25" : "opacity-100"
                 }`}
-                style={{ left: z.x * TILE + 5, top: z.y * TILE + 4 }}
+                style={{ left: z.x * TILE + 5, top: z.y * TILE + 4, maxWidth: z.w * TILE - 10 }}
               >
-                <span className="bg-[#1f2430]/90 text-stone-100 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/15 shadow whitespace-nowrap">
+                <span className="bg-[#1f2430]/90 text-stone-100 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/15 shadow whitespace-nowrap block truncate">
                   {z.label}
                   {z.agentIds.length > 0 ? ` · ${z.agentIds.length}` : ""}
                 </span>
@@ -666,7 +915,7 @@ export const OfficeCanvas = ({
           {plan.seats.map((seat) => {
             const agent = agents.find((a) => a.id === seat.agentId);
             if (!agent) return null;
-            const isActive = agent.id === activeAgentId;
+            const isActive = agent.id === visualActiveId;
             const dim = activeZone && plan.zones[seat.zoneIndex] !== activeZone;
             return (
               <div
@@ -691,11 +940,7 @@ export const OfficeCanvas = ({
                     />
                     <span className="truncate">{agent.name}</span>
                   </span>
-                  <span
-                    className={`text-[8px] leading-tight pl-2.5 ${
-                      isActive ? "text-slate-800" : "text-stone-400"
-                    }`}
-                  >
+                  <span className={`text-[8px] leading-tight pl-2.5 ${isActive ? "text-slate-800" : "text-stone-400"}`}>
                     {isActive ? "Trabalhando agora" : "Disponível"}
                   </span>
                 </div>
@@ -705,13 +950,10 @@ export const OfficeCanvas = ({
 
           {/* Balão do que está sendo feito — flutua acima da estação ativa,
               fora da faixa das plaquinhas, para não colidir com as vizinhas */}
-          {activeAgentId && statusMsg && seatById.get(activeAgentId) && (
+          {visualActiveId && statusMsg && visualActiveSeat && (
             <div
               className="absolute z-40 -translate-x-1/2 -translate-y-full pointer-events-none"
-              style={{
-                left: seatById.get(activeAgentId)!.deskX * TILE,
-                top: (seatById.get(activeAgentId)!.deskY - 1.1) * TILE,
-              }}
+              style={{ left: visualActiveSeat.deskX * TILE, top: (visualActiveSeat.deskY - 1.1) * TILE }}
             >
               <div className="bg-amber-400 text-slate-950 text-[9px] font-bold px-2 py-1 rounded-md shadow-xl border border-amber-600 max-w-[210px] truncate font-mono">
                 💭 {statusMsg}

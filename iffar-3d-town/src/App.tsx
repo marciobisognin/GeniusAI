@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { parse as parseYaml } from "yaml";
 import { OfficeCanvas } from "./OfficeCanvas";
 import { MapCanvas } from "./MapCanvas";
@@ -31,7 +31,6 @@ interface AgentNode {
   title: string;
   campus: string;
   color: string;
-  pos: [number, number];
   cargo?: string;
   funcao?: string;
 }
@@ -61,17 +60,6 @@ function normalizeName(text: string): string {
     .trim();
 }
 
-// Posição estável derivada do id da unidade (nunca coordenadas hardcoded) —
-// mesmo id sempre cai no mesmo ângulo dentro do escritório, então o layout
-// não "pula" entre carregamentos.
-function hashAngle(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return (hash % 1000) / 1000;
-}
-
 function colorForCargo(cargo?: string): string {
   if (!cargo) return "#64748b"; // comissões/núcleos sem cargo definido
   if (cargo.includes("REITOR")) return "#8b5cf6"; // Reitor(a) / Pró-Reitor(a)
@@ -94,6 +82,41 @@ function physicalLocationId(unitId: string, unitsById: Map<string, OrgUnit>): st
     current = unitsById.get(current.parent);
   }
   return "1.1";
+}
+
+function isDescendantOf(unitId: string, ancestorId: string, unitsById: Map<string, OrgUnit>): boolean {
+  let current = unitsById.get(unitId);
+  while (current && current.parent) {
+    if (current.parent === ancestorId) return true;
+    current = unitsById.get(current.parent);
+  }
+  return false;
+}
+
+// A que "repartição" uma unidade pertence dentro do prédio: a chefia
+// (Gabinete/Diretoria Geral e seus subordinados diretos, junto com o próprio
+// nó-prédio) ocupa a sala fechada; qualquer outra unidade pertence à
+// repartição ancorada no filho direto da raiz do prédio mais próximo dela na
+// cadeia de pais (ex.: uma Coordenação sob uma Diretoria sob uma
+// Pró-Reitoria pertence à Pró-Reitoria).
+function departmentOf(
+  unitId: string,
+  buildingRootId: string,
+  unitsById: Map<string, OrgUnit>,
+  gabineteId: string | null,
+): { groupId: string; groupLabel: string; isHead: boolean } {
+  if (
+    unitId === buildingRootId ||
+    (gabineteId && (unitId === gabineteId || isDescendantOf(unitId, gabineteId, unitsById)))
+  ) {
+    return { groupId: "__head__", groupLabel: "Gabinete", isHead: true };
+  }
+  let current = unitsById.get(unitId);
+  while (current && current.parent && current.parent !== buildingRootId) {
+    current = unitsById.get(current.parent);
+  }
+  if (current) return { groupId: current.id, groupLabel: current.nome, isHead: false };
+  return { groupId: "__head__", groupLabel: "Gabinete", isHead: true };
 }
 
 // ---------------------------------------------------------------------------
@@ -313,10 +336,44 @@ export default function App() {
     [orgUnits],
   );
 
-  // Agentes/prédios exibidos por padrão: Reitoria + Pró-Reitorias + o
-  // Gabinete do(a) Diretor(a) Geral de cada campus (~20 prédios). Clicar em
-  // um campus expande as diretorias vinculadas ao Gabinete daquele campus —
-  // evita colocar as ~450 unidades na cena de uma vez.
+  const toAgentNode = useCallback(
+    (unit: OrgUnit): AgentNode => {
+      const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
+      // O rótulo do agente é sempre a função/unidade como está escrita no
+      // organograma (nunca um nome de pessoa fictício). "Gabinete Do(a)
+      // Diretor(a) Geral" se repete em todos os campi, então nesse caso
+      // específico o nome do campus é anexado só para diferenciar o prédio —
+      // nunca substitui a função.
+      const displayName = ownerCampus
+        ? `${unit.nome} — ${ownerCampus.nome.replace(/^Campus\s+/i, "")}`
+        : unit.nome;
+      return {
+        id: unit.id,
+        name: displayName,
+        title: unit.nome,
+        campus: ownerCampus?.nome ?? "Reitoria",
+        color: colorForCargo(unit.cargo),
+        cargo: unit.cargo,
+        funcao: unit.funcao,
+      };
+    },
+    [campusRoots],
+  );
+
+  // Roster COMPLETO do organograma (as 453 unidades), usado para casar
+  // qualquer passo de uma sequência real (por mais profundo que seja — uma
+  // Coordenação dentro de uma Diretoria dentro de uma Pró-Reitoria) e para
+  // popular o escritório do prédio em foco com todas as suas repartições.
+  const allAgents: AgentNode[] = useMemo(
+    () => orgUnits.map(toAgentNode),
+    [orgUnits, toAgentNode],
+  );
+
+  // Atalho do cabeçalho: Reitoria + Pró-Reitorias + o Gabinete de cada
+  // campus (~20 chips). Clicar num campus expande as diretorias vinculadas
+  // ao Gabinete daquele campus na barra — é só um atalho de navegação; o
+  // escritório em si (agentsHere) sempre mostra o organograma completo do
+  // prédio, independente deste filtro.
   const agents: AgentNode[] = useMemo(() => {
     if (orgUnits.length === 0) return [];
     const reitoria = unitsById.get("1.1");
@@ -342,55 +399,8 @@ export default function App() {
       }
     }
 
-    return list.map((unit) => {
-      const isReitoria = unit.id === "1.1";
-      const isCampusGabinete = campusRoots.some((c) => c.id === unit.parent);
-
-      // Todo agente mora fisicamente num dos 14 prédios do mapa (Reitoria
-      // ou o campus a que pertence) — a posição vem das coordenadas reais
-      // desse prédio no RS, nunca de um layout arbitrário.
-      const locationId = physicalLocationId(unit.id, unitsById);
-      const locationUnit = unitsById.get(locationId);
-      const cityKey = locationUnit ? cityKeyFromName(locationUnit.nome) : "Reitoria";
-      const [baseX, baseZ] = RS_CITY_COORDS[cityKey] ?? [0, 0];
-
-      let pos: [number, number];
-      if (isReitoria || isCampusGabinete) {
-        // marcador principal do prédio: exatamente na coordenada da cidade
-        pos = [baseX, baseZ];
-      } else {
-        // demais agentes (Pró-Reitorias na Reitoria, diretorias/coordenações
-        // expandidas num campus): espalhados perto do prédio, por um ângulo
-        // estável derivado do próprio id (nunca hardcoded) — só usado como
-        // fallback caso apareçam fora do escritório em algum momento.
-        const angle = hashAngle(unit.id) * Math.PI * 2;
-        const radius = 3.2 + (hashAngle(`${unit.id}r`) % 1) * 1.6;
-        pos = [baseX + Math.cos(angle) * radius, baseZ + Math.sin(angle) * radius];
-      }
-
-      const ownerCampus = campusRoots.find((c) => c.id === unit.parent);
-      // O rótulo do agente é sempre a função/unidade como está escrita no
-      // organograma (nunca um nome de pessoa fictício). "Gabinete Do(a)
-      // Diretor(a) Geral" se repete em todos os campi, então nesse caso
-      // específico o nome do campus é anexado só para diferenciar o prédio —
-      // nunca substitui a função.
-      const displayName = ownerCampus
-        ? `${unit.nome} — ${ownerCampus.nome.replace(/^Campus\s+/i, "")}`
-        : unit.nome;
-
-      const node: AgentNode = {
-        id: unit.id,
-        name: displayName,
-        title: unit.nome,
-        campus: ownerCampus?.nome ?? "Reitoria",
-        color: colorForCargo(unit.cargo),
-        pos,
-        cargo: unit.cargo,
-        funcao: unit.funcao,
-      };
-      return node;
-    });
-  }, [orgUnits, unitsById, childrenByParent, campusRoots, expandedCampusId, campusFilterId]);
+    return list.map(toAgentNode);
+  }, [orgUnits, unitsById, childrenByParent, campusRoots, expandedCampusId, campusFilterId, toAgentNode]);
 
   // Os 14 prédios do mapa (Reitoria + 13 campi) — sempre visíveis, com
   // posição real derivada de RS_CITY_COORDS, independentemente de qual
@@ -432,15 +442,29 @@ export default function App() {
     [activeLocationId, mapLocations],
   );
 
-  // Agentes que "trabalham" fisicamente no prédio em foco — são eles que
-  // aparecem como avatares dentro do escritório quando a câmera entra. Já
-  // vem com a competência anexada, para o tooltip do OfficeCanvas.
+  // TODAS as unidades e cargos do prédio em foco — não só o atalho do
+  // cabeçalho. Cada unidade já vem com a repartição a que pertence
+  // (groupId/groupLabel/isHead), calculada subindo a cadeia de pais até o
+  // filho direto da raiz do prédio; é essa repartição que vira uma sala do
+  // OfficeCanvas.
   const agentsHere = useMemo(() => {
     if (!activeLocationId) return [];
-    return agents
+    const gabinete = (childrenByParent.get(activeLocationId) ?? []).find((u) =>
+      normalizeName(u.nome).includes("gabinete"),
+    );
+    return allAgents
       .filter((a) => physicalLocationId(a.id, unitsById) === activeLocationId)
-      .map((a) => ({ ...a, competencia: competenciaByName.get(normalizeName(a.title)) ?? null }));
-  }, [activeLocationId, agents, unitsById, competenciaByName]);
+      .map((a) => {
+        const dept = departmentOf(a.id, activeLocationId, unitsById, gabinete?.id ?? null);
+        return {
+          ...a,
+          competencia: competenciaByName.get(normalizeName(a.title)) ?? null,
+          groupId: dept.groupId,
+          groupLabel: dept.groupLabel,
+          isHead: dept.isHead,
+        };
+      });
+  }, [activeLocationId, allAgents, unitsById, childrenByParent, competenciaByName]);
 
   // Máquina de estados da câmera: zoom de drone para dentro do prédio em
   // foco (a partir da visão geral do mapa) revela o escritório só depois que
@@ -510,19 +534,26 @@ export default function App() {
       const data = await res.json();
 
       if (data.sequence) {
-        // Resolução defensiva: se o passo referenciar uma unidade que não
-        // está entre os agentes carregados (ex.: fora do nível de detalhe
-        // exibido), registra um aviso e PULA o passo — nunca anima um
-        // agente errado silenciosamente.
+        // Casa contra o roster COMPLETO (allAgents) — não o atalho do
+        // cabeçalho — para que todo hop da sequência real resolva a um
+        // assento de verdade, por mais fundo que a unidade esteja na
+        // hierarquia (é isso que faz o mensageiro percorrer a cadeia
+        // completa Reitoria -> Pró-Reitoria -> Diretoria -> Coordenação em
+        // vez de pular direto para o primeiro/único nível carregado antes).
+        // Prefere o destino (step.to); só cai para a origem (step.from) se o
+        // destino não existir no organograma. Resolução defensiva: se nem
+        // um nem outro existir, registra um aviso e PULA o passo — nunca
+        // anima uma unidade errada silenciosamente.
         const resolvableSteps = data.sequence
-          .map((step: any) => ({
-            step,
-            agent: agents.find((a) => a.id === step.to || a.id === step.from),
-          }))
+          .map((step: any) => {
+            const agent =
+              allAgents.find((a) => a.id === step.to) ?? allAgents.find((a) => a.id === step.from);
+            return { step, agent };
+          })
           .filter(({ step, agent }: any) => {
             if (!agent) {
               console.warn(
-                `[Organograma] Passo ignorado: unidade "${step.to}" não está entre os agentes exibidos.`,
+                `[Organograma] Passo ignorado: unidade "${step.to}" não está no organograma carregado.`,
               );
             }
             return Boolean(agent);
@@ -743,7 +774,7 @@ export default function App() {
             </button>
             {activeAgentId && (
               <span className="text-[11px] font-mono text-amber-400 bg-[#181517]/90 border border-amber-500/40 px-2.5 py-1 rounded-lg backdrop-blur truncate max-w-xs">
-                🎯 FOCANDO: {agents.find((a) => a.id === activeAgentId)?.name}
+                🎯 FOCANDO: {allAgents.find((a) => a.id === activeAgentId)?.name}
               </span>
             )}
           </div>

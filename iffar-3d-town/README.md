@@ -72,6 +72,15 @@ Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o anda
 
 </td>
 </tr>
+<tr>
+<td colspan="3" valign="top">
+
+### 🚶 Um andar só, com todas as repartições — e um mensageiro que anda até lá
+
+Cada prédio (Reitoria e os 13 campi) mostra **todo o organograma daquela unidade física** — não apenas os cargos de topo — organizado por **repartição real**: o Gabinete fica numa sala fechada à esquerda e, à direita, um "pod" de mesas por Pró-Reitoria/Diretoria/Coordenação, todos no mesmo corredor. Repartições muito pequenas (um ou dois cargos, comum em conselhos e comissões) são agrupadas em uma zona compartilhada de "Colegiados e Comissões" para não virar uma fileira de salas de uma pessoa só. Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: um avatar-mensageiro com uma correspondência sai da sala de origem, atravessa o corredor e entra na sala de destino — o holofote circular o acompanha durante o trajeto e só vira o cartão retangular da nova zona quando ele chega. A câmera rola junto, como uma torcida acompanhando o trajeto.
+
+</td>
+</tr>
 </table>
 
 <img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em pixel art: oceano azul com ondas, o contorno oficial do estado em verde com a Lagoa dos Patos, e 14 sprites de prédio de fachada verde e telhado vermelho na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
