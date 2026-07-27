@@ -147,15 +147,29 @@ const START_X = 2;
 const START_Y = 2;
 const CORRIDOR_H = 3;
 const ZONE_TOP = START_Y + CORRIDOR_H;
-const ZONE_GAP = 0.7;
-const DESK_COL_W = 4.9;
-const DESK_ROW_H = 5.0;
-const ZONE_PAD_X = 1.4;
-const ZONE_PAD_TOP = 2.6;
-const ZONE_PAD_BOTTOM = 1.2;
+const ZONE_GAP = 0.9;
+const DESK_COL_W = 6.2;
+const DESK_ROW_H = 6.4;
+const ZONE_PAD_X = 2.2;
+const ZONE_PAD_TOP = 3.4;
+const ZONE_PAD_BOTTOM = 2.2;
+
+// Nenhuma sala tem mais que isso de estações: é o que evita a "linha de
+// produção" de uma grade densa de mesas — nas salas de referência do
+// Gather 2.0, cada cômodo tem no máximo 3-4 pessoas, com chão vazio de
+// sobra ao redor. Repartições maiores viram várias salas lado a lado, da
+// mesma cor de carpete, em vez de uma sala só lotada.
+const CELL_MAX = 4;
+
+function chunk<T>(arr: T[], size: number): T[][] {
+  if (arr.length === 0) return [];
+  const out: T[][] = [];
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size));
+  return out;
+}
 
 function gridFor(n: number) {
-  const cols = Math.max(1, Math.min(3, Math.ceil(Math.sqrt(Math.max(1, n)))));
+  const cols = Math.max(1, Math.min(2, Math.ceil(Math.sqrt(Math.max(1, n)))));
   const rows = Math.max(1, Math.ceil(Math.max(1, n) / cols));
   return { cols, rows };
 }
@@ -223,38 +237,67 @@ function placeSeats(members: Agent[], zone: Zone, cols: number, topPad: number, 
 
 const SOCIAL_W = 13;
 
+// Cria uma ou mais salas pequenas (no máximo CELL_MAX mesas cada) para um
+// grupo de pessoas, todas com a mesma cor de carpete — para que, mesmo
+// numa repartição de 12 pessoas, o andar mostre 3 salas de 4, cada uma
+// com chão de sobra, em vez de uma sala só apinhada.
+function pushCells(
+  zones: Zone[],
+  seats: Seat[],
+  cursorX: { x: number },
+  kind: Zone["kind"],
+  label: string,
+  memberIds: string[],
+  agentsById: Map<string, Agent>,
+  floor: readonly [string, string],
+  rowH: number | null,
+) {
+  for (const cellIds of chunk(memberIds, CELL_MAX)) {
+    const size = zoneSize(cellIds.length);
+    const zoneIndex = zones.length;
+    const w = size.w;
+    const h = rowH ?? size.h;
+    const z: Zone = {
+      kind,
+      x: cursorX.x,
+      y: ZONE_TOP,
+      w,
+      h,
+      label,
+      agentIds: cellIds,
+      doorX: cursorX.x + w / 2,
+      floorA: floor[0],
+      floorB: floor[1],
+    };
+    zones.push(z);
+    const members = cellIds.map((id) => agentsById.get(id)).filter((a): a is Agent => Boolean(a));
+    const topPad = ZONE_PAD_TOP + (h - size.h) / 2;
+    placeSeats(members, z, size.cols, topPad, seats, zoneIndex);
+    cursorX.x += w + ZONE_GAP;
+  }
+}
+
 function buildPlan(agents: Agent[]): Plan {
   const { head, depts } = buildDepartments(agents);
+  const agentsById = new Map(agents.map((a) => [a.id, a] as const));
   const zones: Zone[] = [];
   const seats: Seat[] = [];
-  let cursorX = START_X;
+  const cursor = { x: START_X };
 
-  const headSize = zoneSize(head.length || 1);
-  const headW = Math.max(headSize.w, 11);
-  const headH = Math.max(headSize.h, 11);
-  const deptSizes = depts.map((d) => zoneSize(d.agentIds.length));
-  const rowH = Math.max(headH, ...deptSizes.map((s) => s.h), 11);
+  // altura de linha comum: o maior número de fiadas que qualquer sala vai
+  // precisar, calculada a partir de células já limitadas a CELL_MAX
+  const allSizes = [
+    zoneSize(Math.min(head.length || 1, CELL_MAX)),
+    ...depts.map((d) => zoneSize(Math.min(d.agentIds.length, CELL_MAX))),
+  ];
+  const rowH = Math.max(...allSizes.map((s) => s.h), 11);
 
-  // 1) sala fechada da chefia (Gabinete + assessoria direta)
-  const headZone: Zone = {
-    kind: "office",
-    x: cursorX,
-    y: ZONE_TOP,
-    w: headW,
-    h: headH,
-    label: "Gabinete",
-    agentIds: head.map((a) => a.id),
-    doorX: cursorX + headW / 2,
-    floorA: "#8b90cf",
-    floorB: "#9499d6",
-  };
-  zones.push(headZone);
-  placeSeats(head, headZone, headSize.cols, 3.6, seats, 0);
-  cursorX += headW + ZONE_GAP;
+  // 1) chefia (Gabinete + assessoria direta) — uma ou mais salas lilás
+  pushCells(zones, seats, cursor, "office", "Gabinete", head.map((a) => a.id), agentsById, ["#8b90cf", "#9499d6"], rowH);
 
   // 2) Estar — logo ao lado da chefia, para intercalar sala de trabalho e
   // espaço de convivência, como nos escritórios de referência.
-  const loungeX = cursorX;
+  const loungeX = cursor.x;
   zones.push({
     kind: "lounge",
     x: loungeX,
@@ -267,38 +310,19 @@ function buildPlan(agents: Agent[]): Plan {
     floorA: "#e7e9f4",
     floorB: "#dde0ee",
   });
-  cursorX += SOCIAL_W + ZONE_GAP;
+  cursor.x += SOCIAL_W + ZONE_GAP;
 
-  // 3) uma sala própria por repartição, cada uma com sua cor de piso
+  // 3) uma ou mais salas por repartição, todas com a mesma cor de piso
   let paletteIndex = 0;
-  depts.forEach((dept, i) => {
-    const size = deptSizes[i];
-    const zoneIndex = zones.length;
+  for (const dept of depts) {
     const isShared = dept.groupId === "__shared__";
     const floor = isShared ? (["#a8aeb2", "#b2b8bc"] as const) : POD_PALETTE[paletteIndex % POD_PALETTE.length];
     if (!isShared) paletteIndex++;
-    const z: Zone = {
-      kind: "pod",
-      x: cursorX,
-      y: ZONE_TOP,
-      w: size.w,
-      h: size.h,
-      label: dept.groupLabel,
-      agentIds: dept.agentIds,
-      doorX: cursorX + size.w / 2,
-      floorA: floor[0],
-      floorB: floor[1],
-    };
-    zones.push(z);
-    const members = dept.agentIds
-      .map((id) => agents.find((a) => a.id === id))
-      .filter((a): a is Agent => Boolean(a));
-    placeSeats(members, z, size.cols, ZONE_PAD_TOP, seats, zoneIndex);
-    cursorX += size.w + ZONE_GAP;
-  });
+    pushCells(zones, seats, cursor, "pod", dept.groupLabel, dept.agentIds, agentsById, floor, rowH);
+  }
 
   // 4) Copa — espaço de convivência informal (café, mesas pequenas)
-  const breakX = cursorX;
+  const breakX = cursor.x;
   zones.push({
     kind: "break",
     x: breakX,
@@ -311,10 +335,10 @@ function buildPlan(agents: Agent[]): Plan {
     floorA: "#efd9b8",
     floorB: "#e7cfa9",
   });
-  cursorX += SOCIAL_W + ZONE_GAP;
+  cursor.x += SOCIAL_W + ZONE_GAP;
 
   // 5) Reunião
-  const meetingX = cursorX;
+  const meetingX = cursor.x;
   zones.push({
     kind: "meeting",
     x: meetingX,
@@ -324,13 +348,13 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Reunião",
     agentIds: [],
     doorX: meetingX + SOCIAL_W / 2,
-    floorA: "#aab6c4", 
+    floorA: "#aab6c4",
     floorB: "#b4bfcc",
   });
-  cursorX += SOCIAL_W + ZONE_GAP;
+  cursor.x += SOCIAL_W + ZONE_GAP;
 
   // 6) Zen — cantinho de descompressão, sempre ao final da fileira
-  const zenX = cursorX;
+  const zenX = cursor.x;
   zones.push({
     kind: "zen",
     x: zenX,
@@ -343,12 +367,12 @@ function buildPlan(agents: Agent[]): Plan {
     floorA: "#c3d6c4",
     floorB: "#cbddcc",
   });
-  cursorX += SOCIAL_W + ZONE_GAP;
+  cursor.x += SOCIAL_W + ZONE_GAP;
 
   return {
     zones,
     seats,
-    totalW: cursorX + 1,
+    totalW: cursor.x + 1,
     totalH: ZONE_TOP + rowH + 2,
     corridorY: START_Y + CORRIDOR_H / 2,
   };
@@ -1237,7 +1261,6 @@ export const OfficeCanvas = ({
               >
                 <span className="bg-[#15171c]/90 text-stone-50 text-[9px] font-mono font-bold px-2.5 py-[3px] rounded-full shadow-md whitespace-nowrap block truncate">
                   {z.label}
-                  {z.agentIds.length > 0 ? ` · ${z.agentIds.length}` : ""}
                 </span>
               </div>
             ) : null,
