@@ -48,55 +48,63 @@ type Agent = OfficeAgent & { competencia?: CompetenciaLike | null };
 
 const TILE = 20;
 
-// Paleta clara e quente do Gather 2.0 (nada de marrom/oliva escuro)
+// Paleta amostrada quadro a quadro do vídeo de referência do Gather 2.0:
+// piso de tábua corrida quente, carpetes pastel, mesas claras, cadeiras
+// azul-marinho e móveis em pêssego/madeira clara. Nada de cinza industrial.
 const C = {
-  circA: "#efe3cf",
-  circB: "#ebdec8",
-  podA: "#bcc8d2",
-  podB: "#b4c1cc",
-  officeA: "#cdc7ea",
-  officeB: "#c5bee6",
-  loungeA: "#eef1f7",
-  loungeB: "#e4e9f2",
-  meetA: "#c9d2d8",
-  meetB: "#c1cbd2",
-  deskTop: "#f4f3ef",
-  deskEdge: "#cdcbc4",
-  chair: "#4a5578",
-  chairDark: "#39415e",
-  wood: "#c89b6a",
-  woodDark: "#a67c4e",
-  sofa: "#e3b78e",
-  sofaDark: "#c2946b",
-  leaf: "#3f8f5a",
-  leafHi: "#4fae6c",
-  pot: "#c97a4e",
-  screenFrame: "#2f3440",
-  metal: "#9aa3ad",
-  skin: "#e8b98a",
-  divider: "#dfd8c6",
-  dividerEdge: "#bdb49d",
-  courier: "#f59e0b",
+  // circulação: tábua corrida creme (o "chão do prédio")
+  floor: "#ece4d6",
+  floorSeam: "#e0d6c4",
+  floorSeam2: "#e6dccb",
+  // mesas
+  deskTop: "#f8f8f5",
+  deskEdge: "#dcdcd4",
+  deskBack: "#c9cdd2",
+  deskWood: "#e8c893",
+  deskWoodEdge: "#c9a166",
+  // cadeiras azul-marinho, como no vídeo
+  chair: "#4a5070",
+  chairDark: "#353a55",
+  chairLight: "#5a6180",
+  // madeira/móveis
+  wood: "#e0b483",
+  woodDark: "#bf8f5e",
+  sofa: "#f0c4a2",
+  sofaDark: "#d69f7c",
+  // plantas
+  leaf: "#4a9d75",
+  leafHi: "#63b98a",
+  leafDark: "#3a7d5c",
+  pot: "#d8dde4",
+  potDark: "#b9c1cb",
+  // diversos
+  screenFrame: "#3a4050",
+  metal: "#a8b0ba",
+  skin: "#f0c39a",
+  divider: "#e4ded0",
+  dividerEdge: "#cdc4b0",
+  courier: "#f0a044",
 } as const;
 
-// Cores de tampo para personalizar as estações (como no vídeo, onde uma mesa
-// é verde-menta, outra laranja) — escolhidas de forma estável pelo id.
-const DESK_ACCENTS = ["#f4f3ef", "#cfe9df", "#f5dcc2", "#dfe3f5", "#f7e2e2", "#e2eecd"];
-const SCREEN_COLORS = ["#4f7fd0", "#d06fa8", "#4fae8f", "#d9a24f", "#6f7fd0"];
-const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a"];
+// Tampos: a maioria branca, algumas em madeira clara ou menta/rosa — como
+// no vídeo, onde uma mesa é verde-água e outra tem tampo de madeira.
+const DESK_ACCENTS = ["#f8f8f5", "#f8f8f5", "#e8c893", "#c9e8e0", "#f8f8f5", "#f2dce4"];
+const SCREEN_COLORS = ["#5b8fd4", "#d47fb0", "#5bb99a", "#e0ae5e", "#7b8ad4", "#4fc0c0"];
+const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a", "#e0c088"];
 
-// Cada repartição ganha sua própria cor de piso (como nas salas do Gather
-// 2.0 — cinza, verde, lilás, azul...), para que o andar leia como um
-// conjunto de escritórios distintos, não uma única planta contínua.
+// Cada repartição ganha seu próprio carpete pastel (como as ilhas de mesa
+// do vídeo — cinza-sálvia, lilás, azul, areia), sobre o mesmo piso de
+// tábua corrida: é a cor do carpete, e não uma parede, que diz onde uma
+// repartição termina e a próxima começa.
 const POD_PALETTE: readonly [string, string][] = [
-  ["#cfe4da", "#c4d9cd"],
-  ["#e6d3e6", "#dbc6db"],
-  ["#cfe0ee", "#c3d5e4"],
-  ["#f0ddc8", "#e6d0b6"],
-  ["#e2ddc9", "#d7d1b6"],
-  ["#d9e0c9", "#cdd5b8"],
-  ["#f0d8de", "#e6cbd2"],
-  ["#d3d9ec", "#c8cfe1"],
+  ["#9aa8ad", "#a6b3b8"], // cinza-sálvia (o carpete das baias do vídeo)
+  ["#9298d4", "#9ba1da"], // lilás/periwinkle
+  ["#8fb0c4", "#9abaca"], // azul-cinza
+  ["#c4b49a", "#cdbea6"], // areia
+  ["#94b8a4", "#a0c2af"], // verde-água
+  ["#b8a0b4", "#c2acbe"], // rosa-acinzentado
+  ["#a0a8c8", "#acb3d0"], // azul-lavanda
+  ["#b0b89a", "#bac2a6"], // oliva claro
 ];
 
 function hash01(id: string): number {
@@ -237,8 +245,8 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Gabinete",
     agentIds: head.map((a) => a.id),
     doorX: cursorX + headW / 2,
-    floorA: C.officeA,
-    floorB: C.officeB,
+    floorA: "#8b90cf",
+    floorB: "#9499d6",
   };
   zones.push(headZone);
   placeSeats(head, headZone, headSize.cols, 3.6, seats, 0);
@@ -256,8 +264,8 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Estar",
     agentIds: [],
     doorX: loungeX + SOCIAL_W / 2,
-    floorA: C.loungeA,
-    floorB: C.loungeB,
+    floorA: "#e7e9f4",
+    floorB: "#dde0ee",
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
@@ -267,7 +275,7 @@ function buildPlan(agents: Agent[]): Plan {
     const size = deptSizes[i];
     const zoneIndex = zones.length;
     const isShared = dept.groupId === "__shared__";
-    const floor = isShared ? ([C.podA, C.podB] as const) : POD_PALETTE[paletteIndex % POD_PALETTE.length];
+    const floor = isShared ? (["#a8aeb2", "#b2b8bc"] as const) : POD_PALETTE[paletteIndex % POD_PALETTE.length];
     if (!isShared) paletteIndex++;
     const z: Zone = {
       kind: "pod",
@@ -300,8 +308,8 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Copa",
     agentIds: [],
     doorX: breakX + SOCIAL_W / 2,
-    floorA: "#f2e4c9",
-    floorB: "#e8d7b3",
+    floorA: "#efd9b8",
+    floorB: "#e7cfa9",
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
@@ -316,8 +324,8 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Reunião",
     agentIds: [],
     doorX: meetingX + SOCIAL_W / 2,
-    floorA: C.meetA,
-    floorB: C.meetB,
+    floorA: "#aab6c4", 
+    floorB: "#b4bfcc",
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
@@ -332,8 +340,8 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Zen",
     agentIds: [],
     doorX: zenX + SOCIAL_W / 2,
-    floorA: "#dee6d6",
-    floorB: "#d2dbc8",
+    floorA: "#c3d6c4",
+    floorB: "#cbddcc",
   });
   cursorX += SOCIAL_W + ZONE_GAP;
 
@@ -348,7 +356,35 @@ function buildPlan(agents: Agent[]): Plan {
 
 // --------------------------- DESENHO ----------------------------------------
 
-function checker(
+// Piso de tábua corrida do prédio inteiro: creme quente com juntas em
+// tijolo (fiadas deslocadas), exatamente como o chão de circulação do
+// vídeo. É o que dá o ar acolhedor em vez de xadrez industrial.
+function woodFloor(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  ctx.fillStyle = C.floor;
+  ctx.fillRect(0, 0, w * TILE, h * TILE);
+
+  const plankH = 1.15 * TILE;
+  const plankW = 11 * TILE;
+  const rows = Math.ceil((h * TILE) / plankH);
+  for (let r = 0; r < rows; r++) {
+    const y = r * plankH;
+    // junta entre fiadas: fininha e de baixo contraste, só o suficiente
+    // para o olho ler "tábua corrida" sem virar uma grade
+    ctx.fillStyle = C.floorSeam2;
+    ctx.fillRect(0, y, w * TILE, 1);
+    // topos de tábua, deslocados a cada fiada
+    const offset = ((r % 3) * plankW) / 3;
+    ctx.fillStyle = C.floorSeam;
+    for (let x = offset; x < w * TILE; x += plankW) {
+      ctx.fillRect(x, y + 1, 1, plankH - 1);
+    }
+  }
+}
+
+// Carpete de uma repartição: retângulo de cor sólida com um xadrez de
+// baixíssimo contraste por cima, como as ilhas de carpete do vídeo. Sem
+// borda dura — é a diferença de cor que delimita, não uma parede.
+function carpet(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -357,12 +393,22 @@ function checker(
   a: string,
   b: string,
 ) {
-  for (let ty = 0; ty < h; ty++) {
-    for (let tx = 0; tx < w; tx++) {
-      ctx.fillStyle = (tx + ty) % 2 === 0 ? a : b;
-      ctx.fillRect((x + tx) * TILE, (y + ty) * TILE, TILE, TILE);
+  ctx.fillStyle = a;
+  ctx.fillRect(x * TILE, y * TILE, w * TILE, h * TILE);
+  ctx.fillStyle = b;
+  const step = 2;
+  for (let ty = 0; ty < h; ty += step) {
+    for (let tx = 0; tx < w; tx += step) {
+      if (((tx / step) + (ty / step)) % 2 !== 0) continue;
+      const cw = Math.min(step, w - tx);
+      const ch = Math.min(step, h - ty);
+      ctx.fillRect((x + tx) * TILE, (y + ty) * TILE, cw * TILE, ch * TILE);
     }
   }
+  // sombra de contato bem sutil na borda inferior, para o carpete
+  // "assentar" no piso de madeira em vez de flutuar
+  ctx.fillStyle = "rgba(90,78,60,0.10)";
+  ctx.fillRect(x * TILE, (y + h) * TILE - 2, w * TILE, 3);
 }
 
 function roundRectPath(
@@ -403,22 +449,49 @@ function divider(
   else ctx.fillRect(x * TILE, y * TILE, len * TILE, t - 2);
 }
 
+// Vaso claro com folhagem redonda, do jeito que as plantas aparecem
+// espalhadas por todo o escritório do vídeo — elas é que dão o ar humano.
 function plant(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   const x = cx * TILE;
   const y = cy * TILE;
+  ctx.fillStyle = "rgba(90,78,60,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 8, 11, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // vaso claro
+  ctx.fillStyle = C.potDark;
+  roundRectPath(ctx, x - 8, y - 1, 16, 11, 3);
+  ctx.fill();
   ctx.fillStyle = C.pot;
-  ctx.fillRect(x - 7, y, 14, 9);
+  roundRectPath(ctx, x - 7, y - 1, 14, 9, 3);
+  ctx.fill();
+  // folhagem em três lóbulos
+  ctx.fillStyle = C.leafDark;
+  ctx.beginPath();
+  ctx.arc(x - 6, y - 8, 7, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 8, 7, 0, Math.PI * 2);
+  ctx.arc(x, y - 15, 8, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = C.leaf;
-  ctx.fillRect(x - 10, y - 15, 20, 16);
+  ctx.beginPath();
+  ctx.arc(x - 5, y - 9, 5.5, 0, Math.PI * 2);
+  ctx.arc(x + 5, y - 9, 5.5, 0, Math.PI * 2);
+  ctx.arc(x, y - 16, 6.5, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = C.leafHi;
-  ctx.fillRect(x - 6, y - 20, 12, 9);
+  ctx.beginPath();
+  ctx.arc(x - 1, y - 17, 3.5, 0, Math.PI * 2);
+  ctx.fill();
 }
 
 function frame(ctx: CanvasRenderingContext2D, cx: number, cy: number, tint: string) {
   const x = cx * TILE;
   const y = cy * TILE;
-  ctx.fillStyle = "#8a7a5c";
-  ctx.fillRect(x - 13, y - 9, 26, 18);
+  ctx.fillStyle = "#c9a97e";
+  roundRectPath(ctx, x - 13, y - 9, 26, 18, 2);
+  ctx.fill();
+  ctx.fillStyle = "#fdfbf6";
+  ctx.fillRect(x - 11, y - 7, 22, 14);
   ctx.fillStyle = tint;
   ctx.fillRect(x - 10, y - 6, 20, 12);
 }
@@ -426,14 +499,18 @@ function frame(ctx: CanvasRenderingContext2D, cx: number, cy: number, tint: stri
 function shelf(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   const x = cx * TILE;
   const y = cy * TILE;
+  ctx.fillStyle = "rgba(90,78,60,0.15)";
+  ctx.fillRect(x - 26, y + 8, 52, 3);
   ctx.fillStyle = C.woodDark;
-  ctx.fillRect(x - 26, y - 10, 52, 20);
+  roundRectPath(ctx, x - 26, y - 10, 52, 20, 3);
+  ctx.fill();
   ctx.fillStyle = C.wood;
   ctx.fillRect(x - 24, y - 8, 48, 16);
-  const books = ["#b4553f", "#3f6bb4", "#3f9e6b", "#a4763f", "#7a4fb4"];
+  const books = ["#d4705c", "#5c86d4", "#5cb98a", "#e0a85e", "#9a76d4", "#d45c9a"];
   for (let i = 0; i < 9; i++) {
     ctx.fillStyle = books[i % books.length];
-    ctx.fillRect(x - 22 + i * 5, y - 6, 4, 12);
+    const bh = 10 + ((i * 7) % 4);
+    ctx.fillRect(x - 22 + i * 5, y - 4 - (bh - 10), 4, bh);
   }
 }
 
@@ -442,23 +519,35 @@ function sofa(ctx: CanvasRenderingContext2D, cx: number, cy: number, horizontal 
   const y = cy * TILE;
   const w = horizontal ? 66 : 30;
   const h = horizontal ? 30 : 66;
+  ctx.fillStyle = "rgba(90,78,60,0.15)";
+  roundRectPath(ctx, x - w / 2 - 2, y - h / 2 + 3, w + 4, h + 4, 7);
+  ctx.fill();
+  // encosto
   ctx.fillStyle = C.sofaDark;
-  ctx.fillRect(x - w / 2 - 3, y - h / 2 - 3, w + 6, h + 6);
+  roundRectPath(ctx, x - w / 2 - 3, y - h / 2 - 3, w + 6, h + 6, 8);
+  ctx.fill();
+  // assento
   ctx.fillStyle = C.sofa;
-  ctx.fillRect(x - w / 2, y - h / 2, w, h);
+  roundRectPath(ctx, x - w / 2, y - h / 2, w, h, 6);
+  ctx.fill();
+  // divisão das almofadas
   ctx.fillStyle = C.sofaDark;
   if (horizontal) {
-    ctx.fillRect(x - w / 6, y - h / 2, 2, h);
-    ctx.fillRect(x + w / 6, y - h / 2, 2, h);
+    ctx.fillRect(x - w / 6, y - h / 2 + 3, 2, h - 6);
+    ctx.fillRect(x + w / 6, y - h / 2 + 3, 2, h - 6);
   } else {
-    ctx.fillRect(x - w / 2, y - h / 6, w, 2);
-    ctx.fillRect(x - w / 2, y + h / 6, w, 2);
+    ctx.fillRect(x - w / 2 + 3, y - h / 6, w - 6, 2);
+    ctx.fillRect(x - w / 2 + 3, y + h / 6, w - 6, 2);
   }
 }
 
 function roundTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
   const x = cx * TILE;
   const y = cy * TILE;
+  ctx.fillStyle = "rgba(90,78,60,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 5, r + 2, r * 0.85, 0, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = C.woodDark;
   ctx.beginPath();
   ctx.arc(x, y, r + 3, 0, Math.PI * 2);
@@ -466,6 +555,10 @@ function roundTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: nu
   ctx.fillStyle = C.wood;
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
+  ctx.arc(x - r * 0.25, y - r * 0.3, r * 0.42, 0, Math.PI * 2);
   ctx.fill();
 }
 
@@ -504,79 +597,158 @@ function pond(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) 
   ctx.stroke();
 }
 
-// Cadeira de escritório vista de cima (base + encosto), sem ninguém sentado.
-function emptyChair(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  const x = cx * TILE;
-  const y = cy * TILE;
+// Cadeira de escritório vista de cima: encosto arredondado azul-marinho
+// com apoios de braço, exatamente como as cadeiras do vídeo.
+function officeChair(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  ctx.fillStyle = "rgba(60,52,40,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 11, 12, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  // apoios de braço
   ctx.fillStyle = C.chairDark;
-  ctx.fillRect(x - 11, y - 9, 22, 20);
+  roundRectPath(ctx, x - 14, y - 2, 4, 12, 2);
+  ctx.fill();
+  roundRectPath(ctx, x + 10, y - 2, 4, 12, 2);
+  ctx.fill();
+  // encosto
+  ctx.fillStyle = C.chairDark;
+  roundRectPath(ctx, x - 12, y - 8, 24, 22, 7);
+  ctx.fill();
   ctx.fillStyle = C.chair;
-  ctx.fillRect(x - 9, y - 7, 18, 16);
-  ctx.fillStyle = C.chairDark;
-  ctx.fillRect(x - 12, y - 3, 3, 8);
-  ctx.fillRect(x + 9, y - 3, 3, 8);
+  roundRectPath(ctx, x - 10, y - 6, 20, 18, 6);
+  ctx.fill();
+  // brilho no estofado
+  ctx.fillStyle = C.chairLight;
+  roundRectPath(ctx, x - 7, y - 3, 14, 7, 3);
+  ctx.fill();
 }
 
-// Mesa densa e personalizada: 2 monitores com conteúdo, teclado, torre,
-// caneca, planta e um objeto pessoal — como as estações do Gather 2.0.
-function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: number) {
+function emptyChair(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  officeChair(ctx, cx * TILE, cy * TILE);
+}
+
+// Estação de trabalho no formato do vídeo: um tampo claro e arredondado
+// encostado num painel de fundo, com monitores, teclado e objetos pessoais
+// EM CIMA dele; a cadeira e a pessoa ficam logo abaixo, de costas.
+function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: number, t: number) {
   const x = cx * TILE;
   const y = cy * TILE;
-  const w = 3.6 * TILE;
-  const h = 1.5 * TILE;
+  const w = 3.9 * TILE;
+  const h = 1.45 * TILE;
   const left = x - w / 2;
   const top = y - h / 2;
 
   const accent = DESK_ACCENTS[Math.floor(seed * DESK_ACCENTS.length) % DESK_ACCENTS.length];
-  ctx.fillStyle = C.deskEdge;
-  ctx.fillRect(left - 2, top - 2, w + 4, h + 4);
+  const isWood = accent === C.deskWood;
+
+  // painel/divisória baixa atrás do tampo (o "fundo" cinza das baias)
+  ctx.fillStyle = C.deskBack;
+  roundRectPath(ctx, left - 3, top - 5, w + 6, 7, 2);
+  ctx.fill();
+
+  // sombra de contato + tampo
+  ctx.fillStyle = "rgba(70,60,45,0.14)";
+  roundRectPath(ctx, left - 1, top + 4, w + 2, h, 4);
+  ctx.fill();
+  ctx.fillStyle = isWood ? C.deskWoodEdge : C.deskEdge;
+  roundRectPath(ctx, left - 2, top - 2, w + 4, h + 4, 4);
+  ctx.fill();
   ctx.fillStyle = accent;
-  ctx.fillRect(left, top, w, h);
+  roundRectPath(ctx, left, top, w, h, 3);
+  ctx.fill();
 
-  // torre do computador
+  // torre do computador, encostada na divisória
   ctx.fillStyle = C.screenFrame;
-  ctx.fillRect(left + 3, top + 4, 9, 20);
+  roundRectPath(ctx, left + 4, top + 3, 9, 21, 2);
+  ctx.fill();
+  ctx.fillStyle = "#5b8fd4";
+  ctx.fillRect(left + 6, top + 6, 5, 2);
 
-  // monitor principal
+  // monitor principal, com "conteúdo" na tela e um leve piscar de cursor
   const s1 = SCREEN_COLORS[Math.floor(seed * 7) % SCREEN_COLORS.length];
   ctx.fillStyle = C.screenFrame;
-  ctx.fillRect(left + 16, top + 2, 26, 17);
+  roundRectPath(ctx, left + 17, top + 1, 28, 19, 2);
+  ctx.fill();
   ctx.fillStyle = s1;
-  ctx.fillRect(left + 18, top + 4, 22, 13);
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.fillRect(left + 20, top + 6, 12, 2);
-  ctx.fillRect(left + 20, top + 10, 16, 2);
+  ctx.fillRect(left + 19, top + 3, 24, 15);
+  ctx.fillStyle = "rgba(255,255,255,0.55)";
+  ctx.fillRect(left + 21, top + 5, 13, 2);
+  ctx.fillRect(left + 21, top + 9, 18, 2);
+  ctx.fillRect(left + 21, top + 13, 10, 2);
+  if (Math.floor(t * 1.6 + seed * 10) % 2 === 0) {
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.fillRect(left + 32, top + 13, 2, 2);
+  }
 
   // segundo monitor
   const s2 = SCREEN_COLORS[Math.floor(seed * 13) % SCREEN_COLORS.length];
   ctx.fillStyle = C.screenFrame;
-  ctx.fillRect(left + 45, top + 3, 19, 15);
+  roundRectPath(ctx, left + 48, top + 2, 20, 16, 2);
+  ctx.fill();
   ctx.fillStyle = s2;
-  ctx.fillRect(left + 47, top + 5, 15, 11);
+  ctx.fillRect(left + 50, top + 4, 16, 12);
+  ctx.fillStyle = "rgba(255,255,255,0.4)";
+  ctx.fillRect(left + 52, top + 6, 9, 2);
 
-  // teclado
-  ctx.fillStyle = "#e6e6e2";
-  ctx.fillRect(left + 20, top + 22, 26, 7);
-  ctx.fillStyle = "#c2c2bd";
-  ctx.fillRect(left + 22, top + 24, 22, 3);
+  // teclado + mouse
+  ctx.fillStyle = "#ececea";
+  roundRectPath(ctx, left + 21, top + 23, 27, 7, 2);
+  ctx.fill();
+  ctx.fillStyle = "#c8c8c4";
+  ctx.fillRect(left + 23, top + 25, 23, 3);
+  ctx.fillStyle = "#ececea";
+  ctx.beginPath();
+  ctx.ellipse(left + 53, top + 26, 3.5, 4.5, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // objetos pessoais (caneca, planta ou brinquedo — variam pelo seed)
-  if (seed > 0.66) {
+  // objeto pessoal — cada mesa é um pouco diferente, como no vídeo
+  const k = Math.floor(seed * 4) % 4;
+  const ox = left + w - 15;
+  const oy = top + 20;
+  if (k === 0) {
+    // caneca
     ctx.fillStyle = "#d9584f";
-    ctx.fillRect(left + w - 16, top + 20, 9, 9);
-  } else if (seed > 0.33) {
+    roundRectPath(ctx, ox - 4, oy, 9, 9, 2);
+    ctx.fill();
+    ctx.strokeStyle = "#d9584f";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(ox + 6.5, oy + 4.5, 3, -1.2, 1.2);
+    ctx.stroke();
+  } else if (k === 1) {
+    // plantinha de mesa
     ctx.fillStyle = C.leaf;
-    ctx.fillRect(left + w - 17, top + 17, 12, 12);
+    ctx.beginPath();
+    ctx.arc(ox - 1, oy + 2, 5, 0, Math.PI * 2);
+    ctx.arc(ox + 4, oy + 3, 4, 0, Math.PI * 2);
+    ctx.fill();
     ctx.fillStyle = C.pot;
-    ctx.fillRect(left + w - 15, top + 27, 8, 4);
+    roundRectPath(ctx, ox - 4, oy + 6, 10, 6, 2);
+    ctx.fill();
+  } else if (k === 2) {
+    // pilha de papéis
+    ctx.fillStyle = "#fdfbf4";
+    roundRectPath(ctx, ox - 4, oy + 2, 12, 9, 1);
+    ctx.fill();
+    ctx.fillStyle = "#d8d4c8";
+    ctx.fillRect(ox - 2, oy + 5, 8, 1);
+    ctx.fillRect(ox - 2, oy + 8, 6, 1);
   } else {
+    // patinho/brinquedo amarelo
     ctx.fillStyle = "#f2c14e";
-    ctx.fillRect(left + w - 15, top + 21, 8, 8);
+    ctx.beginPath();
+    ctx.arc(ox, oy + 6, 4.5, 0, Math.PI * 2);
+    ctx.arc(ox + 4, oy + 2, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e08a3a";
+    ctx.fillRect(ox + 6, oy + 2, 3, 2);
   }
 }
 
-// Pessoa SENTADA vista por trás: vemos a nuca/cabelo, os ombros e o encosto
-// da cadeira — é assim que aparecem as pessoas trabalhando no Gather 2.0.
+// Pessoa SENTADA vista por trás: cabeça redonda com cabelo, ombros na cor
+// do cargo e a cadeira azul-marinho envolvendo — do jeito que as pessoas
+// trabalhando aparecem no vídeo. Todo mundo respira de leve (bob sutil,
+// defasado pelo seed), então o andar inteiro parece vivo, não congelado.
 function seatedPerson(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -587,70 +759,92 @@ function seatedPerson(
   t: number,
 ) {
   const x = cx * TILE;
-  const bob = active ? Math.sin(t * 5) * 1.5 : 0;
+  // respiração de fundo para todos + digitação mais marcada para quem
+  // está resolvendo a demanda
+  const idle = Math.sin(t * 1.5 + seed * 6.28) * 0.55;
+  const bob = active ? Math.sin(t * 5) * 1.6 : idle;
   const y = cy * TILE + bob;
 
-  // encosto da cadeira, atrás da pessoa
-  ctx.fillStyle = C.chairDark;
-  ctx.fillRect(x - 12, y - 6, 24, 22);
-  ctx.fillStyle = C.chair;
-  ctx.fillRect(x - 10, y - 4, 20, 18);
-  // apoios de braço
-  ctx.fillStyle = C.chairDark;
-  ctx.fillRect(x - 13, y + 1, 3, 9);
-  ctx.fillRect(x + 10, y + 1, 3, 9);
+  officeChair(ctx, x, y);
 
-  // ombros (camisa na cor do cargo)
+  // ombros na cor do cargo: uma faixa estreita, quase toda escondida atrás
+  // da cabeça — como no vídeo, onde o que se vê da pessoa é sobretudo o
+  // alto da cabeça, e a cadeira emoldura por baixo
   ctx.fillStyle = shirt;
-  ctx.fillRect(x - 9, y - 8, 18, 8);
-
-  // cabeça vista de cima/por trás (quase toda cabelo)
-  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
-  ctx.fillStyle = C.skin;
-  ctx.fillRect(x - 7, y - 17, 14, 11);
-  ctx.fillStyle = hair;
-  ctx.fillRect(x - 8, y - 19, 16, 9);
-  ctx.fillRect(x - 8, y - 12, 3, 4);
-  ctx.fillRect(x + 5, y - 12, 3, 4);
-
-  if (active) {
-    ctx.strokeStyle = "#f59e0b";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - 15, y - 21, 30, 38);
-  }
-}
-
-// Mensageiro: figura de pé, vista de trás, com as pernas alternando — quem
-// carrega a demanda de uma repartição para outra pelo corredor. A cor da
-// camisa é a do cargo de destino, então já anuncia quem vai recebê-la.
-function drawWalker(ctx: CanvasRenderingContext2D, x: number, y: number, shirt: string, t: number) {
-  const legPhase = Math.floor(t * 6) % 2;
-
-  ctx.fillStyle = "rgba(0,0,0,0.25)";
-  ctx.beginPath();
-  ctx.ellipse(x, y, 8, 3, 0, 0, Math.PI * 2);
+  roundRectPath(ctx, x - 8.5, y - 7, 17, 9, 4);
+  ctx.fill();
+  ctx.fillStyle = "rgba(0,0,0,0.10)";
+  roundRectPath(ctx, x - 8.5, y - 1, 17, 3, 2);
   ctx.fill();
 
-  ctx.fillStyle = "#26221d";
+  // cabeça vista por trás — nuca de cabelo, com uma nesga de pele no
+  // pescoço para não virar uma bola chapada
+  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
+  ctx.fillStyle = C.skin;
+  roundRectPath(ctx, x - 3.5, y - 11, 7, 6, 2);
+  ctx.fill();
+  ctx.fillStyle = hair;
+  ctx.beginPath();
+  ctx.arc(x, y - 13, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.14)";
+  ctx.beginPath();
+  ctx.arc(x - 2.4, y - 15.2, 2.8, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Mensageiro: a mesma linguagem visual dos avatares sentados, só que de pé
+// e de costas, com as pernas alternando e um envelope na mão. É ele quem
+// leva a demanda de uma repartição para outra pelo corredor.
+function drawWalker(ctx: CanvasRenderingContext2D, x: number, y: number, shirt: string, t: number) {
+  const legPhase = Math.floor(t * 7) % 2;
+  const bob = legPhase === 0 ? 0 : -1;
+
+  ctx.fillStyle = "rgba(60,52,40,0.24)";
+  ctx.beginPath();
+  ctx.ellipse(x, y, 9, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // pernas
+  ctx.fillStyle = "#3d4159";
   if (legPhase === 0) {
-    ctx.fillRect(x - 6, y - 11, 4, 10);
-    ctx.fillRect(x + 2, y - 9, 4, 8);
+    roundRectPath(ctx, x - 6, y - 11, 4.5, 10, 2);
+    ctx.fill();
+    roundRectPath(ctx, x + 1.5, y - 9, 4.5, 8, 2);
+    ctx.fill();
   } else {
-    ctx.fillRect(x - 6, y - 9, 4, 8);
-    ctx.fillRect(x + 2, y - 11, 4, 10);
+    roundRectPath(ctx, x - 6, y - 9, 4.5, 8, 2);
+    ctx.fill();
+    roundRectPath(ctx, x + 1.5, y - 11, 4.5, 10, 2);
+    ctx.fill();
   }
 
+  // tronco
   ctx.fillStyle = shirt;
-  ctx.fillRect(x - 8, y - 23, 16, 13);
+  roundRectPath(ctx, x - 8, y - 22 + bob, 16, 13, 5);
+  ctx.fill();
 
+  // cabeça
+  ctx.fillStyle = C.skin;
+  ctx.beginPath();
+  ctx.arc(x, y - 26 + bob, 7, 0, Math.PI * 2);
+  ctx.fill();
   ctx.fillStyle = "#2b1a0e";
-  ctx.fillRect(x - 6, y - 31, 12, 9);
+  ctx.beginPath();
+  ctx.arc(x, y - 27.5 + bob, 7, 0, Math.PI * 2);
+  ctx.fill();
 
-  // pastinha/envelope com a demanda, na mão
+  // envelope com a demanda, na mão
   ctx.fillStyle = C.courier;
-  ctx.fillRect(x + 6, y - 20, 8, 10);
-  ctx.fillStyle = "#b45309";
-  ctx.fillRect(x + 6, y - 20, 8, 2);
+  roundRectPath(ctx, x + 6, y - 19 + bob, 9, 7, 1);
+  ctx.fill();
+  ctx.strokeStyle = "#c9762a";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + 6, y - 19 + bob);
+  ctx.lineTo(x + 10.5, y - 15.5 + bob);
+  ctx.lineTo(x + 15, y - 19 + bob);
+  ctx.stroke();
 }
 
 // --------------------------- MOVIMENTO --------------------------------------
@@ -794,10 +988,10 @@ export const OfficeCanvas = ({
     ctx.imageSmoothingEnabled = false;
 
     const drawScene = (t: number, walkerPos: Point | null, walkerColor: string) => {
-      checker(ctx, 0, 0, plan.totalW, plan.totalH, C.circA, C.circB);
+      woodFloor(ctx, plan.totalW, plan.totalH);
 
       for (const z of plan.zones) {
-        checker(ctx, z.x, z.y, z.w, z.h, z.floorA, z.floorB);
+        carpet(ctx, z.x, z.y, z.w, z.h, z.floorA, z.floorB);
       }
 
       // Decoração da sala da chefia — sem paredes: o piso lilás e a
@@ -893,7 +1087,7 @@ export const OfficeCanvas = ({
         const agent = agents.find((a) => a.id === seat.agentId);
         if (!agent) continue;
         const seed = hash01(agent.id);
-        desk(ctx, seat.deskX, seat.deskY, seed);
+        desk(ctx, seat.deskX, seat.deskY, seed, t);
         seatedPerson(ctx, seat.deskX, seat.deskY + 1.6, agent.color, seed, agent.id === visualActiveId, t);
       }
 
@@ -901,9 +1095,18 @@ export const OfficeCanvas = ({
     };
 
     let raf = 0;
+    let lastDraw = -1;
     const render = (ms: number) => {
-      const t = ms / 1000;
+      raf = requestAnimationFrame(render);
+
       const walk = walkRef.current;
+      // 60fps enquanto alguém anda ou trabalha; ~15fps no repouso, só para
+      // manter a respiração dos avatares viva sem custar CPU à toa.
+      const interval = walk || visualActiveId ? 0 : 66;
+      if (lastDraw >= 0 && ms - lastDraw < interval) return;
+      lastDraw = ms;
+
+      const t = ms / 1000;
       let walkerPos: Point | null = null;
       if (walk) {
         const p = walkPosition(walk, ms - walk.startTs);
@@ -911,43 +1114,58 @@ export const OfficeCanvas = ({
         if (p.done) walkRef.current = null;
       }
 
-      drawScene(t, walkerPos, walk?.color ?? "#f59e0b");
+      drawScene(t, walkerPos, walk?.color ?? C.courier);
 
-      // HOLOFOTE: escurece o andar inteiro e reacende só a área ativa —
-      // um círculo seguindo o mensageiro em trânsito, ou o retângulo da
-      // zona quando ninguém está andando.
+      // FOCO: como no vídeo, o andar NÃO apaga — ele só recua um pouco, e a
+      // área que está resolvendo a demanda ganha um cartão claro por cima.
+      // A leitura é suave, não um holofote de palco.
+      const dim = "rgba(74,64,48,0.30)";
       if (walkerPos) {
-        ctx.fillStyle = "rgba(28,24,18,0.6)";
+        ctx.fillStyle = dim;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        const gx = walkerPos.x * TILE;
+        const gy = walkerPos.y * TILE;
+        const r = 3.6 * TILE;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(walkerPos.x * TILE, walkerPos.y * TILE, 3.4 * TILE, 0, Math.PI * 2);
+        ctx.arc(gx, gy, r, 0, Math.PI * 2);
         ctx.clip();
-        drawScene(t, walkerPos, walk?.color ?? "#f59e0b");
+        drawScene(t, walkerPos, walk?.color ?? C.courier);
         ctx.restore();
+        // halo quente ao redor de quem está levando a demanda
+        const g = ctx.createRadialGradient(gx, gy, r * 0.72, gx, gy, r);
+        g.addColorStop(0, "rgba(255,246,228,0)");
+        g.addColorStop(1, "rgba(255,246,228,0.5)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(gx, gy, r, 0, Math.PI * 2);
+        ctx.fill();
       } else if (activeZone) {
-        ctx.fillStyle = "rgba(28,24,18,0.6)";
+        ctx.fillStyle = dim;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        const pad = 0.35 * TILE;
+        const pad = 0.4 * TILE;
         const rx = activeZone.x * TILE - pad;
         const ry = activeZone.y * TILE - pad;
         const rw = activeZone.w * TILE + pad * 2;
         const rh = activeZone.h * TILE + pad * 2;
 
         ctx.save();
-        roundRectPath(ctx, rx, ry, rw, rh, 14);
+        roundRectPath(ctx, rx, ry, rw, rh, 16);
         ctx.clip();
-        drawScene(t, null, "#f59e0b");
+        drawScene(t, null, C.courier);
         ctx.restore();
 
-        ctx.strokeStyle = "#fdf6e6";
-        ctx.lineWidth = 5;
-        roundRectPath(ctx, rx, ry, rw, rh, 14);
+        // moldura creme suave, como o cartão de destaque do vídeo
+        ctx.strokeStyle = "rgba(255,250,238,0.92)";
+        ctx.lineWidth = 6;
+        roundRectPath(ctx, rx, ry, rw, rh, 16);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(190,172,138,0.5)";
+        ctx.lineWidth = 1.5;
+        roundRectPath(ctx, rx - 3, ry - 3, rw + 6, rh + 6, 18);
         ctx.stroke();
       }
-
-      if (visualActiveId || walkerPos) raf = requestAnimationFrame(render);
     };
     raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
@@ -976,9 +1194,9 @@ export const OfficeCanvas = ({
   const visualActiveSeat = visualActiveId ? seatById.get(visualActiveId) : null;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-[#171b17] p-4 animate-fade-in">
+    <div className="absolute inset-0 flex items-center justify-center bg-[#2a2620] p-4 animate-fade-in">
       <div
-        className="relative max-w-full max-h-full overflow-auto rounded-2xl border-[6px] border-[#8a7a5c] shadow-2xl"
+        className="relative max-w-full max-h-full overflow-auto rounded-2xl border-[6px] border-[#d9c8a8] shadow-2xl"
         style={{ lineHeight: 0 }}
       >
         <div className="relative" style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}>
@@ -1017,7 +1235,7 @@ export const OfficeCanvas = ({
                 }`}
                 style={{ left: z.x * TILE + 5, top: z.y * TILE + 4, maxWidth: z.w * TILE - 10 }}
               >
-                <span className="bg-[#1f2430]/90 text-stone-100 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/15 shadow whitespace-nowrap block truncate">
+                <span className="bg-[#15171c]/90 text-stone-50 text-[9px] font-mono font-bold px-2.5 py-[3px] rounded-full shadow-md whitespace-nowrap block truncate">
                   {z.label}
                   {z.agentIds.length > 0 ? ` · ${z.agentIds.length}` : ""}
                 </span>
@@ -1040,21 +1258,19 @@ export const OfficeCanvas = ({
                 style={{ left: seat.deskX * TILE, top: (seat.deskY + 2.6) * TILE }}
               >
                 <div
-                  className={`flex flex-col items-start px-1.5 py-0.5 rounded-md shadow border font-mono ${
-                    isActive
-                      ? "bg-amber-400 text-slate-950 border-amber-600"
-                      : "bg-[#1f2430]/95 text-stone-100 border-white/15"
+                  className={`flex flex-col items-start px-2 py-[3px] rounded-xl shadow-md font-mono ${
+                    isActive ? "bg-amber-400 text-slate-950" : "bg-[#15171c]/92 text-stone-50"
                   }`}
                 >
-                  <span className="flex items-center gap-1 text-[9px] font-bold leading-tight max-w-[86px]">
+                  <span className="flex items-center gap-1.5 text-[9px] font-bold leading-tight max-w-[88px]">
                     <span
-                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      className={`w-[6px] h-[6px] rounded-full shrink-0 ${
                         isActive ? "bg-red-600 animate-pulse" : "bg-emerald-400"
                       }`}
                     />
                     <span className="truncate">{agent.name}</span>
                   </span>
-                  <span className={`text-[8px] leading-tight pl-2.5 ${isActive ? "text-slate-800" : "text-stone-400"}`}>
+                  <span className={`text-[8px] leading-tight pl-[13px] ${isActive ? "text-slate-800" : "text-stone-400"}`}>
                     {isActive ? "Trabalhando agora" : "Disponível"}
                   </span>
                 </div>
