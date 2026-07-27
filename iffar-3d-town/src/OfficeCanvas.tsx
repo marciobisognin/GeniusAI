@@ -1,14 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
 // ---------------------------------------------------------------------------
-// ESCRITÓRIO EM PIXEL ART (CANVAS) — ESTILO GATHER TOWN
+// ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0
 //
-// Substitui a sala única feita com divs por um andar de verdade: um corredor
-// central, uma sala com porta para cada agente (repartição) e uma sala de
-// reunião/estar compartilhada no fim do corredor. Paredes têm uma face
-// visível (não é só uma borda), avatares são sprites em pixel art (não um
-// círculo com emoji), e tudo é desenhado em canvas com bordas duras — nada de
-// `border-radius`/CSS blur.
+// Planta aberta, como no Gather 2.0: um piso de circulação creme com "ilhas"
+// de zonas delimitadas por COR DE PISO (não por paredes). As Pró-Reitorias /
+// Diretorias sentam juntas numa ilha de mesas com divisórias baixas de baia;
+// só a unidade-sede (Reitoria ou Gabinete do(a) Diretor(a) Geral) ganha uma
+// sala fechada com paredes de verdade. Complementam a planta uma área de
+// estar e uma sala de reunião.
+//
+// Quando uma tarefa está sendo resolvida, a câmera NÃO corta de cena: o andar
+// inteiro continua visível, tudo escurece e a zona ativa é redesenhada em
+// brilho total dentro de um cartão claro — o "holofote" do Gather 2.0.
 // ---------------------------------------------------------------------------
 
 interface OfficeAgent {
@@ -25,308 +29,412 @@ interface CompetenciaLike {
   resumo: string | null;
 }
 
-const TILE = 20; // px por tile, resolução interna do canvas (1:1, sem upscale)
+type Agent = OfficeAgent & { competencia?: CompetenciaLike | null };
 
-// Paleta (pixel art, tons sólidos — nada de gradiente/blur)
-const COLOR = {
-  corridorFloorA: "#5b6b78",
-  corridorFloorB: "#516070",
-  roomFloorA: "#d9c69a",
-  roomFloorB: "#cdb888",
-  meetingFloorA: "#c9a876",
-  meetingFloorB: "#bd9c68",
-  wallBase: "#3a2b18",
-  wallTop: "#5c4425",
-  wallShadow: "#241a0f",
-  doorMat: "#8a5a2f",
-  deskTop: "#7a4e2b",
-  deskEdge: "#4a2f1a",
-  monitor: "#0284c7",
-  monitorFrame: "#075985",
-  chair: "#3a3630",
-  sofa: "#1e3a5f",
-  sofaEdge: "#0f2942",
-  tableTop: "#8a552e",
-  tableEdge: "#4a2f1a",
-  rug: "#7a4a2e",
-  shelf: "#5c4425",
-  shelfEdge: "#3a2b16",
-  plantPot: "#7c4a2d",
-  plantLeaf: "#166534",
-  frame: "#3f3121",
-  frameArt: "#7dd3c0",
+const TILE = 20;
+
+// Paleta clara e quente do Gather 2.0 (nada de marrom/oliva escuro)
+const C = {
+  circA: "#efe3cf",
+  circB: "#ebdec8",
+  podA: "#bcc8d2",
+  podB: "#b4c1cc",
+  officeA: "#cdc7ea",
+  officeB: "#c5bee6",
+  loungeA: "#eef1f7",
+  loungeB: "#e4e9f2",
+  meetA: "#c9d2d8",
+  meetB: "#c1cbd2",
+  wallTop: "#efe6d3",
+  wallFace: "#c3b393",
+  wallShadow: "#95866a",
+  deskTop: "#f4f3ef",
+  deskEdge: "#cdcbc4",
+  chair: "#4a5578",
+  chairDark: "#39415e",
+  wood: "#c89b6a",
+  woodDark: "#a67c4e",
+  sofa: "#e3b78e",
+  sofaDark: "#c2946b",
+  leaf: "#3f8f5a",
+  leafHi: "#4fae6c",
+  pot: "#c97a4e",
+  screenFrame: "#2f3440",
+  metal: "#9aa3ad",
   skin: "#e8b98a",
-  hair: "#2b1a0e",
-  pants: "#26221d",
-  shoes: "#161311",
+  divider: "#dfd8c6",
+  dividerEdge: "#bdb49d",
 } as const;
 
-// Sprite de personagem: grade 8x12 "pixels" (h=cabelo, f=rosto, s=camisa,
-// p=calça, o=sapato). A cor da camisa (`s`) vem do cargo do agente.
-const SPRITE: string[] = [
-  "..hhhh..",
-  ".hffffh.",
-  ".hffffh.",
-  "..ffff..",
-  ".ssssss.",
-  "ssssssss",
-  "ssssssss",
-  ".ss..ss.",
-  ".ss..ss.",
-  ".pp..pp.",
-  ".pp..pp.",
-  ".oo..oo.",
-];
-const SPRITE_PX = 3; // canvas-px por "pixel" do sprite
-const SPRITE_W = 8 * SPRITE_PX;
-const SPRITE_H = SPRITE.length * SPRITE_PX;
+// Cores de tampo para personalizar as estações (como no vídeo, onde uma mesa
+// é verde-menta, outra laranja) — escolhidas de forma estável pelo id.
+const DESK_ACCENTS = ["#f4f3ef", "#cfe9df", "#f5dcc2", "#dfe3f5", "#f7e2e2", "#e2eecd"];
+const SCREEN_COLORS = ["#4f7fd0", "#d06fa8", "#4fae8f", "#d9a24f", "#6f7fd0"];
 
-interface RoomBox {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  doorX: number; // centro da porta, em tiles, na parede de cima
-}
-
-interface FloorPlan {
-  corridor: { x: number; y: number; w: number; h: number };
-  rooms: RoomBox[]; // um por agente, na mesma ordem de `agents`
-  meeting: RoomBox;
-  totalW: number;
-  totalH: number;
-}
-
-const ROOM_W = 7;
-const ROOM_H = 8;
-const GAP = 1;
-const CORRIDOR_H = 3;
-const START_X = 2;
-const START_Y = 2;
-
-function buildFloorPlan(count: number): FloorPlan {
-  const n = Math.max(1, count);
-  const rooms: RoomBox[] = [];
-  for (let i = 0; i < n; i++) {
-    const x = START_X + i * (ROOM_W + GAP);
-    rooms.push({ x, y: START_Y + CORRIDOR_H, w: ROOM_W, h: ROOM_H, doorX: x + ROOM_W / 2 });
-  }
-  const meetingW = ROOM_W + 3;
-  const meetingX = START_X + n * (ROOM_W + GAP);
-  const meeting: RoomBox = {
-    x: meetingX,
-    y: START_Y + CORRIDOR_H,
-    w: meetingW,
-    h: ROOM_H,
-    doorX: meetingX + meetingW / 2,
-  };
-  const totalW = meetingX + meetingW + 2;
-  const totalH = START_Y + CORRIDOR_H + ROOM_H + 2;
-  return {
-    corridor: { x: START_X - 1, y: START_Y, w: totalW - START_X, h: CORRIDOR_H },
-    rooms,
-    meeting,
-    totalW,
-    totalH,
-  };
-}
-
-// Hash estável por id (mesmo uso do App.tsx) — evita decoração idêntica em
-// toda sala e mantém o layout estável entre re-renders.
 function hash01(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
   return (h % 1000) / 1000;
 }
 
-function fillTiles(
+// --------------------------- PLANTA -----------------------------------------
+
+interface Zone {
+  kind: "office" | "pod" | "lounge" | "meeting";
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  label?: string;
+  agentIds: string[];
+}
+
+interface Seat {
+  agentId: string;
+  deskX: number; // centro da mesa, em tiles
+  deskY: number;
+  zoneIndex: number;
+}
+
+interface Plan {
+  zones: Zone[];
+  seats: Seat[];
+  totalW: number;
+  totalH: number;
+}
+
+const OFFICE = { x: 2, y: 2, w: 11, h: 11 };
+const POD_W = 15;
+const POD_H = 11;
+const POD_X0 = 15;
+const POD_GAP = 1;
+const SEATS_PER_POD = 6;
+// espaçamento entre estações: precisa caber a plaquinha de nome sem colidir
+// com a estação vizinha (nomes de unidade do IFFar são longos)
+const COL_STEP = 4.9;
+const ROW_STEP = 5.0;
+
+function buildPlan(agents: Agent[]): Plan {
+  const zones: Zone[] = [];
+  const seats: Seat[] = [];
+
+  // 1) Sala fechada da unidade-sede (primeiro agente da lista)
+  const head = agents[0];
+  const officeZone: Zone = {
+    kind: "office",
+    ...OFFICE,
+    label: head ? "Gabinete" : undefined,
+    agentIds: head ? [head.id] : [],
+  };
+  zones.push(officeZone);
+  if (head) {
+    seats.push({
+      agentId: head.id,
+      deskX: OFFICE.x + OFFICE.w / 2,
+      deskY: OFFICE.y + 3.4,
+      zoneIndex: 0,
+    });
+  }
+
+  // 2) Ilhas de mesas abertas para as demais unidades
+  const rest = agents.slice(1);
+  const nPods = Math.ceil(rest.length / SEATS_PER_POD);
+  for (let p = 0; p < nPods; p++) {
+    const px = POD_X0 + p * (POD_W + POD_GAP);
+    const members = rest.slice(p * SEATS_PER_POD, (p + 1) * SEATS_PER_POD);
+    const zoneIndex = zones.length;
+    zones.push({
+      kind: "pod",
+      x: px,
+      y: OFFICE.y,
+      w: POD_W,
+      h: POD_H,
+      label: nPods > 1 ? `Equipe ${p + 1}` : "Pró-Reitorias e Diretorias",
+      agentIds: members.map((a) => a.id),
+    });
+    members.forEach((a, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      seats.push({
+        agentId: a.id,
+        deskX: px + 2.6 + col * COL_STEP,
+        deskY: OFFICE.y + 1.7 + row * ROW_STEP,
+        zoneIndex,
+      });
+    });
+  }
+
+  const contentRight = nPods > 0 ? POD_X0 + nPods * (POD_W + POD_GAP) : POD_X0;
+  const totalW = Math.max(contentRight, 32) + 2;
+
+  // 3) Zonas de convívio, na faixa de baixo
+  zones.push({ kind: "lounge", x: 2, y: 14, w: 13, h: 11, label: "Estar", agentIds: [] });
+  zones.push({ kind: "meeting", x: 17, y: 14, w: 13, h: 11, label: "Reunião", agentIds: [] });
+
+  return { zones, seats, totalW, totalH: 27 };
+}
+
+// --------------------------- DESENHO ----------------------------------------
+
+function checker(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
   w: number,
   h: number,
-  colorA: string,
-  colorB: string,
+  a: string,
+  b: string,
 ) {
   for (let ty = 0; ty < h; ty++) {
     for (let tx = 0; tx < w; tx++) {
-      ctx.fillStyle = (tx + ty) % 2 === 0 ? colorA : colorB;
+      ctx.fillStyle = (tx + ty) % 2 === 0 ? a : b;
       ctx.fillRect((x + tx) * TILE, (y + ty) * TILE, TILE, TILE);
     }
   }
 }
 
-// Parede com face visível (não só uma borda): uma faixa mais clara em cima
-// (topo da parede) e uma faixa escura embaixo (sombra/base) — dá a
-// sensação de altura em vez de uma simples linha de contorno.
-function drawWallSegment(
+function roundRectPath(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  wTiles: number,
-  vertical = false,
+  w: number,
+  h: number,
+  r: number,
 ) {
-  const thickness = 0.55 * TILE;
-  if (!vertical) {
-    ctx.fillStyle = COLOR.wallShadow;
-    ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, thickness);
-    ctx.fillStyle = COLOR.wallTop;
-    ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, thickness * 0.55);
-  } else {
-    ctx.fillStyle = COLOR.wallBase;
-    ctx.fillRect(x * TILE, y * TILE, thickness, wTiles * TILE);
-    ctx.fillStyle = COLOR.wallTop;
-    ctx.fillRect(x * TILE, y * TILE, thickness * 0.45, wTiles * TILE);
-  }
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
 }
 
-function drawRoomShell(ctx: CanvasRenderingContext2D, room: RoomBox, floorA: string, floorB: string) {
-  fillTiles(ctx, room.x, room.y, room.w, room.h, floorA, floorB);
-
-  // paredes laterais e de baixo (perímetro externo do prédio)
-  drawWallSegment(ctx, room.x, room.y, room.h, true);
-  drawWallSegment(ctx, room.x + room.w - 0.28, room.y, room.h, true);
-  ctx.fillStyle = COLOR.wallBase;
-  ctx.fillRect(room.x * TILE, (room.y + room.h - 0.4) * TILE, room.w * TILE, 0.4 * TILE);
-
-  // parede de cima, com vão da porta voltado para o corredor
-  const doorHalf = 0.9;
-  const segLeftW = room.doorX - doorHalf - room.x;
-  const segRightX = room.doorX + doorHalf;
-  const segRightW = room.x + room.w - segRightX;
-  if (segLeftW > 0) drawWallSegment(ctx, room.x, room.y, segLeftW);
-  if (segRightW > 0) drawWallSegment(ctx, segRightX, room.y, segRightW);
-
-  // tapete da soleira, marcando a porta
-  ctx.fillStyle = COLOR.doorMat;
-  ctx.fillRect((room.doorX - doorHalf) * TILE, room.y * TILE - 2, doorHalf * 2 * TILE, TILE * 0.5 + 2);
+// Parede com face visível: topo claro + face + sombra na base.
+function wallH(ctx: CanvasRenderingContext2D, x: number, y: number, wTiles: number) {
+  const t = TILE * 0.5;
+  ctx.fillStyle = C.wallShadow;
+  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t);
+  ctx.fillStyle = C.wallFace;
+  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t * 0.7);
+  ctx.fillStyle = C.wallTop;
+  ctx.fillRect(x * TILE, y * TILE, wTiles * TILE, t * 0.35);
 }
 
-function drawDesk(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  const w = 2.1 * TILE;
-  const h = 1.3 * TILE;
-  const x = cx * TILE - w / 2;
-  const y = cy * TILE - h / 2;
-  ctx.fillStyle = COLOR.deskEdge;
-  ctx.fillRect(x - 2, y - 2, w + 4, h + 4);
-  ctx.fillStyle = COLOR.deskTop;
-  ctx.fillRect(x, y, w, h);
-  ctx.fillStyle = COLOR.monitorFrame;
-  ctx.fillRect(x + w * 0.14, y + h * 0.12, w * 0.3, h * 0.55);
-  ctx.fillStyle = COLOR.monitor;
-  ctx.fillRect(x + w * 0.17, y + h * 0.18, w * 0.24, h * 0.4);
-
-  // cadeira, logo abaixo da mesa
-  ctx.fillStyle = COLOR.chair;
-  ctx.fillRect(cx * TILE - 0.35 * TILE, cy * TILE + h * 0.7, 0.7 * TILE, 0.7 * TILE);
+function wallV(ctx: CanvasRenderingContext2D, x: number, y: number, hTiles: number) {
+  const t = TILE * 0.45;
+  ctx.fillStyle = C.wallShadow;
+  ctx.fillRect(x * TILE, y * TILE, t, hTiles * TILE);
+  ctx.fillStyle = C.wallFace;
+  ctx.fillRect(x * TILE, y * TILE, t * 0.65, hTiles * TILE);
 }
 
-function drawMeetingTable(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  const r = 1.5 * TILE;
-  ctx.fillStyle = COLOR.rug;
-  ctx.globalAlpha = 0.5;
-  ctx.fillRect(cx * TILE - r * 1.5, cy * TILE - r * 1.5, r * 3, r * 3);
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = COLOR.tableEdge;
-  ctx.fillRect(cx * TILE - r - 2, cy * TILE - r - 2, r * 2 + 4, r * 2 + 4);
-  ctx.fillStyle = COLOR.tableTop;
-  ctx.fillRect(cx * TILE - r, cy * TILE - r, r * 2, r * 2);
-  const seats = [
-    [0, -1.5],
-    [0, 1.5],
-    [-1.4, -0.9],
-    [1.4, -0.9],
-    [-1.4, 0.9],
-    [1.4, 0.9],
-  ];
-  ctx.fillStyle = COLOR.chair;
-  for (const [dx, dy] of seats) {
-    ctx.fillRect(cx * TILE + dx * TILE - 6, cy * TILE + dy * TILE - 6, 12, 12);
-  }
-}
-
-function drawSofa(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  const cushionW = 0.85 * TILE;
-  const h = 1.5 * TILE;
-  ctx.fillStyle = COLOR.sofaEdge;
-  ctx.fillRect(x * TILE - 3, y * TILE - 3, cushionW * 3 + 6, h + 6);
-  for (let i = 0; i < 3; i++) {
-    ctx.fillStyle = COLOR.sofa;
-    ctx.fillRect(x * TILE + i * cushionW, y * TILE, cushionW - 2, h);
-  }
-}
-
-function drawBookshelf(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  const w = 3 * TILE;
-  const h = 1 * TILE;
-  ctx.fillStyle = COLOR.shelfEdge;
-  ctx.fillRect(x * TILE - 2, y * TILE - 2, w + 4, h + 4);
-  ctx.fillStyle = COLOR.shelf;
-  ctx.fillRect(x * TILE, y * TILE, w, h);
-  const bookColors = ["#7f1d1d", "#1e3a8a", "#166534", "#7c2d12", "#4c1d95"];
-  const bookW = w / 8;
-  for (let i = 0; i < 8; i++) {
-    ctx.fillStyle = bookColors[i % bookColors.length];
-    ctx.fillRect(x * TILE + i * bookW + 2, y * TILE + 2, bookW - 4, h - 4);
-  }
-}
-
-function drawPlant(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
-  ctx.fillStyle = COLOR.plantPot;
-  ctx.fillRect(cx * TILE - 8, cy * TILE, 16, 10);
-  ctx.fillStyle = COLOR.plantLeaf;
-  ctx.fillRect(cx * TILE - 11, cy * TILE - 16, 22, 18);
-  ctx.fillStyle = "#15803d";
-  ctx.fillRect(cx * TILE - 6, cy * TILE - 20, 12, 8);
-}
-
-function drawWallFrame(ctx: CanvasRenderingContext2D, x: number, y: number) {
-  ctx.fillStyle = COLOR.frame;
-  ctx.fillRect(x * TILE, y * TILE, 1.4 * TILE, 0.9 * TILE);
-  ctx.fillStyle = COLOR.frameArt;
-  ctx.fillRect(x * TILE + 3, y * TILE + 3, 1.4 * TILE - 6, 0.9 * TILE - 6);
-}
-
-function drawPerson(
+// Divisória baixa de baia (separa estações dentro da ilha aberta)
+function divider(
   ctx: CanvasRenderingContext2D,
-  px: number,
-  py: number,
-  shirtColor: string,
-  opts: { active: boolean; t: number },
+  x: number,
+  y: number,
+  len: number,
+  vertical: boolean,
 ) {
-  const bounce = opts.active ? Math.sin(opts.t * 6) * 2 : 0;
-  const baseX = px - SPRITE_W / 2;
-  const baseY = py - SPRITE_H - 4 + bounce;
+  const t = 5;
+  ctx.fillStyle = C.dividerEdge;
+  if (vertical) ctx.fillRect(x * TILE, y * TILE, t, len * TILE);
+  else ctx.fillRect(x * TILE, y * TILE, len * TILE, t);
+  ctx.fillStyle = C.divider;
+  if (vertical) ctx.fillRect(x * TILE, y * TILE, t - 2, len * TILE);
+  else ctx.fillRect(x * TILE, y * TILE, len * TILE, t - 2);
+}
 
-  // sombra no chão
-  ctx.fillStyle = "rgba(0,0,0,0.28)";
-  ctx.fillRect(px - SPRITE_W / 2.4, py - 4, SPRITE_W / 1.2, 5);
+function plant(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = C.pot;
+  ctx.fillRect(x - 7, y, 14, 9);
+  ctx.fillStyle = C.leaf;
+  ctx.fillRect(x - 10, y - 15, 20, 16);
+  ctx.fillStyle = C.leafHi;
+  ctx.fillRect(x - 6, y - 20, 12, 9);
+}
 
-  if (opts.active) {
+function frame(ctx: CanvasRenderingContext2D, cx: number, cy: number, tint: string) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = "#8a7a5c";
+  ctx.fillRect(x - 13, y - 9, 26, 18);
+  ctx.fillStyle = tint;
+  ctx.fillRect(x - 10, y - 6, 20, 12);
+}
+
+function shelf(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = C.woodDark;
+  ctx.fillRect(x - 26, y - 10, 52, 20);
+  ctx.fillStyle = C.wood;
+  ctx.fillRect(x - 24, y - 8, 48, 16);
+  const books = ["#b4553f", "#3f6bb4", "#3f9e6b", "#a4763f", "#7a4fb4"];
+  for (let i = 0; i < 9; i++) {
+    ctx.fillStyle = books[i % books.length];
+    ctx.fillRect(x - 22 + i * 5, y - 6, 4, 12);
+  }
+}
+
+function sofa(ctx: CanvasRenderingContext2D, cx: number, cy: number, horizontal = true) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  const w = horizontal ? 66 : 30;
+  const h = horizontal ? 30 : 66;
+  ctx.fillStyle = C.sofaDark;
+  ctx.fillRect(x - w / 2 - 3, y - h / 2 - 3, w + 6, h + 6);
+  ctx.fillStyle = C.sofa;
+  ctx.fillRect(x - w / 2, y - h / 2, w, h);
+  ctx.fillStyle = C.sofaDark;
+  if (horizontal) {
+    ctx.fillRect(x - w / 6, y - h / 2, 2, h);
+    ctx.fillRect(x + w / 6, y - h / 2, 2, h);
+  } else {
+    ctx.fillRect(x - w / 2, y - h / 6, w, 2);
+    ctx.fillRect(x - w / 2, y + h / 6, w, 2);
+  }
+}
+
+function roundTable(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = C.woodDark;
+  ctx.beginPath();
+  ctx.arc(x, y, r + 3, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.wood;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Cadeira de escritório vista de cima (base + encosto), sem ninguém sentado.
+function emptyChair(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = C.chairDark;
+  ctx.fillRect(x - 11, y - 9, 22, 20);
+  ctx.fillStyle = C.chair;
+  ctx.fillRect(x - 9, y - 7, 18, 16);
+  ctx.fillStyle = C.chairDark;
+  ctx.fillRect(x - 12, y - 3, 3, 8);
+  ctx.fillRect(x + 9, y - 3, 3, 8);
+}
+
+// Mesa densa e personalizada: 2 monitores com conteúdo, teclado, torre,
+// caneca, planta e um objeto pessoal — como as estações do Gather 2.0.
+function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  const w = 3.6 * TILE;
+  const h = 1.5 * TILE;
+  const left = x - w / 2;
+  const top = y - h / 2;
+
+  const accent = DESK_ACCENTS[Math.floor(seed * DESK_ACCENTS.length) % DESK_ACCENTS.length];
+  ctx.fillStyle = C.deskEdge;
+  ctx.fillRect(left - 2, top - 2, w + 4, h + 4);
+  ctx.fillStyle = accent;
+  ctx.fillRect(left, top, w, h);
+
+  // torre do computador
+  ctx.fillStyle = C.screenFrame;
+  ctx.fillRect(left + 3, top + 4, 9, 20);
+
+  // monitor principal
+  const s1 = SCREEN_COLORS[Math.floor(seed * 7) % SCREEN_COLORS.length];
+  ctx.fillStyle = C.screenFrame;
+  ctx.fillRect(left + 16, top + 2, 26, 17);
+  ctx.fillStyle = s1;
+  ctx.fillRect(left + 18, top + 4, 22, 13);
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.fillRect(left + 20, top + 6, 12, 2);
+  ctx.fillRect(left + 20, top + 10, 16, 2);
+
+  // segundo monitor
+  const s2 = SCREEN_COLORS[Math.floor(seed * 13) % SCREEN_COLORS.length];
+  ctx.fillStyle = C.screenFrame;
+  ctx.fillRect(left + 45, top + 3, 19, 15);
+  ctx.fillStyle = s2;
+  ctx.fillRect(left + 47, top + 5, 15, 11);
+
+  // teclado
+  ctx.fillStyle = "#e6e6e2";
+  ctx.fillRect(left + 20, top + 22, 26, 7);
+  ctx.fillStyle = "#c2c2bd";
+  ctx.fillRect(left + 22, top + 24, 22, 3);
+
+  // objetos pessoais (caneca, planta ou brinquedo — variam pelo seed)
+  if (seed > 0.66) {
+    ctx.fillStyle = "#d9584f";
+    ctx.fillRect(left + w - 16, top + 20, 9, 9);
+  } else if (seed > 0.33) {
+    ctx.fillStyle = C.leaf;
+    ctx.fillRect(left + w - 17, top + 17, 12, 12);
+    ctx.fillStyle = C.pot;
+    ctx.fillRect(left + w - 15, top + 27, 8, 4);
+  } else {
+    ctx.fillStyle = "#f2c14e";
+    ctx.fillRect(left + w - 15, top + 21, 8, 8);
+  }
+}
+
+// Pessoa SENTADA vista por trás: vemos a nuca/cabelo, os ombros e o encosto
+// da cadeira — é assim que aparecem as pessoas trabalhando no Gather 2.0.
+const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a"];
+
+function seatedPerson(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  shirt: string,
+  seed: number,
+  active: boolean,
+  t: number,
+) {
+  const x = cx * TILE;
+  const bob = active ? Math.sin(t * 5) * 1.5 : 0;
+  const y = cy * TILE + bob;
+
+  // encosto da cadeira, atrás da pessoa
+  ctx.fillStyle = C.chairDark;
+  ctx.fillRect(x - 12, y - 6, 24, 22);
+  ctx.fillStyle = C.chair;
+  ctx.fillRect(x - 10, y - 4, 20, 18);
+  // apoios de braço
+  ctx.fillStyle = C.chairDark;
+  ctx.fillRect(x - 13, y + 1, 3, 9);
+  ctx.fillRect(x + 10, y + 1, 3, 9);
+
+  // ombros (camisa na cor do cargo)
+  ctx.fillStyle = shirt;
+  ctx.fillRect(x - 9, y - 8, 18, 8);
+
+  // cabeça vista de cima/por trás (quase toda cabelo)
+  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
+  ctx.fillStyle = C.skin;
+  ctx.fillRect(x - 7, y - 17, 14, 11);
+  ctx.fillStyle = hair;
+  ctx.fillRect(x - 8, y - 19, 16, 9);
+  ctx.fillRect(x - 8, y - 12, 3, 4);
+  ctx.fillRect(x + 5, y - 12, 3, 4);
+
+  if (active) {
     ctx.strokeStyle = "#f59e0b";
     ctx.lineWidth = 2;
-    ctx.strokeRect(baseX - 3, baseY - 3, SPRITE_W + 6, SPRITE_H + 6);
-  }
-
-  for (let row = 0; row < SPRITE.length; row++) {
-    const line = SPRITE[row];
-    for (let col = 0; col < line.length; col++) {
-      const c = line[col];
-      if (c === ".") continue;
-      ctx.fillStyle =
-        c === "h" ? COLOR.hair : c === "f" ? COLOR.skin : c === "s" ? shirtColor : c === "p" ? COLOR.pants : COLOR.shoes;
-      ctx.fillRect(baseX + col * SPRITE_PX, baseY + row * SPRITE_PX, SPRITE_PX, SPRITE_PX);
-    }
+    ctx.strokeRect(x - 15, y - 21, 30, 38);
   }
 }
 
-interface HitBox {
-  agentId: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+// --------------------------- COMPONENTE -------------------------------------
 
 export const OfficeCanvas = ({
   buildingName,
@@ -336,37 +444,29 @@ export const OfficeCanvas = ({
   onSelectAgent,
 }: {
   buildingName: string;
-  agents: (OfficeAgent & { competencia?: CompetenciaLike | null })[];
+  agents: Agent[];
   activeAgentId: string | null;
   statusMsg: string;
   onSelectAgent: (id: string) => void;
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const activeRoomRef = useRef<HTMLDivElement>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null);
 
-  const plan = useMemo(() => buildFloorPlan(agents.length), [agents.length]);
+  const plan = useMemo(() => buildPlan(agents), [agents]);
 
-  // Posição (em tiles) de cada avatar — no centro da respectiva sala, um
-  // pouco acima da mesa — usada tanto para desenhar quanto para hit-test.
-  const hitBoxes: HitBox[] = useMemo(
-    () =>
-      agents.map((agent, i) => {
-        const room = plan.rooms[i];
-        const cx = room.x + room.w / 2;
-        const cy = room.y + room.h * 0.42;
-        return {
-          agentId: agent.id,
-          x: cx * TILE - SPRITE_W / 2 - 4,
-          y: cy * TILE - SPRITE_H - 10,
-          w: SPRITE_W + 8,
-          h: SPRITE_H + 16,
-        };
-      }),
-    [agents, plan],
-  );
+  const seatById = useMemo(() => {
+    const m = new Map<string, Seat>();
+    for (const s of plan.seats) m.set(s.agentId, s);
+    return m;
+  }, [plan]);
+
+  // Zona do agente ativo — é ela que recebe o holofote.
+  const activeZone = useMemo(() => {
+    if (!activeAgentId) return null;
+    const seat = seatById.get(activeAgentId);
+    if (!seat) return null;
+    return plan.zones[seat.zoneIndex] ?? null;
+  }, [activeAgentId, seatById, plan]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -377,91 +477,159 @@ export const OfficeCanvas = ({
     canvas.height = plan.totalH * TILE;
     ctx.imageSmoothingEnabled = false;
 
-    let raf = 0;
-    const draw = (t: number) => {
-      ctx.fillStyle = "#0e1a12";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    const drawScene = (t: number) => {
+      // piso de circulação (creme), cobrindo o andar inteiro
+      checker(ctx, 0, 0, plan.totalW, plan.totalH, C.circA, C.circB);
 
-      // corredor
-      fillTiles(ctx, plan.corridor.x, plan.corridor.y, plan.corridor.w, plan.corridor.h, COLOR.corridorFloorA, COLOR.corridorFloorB);
-      drawWallSegment(ctx, plan.corridor.x, plan.corridor.y, plan.corridor.w);
-      drawWallSegment(ctx, plan.corridor.x, plan.corridor.y, plan.corridor.h, true);
-      drawWallSegment(ctx, plan.corridor.x + plan.corridor.w - 0.28, plan.corridor.y, plan.corridor.h, true);
+      for (const z of plan.zones) {
+        if (z.kind === "office") checker(ctx, z.x, z.y, z.w, z.h, C.officeA, C.officeB);
+        if (z.kind === "pod") checker(ctx, z.x, z.y, z.w, z.h, C.podA, C.podB);
+        if (z.kind === "lounge") checker(ctx, z.x, z.y, z.w, z.h, C.loungeA, C.loungeB);
+        if (z.kind === "meeting") checker(ctx, z.x, z.y, z.w, z.h, C.meetA, C.meetB);
+      }
 
-      // salas de cada agente/repartição
-      plan.rooms.forEach((room, i) => {
-        drawRoomShell(ctx, room, COLOR.roomFloorA, COLOR.roomFloorB);
-        const seed = hash01(agents[i]?.id ?? String(i));
-        drawWallFrame(ctx, room.x + room.w * 0.62, room.y + 0.15);
-        if (seed > 0.5) drawPlant(ctx, room.x + room.w - 0.9, room.y + room.h - 1.3);
-        drawDesk(ctx, room.x + room.w / 2, room.y + room.h * 0.62);
-      });
+      // Só a sala-sede tem paredes de verdade (com vão de porta embaixo)
+      for (const z of plan.zones) {
+        if (z.kind !== "office") continue;
+        wallH(ctx, z.x, z.y, z.w);
+        wallV(ctx, z.x, z.y, z.h);
+        wallV(ctx, z.x + z.w - 0.45, z.y, z.h);
+        const doorC = z.x + z.w / 2;
+        wallH(ctx, z.x, z.y + z.h - 0.5, doorC - 1 - z.x);
+        wallH(ctx, doorC + 1, z.y + z.h - 0.5, z.x + z.w - (doorC + 1));
+        // sala de chefia mobiliada: quadros, sofá de apoio, estante e plantas
+        frame(ctx, z.x + 3.2, z.y + 0.9, "#9fd0c4");
+        frame(ctx, z.x + 7.8, z.y + 0.9, "#e0c08a");
+        sofa(ctx, z.x + z.w / 2, z.y + 7.6, true);
+        roundTable(ctx, z.x + z.w / 2, z.y + 9.1, 15);
+        shelf(ctx, z.x + 2.6, z.y + 5.6);
+        plant(ctx, z.x + 1.3, z.y + 2.2);
+        plant(ctx, z.x + z.w - 1.3, z.y + 2.2);
+        plant(ctx, z.x + z.w - 1.3, z.y + 6.4);
+      }
 
-      // sala de reunião / estar compartilhada
-      drawRoomShell(ctx, plan.meeting, COLOR.meetingFloorA, COLOR.meetingFloorB);
-      drawWallFrame(ctx, plan.meeting.x + 1, plan.meeting.y + 0.15);
-      drawWallFrame(ctx, plan.meeting.x + plan.meeting.w - 2.4, plan.meeting.y + 0.15);
-      drawBookshelf(ctx, plan.meeting.x + 0.6, plan.meeting.y + plan.meeting.h - 1.6);
-      drawSofa(ctx, plan.meeting.x + plan.meeting.w - 3.2, plan.meeting.y + 1);
-      drawPlant(ctx, plan.meeting.x + plan.meeting.w - 1, plan.meeting.y + plan.meeting.h - 1.3);
-      drawMeetingTable(ctx, plan.meeting.x + plan.meeting.w / 2, plan.meeting.y + plan.meeting.h * 0.55);
+      // Ilhas de mesas: divisórias baixas entre as estações
+      for (const z of plan.zones) {
+        if (z.kind !== "pod") continue;
+        for (let c = 1; c < 3; c++) {
+          divider(ctx, z.x + 0.25 + c * COL_STEP, z.y + 0.5, 3.8, true);
+          divider(ctx, z.x + 0.25 + c * COL_STEP, z.y + 0.5 + ROW_STEP, 3.8, true);
+        }
+        divider(ctx, z.x + 0.4, z.y + ROW_STEP - 0.6, z.w - 0.8, false);
+        plant(ctx, z.x + z.w - 0.9, z.y + z.h - 1);
+        plant(ctx, z.x + 0.9, z.y + z.h - 1);
+      }
 
-      // avatares
-      agents.forEach((agent, i) => {
-        const room = plan.rooms[i];
-        const cx = room.x + room.w / 2;
-        const cy = room.y + room.h * 0.62 - 1.1;
-        drawPerson(ctx, cx * TILE, cy * TILE, agent.color, {
-          active: agent.id === activeAgentId,
-          t: t / 1000,
-        });
-      });
+      // Estar
+      for (const z of plan.zones) {
+        if (z.kind !== "lounge") continue;
+        sofa(ctx, z.x + z.w / 2, z.y + 2, true);
+        sofa(ctx, z.x + 1.9, z.y + 5.4, false);
+        roundTable(ctx, z.x + z.w / 2, z.y + 5.2, 22);
+        shelf(ctx, z.x + z.w / 2, z.y + z.h - 1.2);
+        plant(ctx, z.x + z.w - 1.4, z.y + 1.6);
+        plant(ctx, z.x + z.w - 1.4, z.y + 7.4);
+      }
 
-      // Só continua animando enquanto houver um avatar ativo para "pular"
-      // nesta sala — evita repintar o canvas a 60fps sem necessidade (custo
-      // de CPU e possíveis artefatos de composição com o mapa por baixo).
-      if (agents.some((a) => a.id === activeAgentId)) {
-        raf = requestAnimationFrame(draw);
+      // Reunião
+      for (const z of plan.zones) {
+        if (z.kind !== "meeting") continue;
+        const cx = z.x + z.w / 2;
+        const cy = z.y + z.h / 2 - 0.6;
+        roundTable(ctx, cx, cy, 42);
+        for (let i = 0; i < 8; i++) {
+          const a = (i / 8) * Math.PI * 2;
+          emptyChair(ctx, cx + Math.cos(a) * 3.1, cy + Math.sin(a) * 2.6);
+        }
+        frame(ctx, z.x + 2, z.y + 0.8, "#cfe0f5");
+        plant(ctx, z.x + z.w - 1.3, z.y + z.h - 1.3);
+      }
+
+      // Mesas + pessoas sentadas
+      for (const seat of plan.seats) {
+        const agent = agents.find((a) => a.id === seat.agentId);
+        if (!agent) continue;
+        const seed = hash01(agent.id);
+        desk(ctx, seat.deskX, seat.deskY, seed);
+        // encostado na mesa (não flutuando abaixo dela)
+        seatedPerson(
+          ctx,
+          seat.deskX,
+          seat.deskY + 1.6,
+          agent.color,
+          seed,
+          agent.id === activeAgentId,
+          t,
+        );
       }
     };
-    raf = requestAnimationFrame(draw);
+
+    let raf = 0;
+    const render = (ms: number) => {
+      const t = ms / 1000;
+      drawScene(t);
+
+      // HOLOFOTE: escurece o andar inteiro e reacende só a zona ativa,
+      // dentro de um cartão claro de cantos arredondados.
+      if (activeZone) {
+        ctx.fillStyle = "rgba(28,24,18,0.6)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const pad = 0.35 * TILE;
+        const rx = activeZone.x * TILE - pad;
+        const ry = activeZone.y * TILE - pad;
+        const rw = activeZone.w * TILE + pad * 2;
+        const rh = activeZone.h * TILE + pad * 2;
+
+        ctx.save();
+        roundRectPath(ctx, rx, ry, rw, rh, 14);
+        ctx.clip();
+        drawScene(t);
+        ctx.restore();
+
+        ctx.strokeStyle = "#fdf6e6";
+        ctx.lineWidth = 5;
+        roundRectPath(ctx, rx, ry, rw, rh, 14);
+        ctx.stroke();
+      }
+
+      if (activeAgentId) raf = requestAnimationFrame(render);
+    };
+    raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [plan, agents, activeAgentId]);
+  }, [plan, agents, activeAgentId, activeZone]);
 
-  // "Anda até a sala": quando o agente ativo troca de sala dentro do mesmo
-  // prédio, rola o corredor até a porta certa ficar visível.
-  useEffect(() => {
-    if (!activeAgentId) return;
-    if (!agents.some((a) => a.id === activeAgentId)) return;
-    activeRoomRef.current?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
-  }, [activeAgentId, agents]);
-
-  const handlePointer = (e: React.MouseEvent<HTMLCanvasElement>, isClick: boolean) => {
+  const handlePointer = (e: React.MouseEvent<HTMLCanvasElement>, click: boolean) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    const hit = hitBoxes.find((h) => x >= h.x && x <= h.x + h.w && y >= h.y && y <= h.y + h.h);
-    if (isClick) {
+    const r = canvas.getBoundingClientRect();
+    const x = ((e.clientX - r.left) * canvas.width) / r.width;
+    const y = ((e.clientY - r.top) * canvas.height) / r.height;
+    const hit = plan.seats.find((s) => {
+      const sx = s.deskX * TILE;
+      const sy = s.deskY * TILE;
+      return x >= sx - 40 && x <= sx + 40 && y >= sy - 22 && y <= sy + 60;
+    });
+    if (click) {
       if (hit) onSelectAgent(hit.agentId);
       return;
     }
     setHoveredId(hit?.agentId ?? null);
-    setTooltipPos(hit ? { x: hit.x + hit.w / 2, y: hit.y } : null);
   };
 
-  const hoveredAgent = hoveredId ? agents.find((a) => a.id === hoveredId) : null;
+  const hovered = hoveredId ? agents.find((a) => a.id === hoveredId) : null;
+  const hoveredSeat = hoveredId ? seatById.get(hoveredId) : null;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center bg-[#0e1a12] p-4 animate-fade-in">
+    <div className="absolute inset-0 flex items-center justify-center bg-[#171b17] p-4 animate-fade-in">
       <div
-        ref={scrollRef}
-        className="relative max-w-full max-h-full overflow-x-auto overflow-y-hidden rounded-2xl border-[6px] border-[#5c4425] shadow-2xl"
+        className="relative max-w-full max-h-full overflow-auto rounded-2xl border-[6px] border-[#8a7a5c] shadow-2xl"
+        style={{ lineHeight: 0 }}
       >
-        <div className="relative" style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}>
+        <div
+          className="relative"
+          style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}
+        >
           <canvas
             ref={canvasRef}
             style={{ width: plan.totalW * TILE, height: plan.totalH * TILE, imageRendering: "pixelated" }}
@@ -471,64 +639,102 @@ export const OfficeCanvas = ({
             className="cursor-pointer"
           />
 
-          <div className="absolute top-1 left-1/2 -translate-x-1/2 z-20 bg-[#181517] text-amber-400 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/50 shadow-lg whitespace-nowrap">
+          <div className="absolute top-1.5 right-2 z-30 bg-[#1f2430] text-amber-300 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 shadow-lg whitespace-nowrap">
             🏛️ {buildingName}
           </div>
 
-          {/* âncoras invisíveis para o auto-scroll até a sala do agente ativo */}
-          {plan.rooms.map((room, i) => (
-            <div
-              key={agents[i]?.id ?? i}
-              ref={agents[i]?.id === activeAgentId ? activeRoomRef : undefined}
-              className="absolute pointer-events-none"
-              style={{ left: room.x * TILE, top: room.y * TILE, width: room.w * TILE, height: room.h * TILE }}
-            />
-          ))}
+          {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") —
+              flutua dentro da zona, para não colidir com o título do prédio */}
+          {plan.zones.map((z, i) =>
+            z.label ? (
+              <div
+                key={`zone-${i}`}
+                className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
+                  activeZone && activeZone !== z ? "opacity-25" : "opacity-100"
+                }`}
+                style={{ left: z.x * TILE + 5, top: z.y * TILE + 4 }}
+              >
+                <span className="bg-[#1f2430]/90 text-stone-100 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full border border-white/15 shadow whitespace-nowrap">
+                  {z.label}
+                  {z.agentIds.length > 0 ? ` · ${z.agentIds.length}` : ""}
+                </span>
+              </div>
+            ) : null,
+          )}
 
-          {/* etiqueta com o nome/função de cada agente, sob o sprite */}
-          {agents.map((agent, i) => {
-            const room = plan.rooms[i];
-            const cx = (room.x + room.w / 2) * TILE;
-            const cy = (room.y + room.h * 0.62 + 0.55) * TILE;
+          {/* Plaquinha por agente: nome + linha de status, como no Gather 2.0 */}
+          {plan.seats.map((seat) => {
+            const agent = agents.find((a) => a.id === seat.agentId);
+            if (!agent) return null;
             const isActive = agent.id === activeAgentId;
+            const dim = activeZone && plan.zones[seat.zoneIndex] !== activeZone;
             return (
               <div
-                key={`label-${agent.id}`}
-                className="absolute -translate-x-1/2 pointer-events-none z-10"
-                style={{ left: cx, top: cy }}
+                key={`lbl-${agent.id}`}
+                className={`absolute z-20 -translate-x-1/2 pointer-events-none transition-opacity duration-300 ${
+                  dim ? "opacity-25" : "opacity-100"
+                }`}
+                style={{ left: seat.deskX * TILE, top: (seat.deskY + 2.6) * TILE }}
               >
-                {isActive && statusMsg && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-9 bg-amber-400 text-slate-950 text-[10px] font-bold px-2 py-1 rounded-lg shadow-xl border border-slate-900 whitespace-nowrap max-w-[180px] truncate font-mono">
-                    💭 {statusMsg}
-                  </div>
-                )}
                 <div
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-mono font-bold whitespace-nowrap max-w-[130px] truncate shadow ${
-                    isActive ? "bg-amber-500 text-stone-950" : "bg-[#181517]/95 text-stone-200 border border-stone-700/70"
+                  className={`flex flex-col items-start px-1.5 py-0.5 rounded-md shadow border font-mono ${
+                    isActive
+                      ? "bg-amber-400 text-slate-950 border-amber-600"
+                      : "bg-[#1f2430]/95 text-stone-100 border-white/15"
                   }`}
                 >
-                  {agent.name}
+                  <span className="flex items-center gap-1 text-[9px] font-bold leading-tight max-w-[86px]">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                        isActive ? "bg-red-600 animate-pulse" : "bg-emerald-400"
+                      }`}
+                    />
+                    <span className="truncate">{agent.name}</span>
+                  </span>
+                  <span
+                    className={`text-[8px] leading-tight pl-2.5 ${
+                      isActive ? "text-slate-800" : "text-stone-400"
+                    }`}
+                  >
+                    {isActive ? "Trabalhando agora" : "Disponível"}
+                  </span>
                 </div>
               </div>
             );
           })}
 
-          {hoveredAgent && tooltipPos && (
+          {/* Balão do que está sendo feito — flutua acima da estação ativa,
+              fora da faixa das plaquinhas, para não colidir com as vizinhas */}
+          {activeAgentId && statusMsg && seatById.get(activeAgentId) && (
             <div
-              className="absolute z-30 pointer-events-none -translate-x-1/2 -translate-y-full max-w-[220px] bg-[#120f11]/95 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono"
-              style={{ left: tooltipPos.x, top: tooltipPos.y - 8 }}
+              className="absolute z-40 -translate-x-1/2 -translate-y-full pointer-events-none"
+              style={{
+                left: seatById.get(activeAgentId)!.deskX * TILE,
+                top: (seatById.get(activeAgentId)!.deskY - 1.1) * TILE,
+              }}
             >
-              <div className="font-bold text-amber-400 whitespace-normal">{hoveredAgent.name}</div>
-              {hoveredAgent.cargo && (
+              <div className="bg-amber-400 text-slate-950 text-[9px] font-bold px-2 py-1 rounded-md shadow-xl border border-amber-600 max-w-[210px] truncate font-mono">
+                💭 {statusMsg}
+              </div>
+            </div>
+          )}
+
+          {hovered && hoveredSeat && (
+            <div
+              className="absolute z-40 pointer-events-none -translate-x-1/2 -translate-y-full max-w-[230px] bg-[#12151c]/97 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono"
+              style={{ left: hoveredSeat.deskX * TILE, top: (hoveredSeat.deskY - 1) * TILE }}
+            >
+              <div className="font-bold text-amber-400 whitespace-normal">{hovered.name}</div>
+              {hovered.cargo && (
                 <div className="text-stone-400">
-                  {hoveredAgent.cargo}
-                  {hoveredAgent.funcao ? ` · ${hoveredAgent.funcao}` : ""}
+                  {hovered.cargo}
+                  {hovered.funcao ? ` · ${hovered.funcao}` : ""}
                 </div>
               )}
-              {hoveredAgent.competencia && (
+              {hovered.competencia && (
                 <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
-                  Art. {hoveredAgent.competencia.artigo}
-                  {hoveredAgent.competencia.resumo ? ` — ${hoveredAgent.competencia.resumo.slice(0, 140)}` : ""}
+                  Art. {hovered.competencia.artigo}
+                  {hovered.competencia.resumo ? ` — ${hovered.competencia.resumo.slice(0, 140)}` : ""}
                 </div>
               )}
             </div>

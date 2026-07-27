@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — um andar em **pixel art renderizado em canvas**, no espírito do [Gather Town](https://www.gather.town/pt/virtual-office): corredor central, uma **sala com porta própria para cada repartição** (Pró-Reitoria/Diretoria), sala de reunião com mesa e cadeiras, sofá, quadros na parede, estante e plantas, e um **sprite de personagem** (não um ícone genérico) para cada agente — com um corte de cenário sempre que a cadeia muda de campus.
+A Reitoria (Santa Maria) e os 13 campi ficam na coordenada geográfica real deles, sobre o contorno oficial do RS (dados do IBGE), cada um como um prédio desenhado em verde e vermelho. Ao processar uma demanda, a câmera faz um zoom estilo drone até o prédio certo e revela o escritório por dentro — um andar em **pixel art renderizado em canvas**, modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): **planta aberta** com zonas delimitadas por cor de piso, ilha de mesas com divisórias de baia para as Pró-Reitorias/Diretorias, sala fechada só para o Gabinete, área de estar e sala de reunião — e um **sprite sentado à mesa, visto por trás**, para cada agente.
 
 </td>
 <td width="33%" valign="top">
@@ -60,6 +60,15 @@ Um motor de regras (`routing.yaml`) classifica a demanda pelas atribuições do 
 ### 📄 Artefatos vinculados por ticket
 
 Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois que `/api/view-artifact` confirma 200.
+
+</td>
+</tr>
+<tr>
+<td colspan="3" valign="top">
+
+### 🔦 Holofote na zona que está resolvendo a demanda
+
+Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o andar inteiro continua visível, tudo escurece e só a zona responsável é reacendida dentro de um cartão claro — a mesma leitura de foco do Gather 2.0. Você vê *quem* está trabalhando sem perder *onde* aquilo está na instituição. O corte de cena com flash ficou reservado para o que é de fato uma troca de lugar: quando a cadeia muda de prédio (Reitoria ↔ campus).
 
 </td>
 </tr>
