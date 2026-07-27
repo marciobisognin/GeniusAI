@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — planta aberta modelada no [Gather 2.0](https://www.gather.town/pt/virtual-office), com zonas por cor de piso, ilha de mesas com divisórias, sala fechada só para o Gabinete e um **sprite sentado à mesa** para cada agente.
+O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um corredor central com uma **sala própria por repartição**, cada uma com sua cor de piso, paredes de verdade e porta voltada para o corredor, e um **sprite sentado à mesa** para cada agente.
 
 </td>
 <td width="33%" valign="top">
@@ -75,9 +75,11 @@ Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o anda
 <tr>
 <td colspan="3" valign="top">
 
-### 🚶 Um andar só, com todas as repartições — e um mensageiro que anda até lá
+### 🚶 Um andar só, com uma sala por repartição — e um mensageiro que anda até lá
 
-Cada prédio (Reitoria e os 13 campi) mostra **todo o organograma daquela unidade física** — não apenas os cargos de topo — organizado por **repartição real**: o Gabinete fica numa sala fechada à esquerda e, à direita, um "pod" de mesas por Pró-Reitoria/Diretoria/Coordenação, todos no mesmo corredor. Repartições muito pequenas (um ou dois cargos, comum em conselhos e comissões) são agrupadas em uma zona compartilhada de "Colegiados e Comissões" para não virar uma fileira de salas de uma pessoa só. Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: um avatar-mensageiro com uma correspondência sai da sala de origem, atravessa o corredor e entra na sala de destino — o holofote circular o acompanha durante o trajeto e só vira o cartão retangular da nova zona quando ele chega. A câmera rola junto, como uma torcida acompanhando o trajeto.
+Cada prédio (Reitoria e os 13 campi) mostra **todo o organograma daquela unidade física** — não apenas os cargos de topo — organizado por **repartição real**, uma sala de verdade por vez: paredes nos 4 lados, porta voltada para o corredor central e uma cor de piso própria (verde, lilás, azul, pêssego...), para que o andar leia como um conjunto de escritórios distintos, e não uma única planta contínua. O Gabinete ocupa a maior sala, à esquerda; cada Pró-Reitoria/Diretoria/Coordenação tem a sua; repartições muito pequenas (um ou dois cargos, comum em conselhos e comissões) são agrupadas numa sala compartilhada de "Colegiados e Comissões" para não virar uma fileira de salas de uma pessoa só. Intercalados entre as salas de trabalho, três **espaços de convivência** — Estar (sofás e mesa de centro), Copa (mesinhas de café) e Reunião (mesa redonda grande) — dão um ar mais humano e próximo do dia a dia real de uma instituição de ensino.
+
+Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: um avatar-mensageiro com uma correspondência sai da sala de origem, passa pela porta, atravessa o corredor e entra na sala de destino — o holofote circular o acompanha durante o trajeto e só vira o cartão retangular da nova sala quando ele chega. A câmera rola junto, como uma torcida acompanhando o trajeto.
 
 </td>
 </tr>

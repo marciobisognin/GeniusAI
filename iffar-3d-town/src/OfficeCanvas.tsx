@@ -4,14 +4,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0, COM O ORGANOGRAMA
 // COMPLETO DO PRÉDIO
 //
-// Planta aberta, como no Gather 2.0: um piso de circulação creme com "ilhas"
-// de zonas delimitadas por COR DE PISO (não por paredes). Cada repartição
-// direta da Reitoria/do campus (Pró-Reitoria, Diretoria, Comissão...) senta
-// junto numa ilha de mesas com divisórias baixas de baia; só a chefia
-// (Gabinete do(a) Reitor(a)/Diretor(a) Geral, com seus assessores diretos)
-// ganha uma sala fechada com paredes de verdade. Repartições de 1-2 pessoas
-// (comissões, colegiados) se juntam numa única sala compartilhada — do
-// contrário a Reitoria teria uma dezena de salas de uma pessoa só.
+// Um corredor central corre por cima de uma fileira de SALAS DE VERDADE —
+// paredes nos 4 lados, com a porta voltada para o corredor — cada uma com
+// sua própria cor de piso, como nas salas do Gather 2.0. Cada repartição
+// direta da Reitoria/do campus (Pró-Reitoria, Diretoria, Comissão...) ganha
+// sua sala; a chefia (Gabinete do(a) Reitor(a)/Diretor(a) Geral, com seus
+// assessores diretos) fica na sala maior, à esquerda. Repartições de 1-2
+// pessoas (comissões, colegiados) se juntam numa única sala compartilhada —
+// do contrário a Reitoria teria uma dezena de salas de uma pessoa só.
+// Intercaladas entre as salas de trabalho, espaços de convivência (Estar,
+// Copa, Reunião) dão um ar mais humano e próximo do dia a dia real de uma
+// instituição de ensino.
 //
 // Quando a demanda passa de uma unidade para outra DENTRO do mesmo prédio,
 // um mensageiro anda pelo corredor entre as duas repartições — como no
@@ -81,6 +84,20 @@ const DESK_ACCENTS = ["#f4f3ef", "#cfe9df", "#f5dcc2", "#dfe3f5", "#f7e2e2", "#e
 const SCREEN_COLORS = ["#4f7fd0", "#d06fa8", "#4fae8f", "#d9a24f", "#6f7fd0"];
 const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a"];
 
+// Cada repartição ganha sua própria cor de piso (como nas salas do Gather
+// 2.0 — cinza, verde, lilás, azul...), para que o andar leia como um
+// conjunto de escritórios distintos, não uma única planta contínua.
+const POD_PALETTE: readonly [string, string][] = [
+  ["#cfe4da", "#c4d9cd"],
+  ["#e6d3e6", "#dbc6db"],
+  ["#cfe0ee", "#c3d5e4"],
+  ["#f0ddc8", "#e6d0b6"],
+  ["#e2ddc9", "#d7d1b6"],
+  ["#d9e0c9", "#cdd5b8"],
+  ["#f0d8de", "#e6cbd2"],
+  ["#d3d9ec", "#c8cfe1"],
+];
+
 function hash01(id: string): number {
   let h = 0;
   for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
@@ -90,7 +107,7 @@ function hash01(id: string): number {
 // --------------------------- PLANTA -----------------------------------------
 
 interface Zone {
-  kind: "office" | "pod" | "lounge" | "meeting";
+  kind: "office" | "pod" | "lounge" | "meeting" | "break";
   x: number;
   y: number;
   w: number;
@@ -98,6 +115,8 @@ interface Zone {
   label?: string;
   agentIds: string[];
   doorX: number; // ponto de entrada/saída no corredor, em tiles
+  floorA: string;
+  floorB: string;
 }
 
 interface Seat {
@@ -193,16 +212,21 @@ function placeSeats(members: Agent[], zone: Zone, cols: number, topPad: number, 
   });
 }
 
+const SOCIAL_W = 13;
+
 function buildPlan(agents: Agent[]): Plan {
   const { head, depts } = buildDepartments(agents);
   const zones: Zone[] = [];
   const seats: Seat[] = [];
   let cursorX = START_X;
 
-  // 1) sala fechada da chefia (Gabinete + assessoria direta)
   const headSize = zoneSize(head.length || 1);
   const headW = Math.max(headSize.w, 11);
   const headH = Math.max(headSize.h, 11);
+  const deptSizes = depts.map((d) => zoneSize(d.agentIds.length));
+  const rowH = Math.max(headH, ...deptSizes.map((s) => s.h), 11);
+
+  // 1) sala fechada da chefia (Gabinete + assessoria direta)
   const headZone: Zone = {
     kind: "office",
     x: cursorX,
@@ -212,15 +236,38 @@ function buildPlan(agents: Agent[]): Plan {
     label: "Gabinete",
     agentIds: head.map((a) => a.id),
     doorX: cursorX + headW / 2,
+    floorA: C.officeA,
+    floorB: C.officeB,
   };
   zones.push(headZone);
   placeSeats(head, headZone, headSize.cols, 3.6, seats, 0);
   cursorX += headW + ZONE_GAP;
 
-  // 2) uma ilha aberta por repartição
-  for (const dept of depts) {
-    const size = zoneSize(dept.agentIds.length);
+  // 2) Estar — logo ao lado da chefia, para intercalar sala de trabalho e
+  // espaço de convivência, como nos escritórios de referência.
+  const loungeX = cursorX;
+  zones.push({
+    kind: "lounge",
+    x: loungeX,
+    y: ZONE_TOP,
+    w: SOCIAL_W,
+    h: rowH,
+    label: "Estar",
+    agentIds: [],
+    doorX: loungeX + SOCIAL_W / 2,
+    floorA: C.loungeA,
+    floorB: C.loungeB,
+  });
+  cursorX += SOCIAL_W + ZONE_GAP;
+
+  // 3) uma sala própria por repartição, cada uma com sua cor de piso
+  let paletteIndex = 0;
+  depts.forEach((dept, i) => {
+    const size = deptSizes[i];
     const zoneIndex = zones.length;
+    const isShared = dept.groupId === "__shared__";
+    const floor = isShared ? ([C.podA, C.podB] as const) : POD_PALETTE[paletteIndex % POD_PALETTE.length];
+    if (!isShared) paletteIndex++;
     const z: Zone = {
       kind: "pod",
       x: cursorX,
@@ -230,6 +277,8 @@ function buildPlan(agents: Agent[]): Plan {
       label: dept.groupLabel,
       agentIds: dept.agentIds,
       doorX: cursorX + size.w / 2,
+      floorA: floor[0],
+      floorB: floor[1],
     };
     zones.push(z);
     const members = dept.agentIds
@@ -237,35 +286,39 @@ function buildPlan(agents: Agent[]): Plan {
       .filter((a): a is Agent => Boolean(a));
     placeSeats(members, z, size.cols, ZONE_PAD_TOP, seats, zoneIndex);
     cursorX += size.w + ZONE_GAP;
-  }
-
-  const rowH = Math.max(headH, ...zones.slice(1).map((z) => z.h), 11);
-
-  // 3) estar + reunião, sempre ao final da fileira
-  const loungeX = cursorX;
-  zones.push({
-    kind: "lounge",
-    x: loungeX,
-    y: ZONE_TOP,
-    w: 13,
-    h: rowH,
-    label: "Estar",
-    agentIds: [],
-    doorX: loungeX + 6.5,
   });
-  cursorX += 13 + ZONE_GAP;
+
+  // 4) Copa — espaço de convivência informal (café, mesas pequenas)
+  const breakX = cursorX;
+  zones.push({
+    kind: "break",
+    x: breakX,
+    y: ZONE_TOP,
+    w: SOCIAL_W,
+    h: rowH,
+    label: "Copa",
+    agentIds: [],
+    doorX: breakX + SOCIAL_W / 2,
+    floorA: "#f2e4c9",
+    floorB: "#e8d7b3",
+  });
+  cursorX += SOCIAL_W + ZONE_GAP;
+
+  // 5) Reunião — sempre ao final da fileira
   const meetingX = cursorX;
   zones.push({
     kind: "meeting",
     x: meetingX,
     y: ZONE_TOP,
-    w: 13,
+    w: SOCIAL_W,
     h: rowH,
     label: "Reunião",
     agentIds: [],
-    doorX: meetingX + 6.5,
+    doorX: meetingX + SOCIAL_W / 2,
+    floorA: C.meetA,
+    floorB: C.meetB,
   });
-  cursorX += 13 + ZONE_GAP;
+  cursorX += SOCIAL_W + ZONE_GAP;
 
   return {
     zones,
@@ -711,23 +764,27 @@ export const OfficeCanvas = ({
       checker(ctx, 0, 0, plan.totalW, plan.totalH, C.circA, C.circB);
 
       for (const z of plan.zones) {
-        if (z.kind === "office") checker(ctx, z.x, z.y, z.w, z.h, C.officeA, C.officeB);
-        if (z.kind === "pod") checker(ctx, z.x, z.y, z.w, z.h, C.podA, C.podB);
-        if (z.kind === "lounge") checker(ctx, z.x, z.y, z.w, z.h, C.loungeA, C.loungeB);
-        if (z.kind === "meeting") checker(ctx, z.x, z.y, z.w, z.h, C.meetA, C.meetB);
+        checker(ctx, z.x, z.y, z.w, z.h, z.floorA, z.floorB);
       }
 
-      // Só a sala da chefia tem paredes de verdade (com vão de porta embaixo)
+      // Toda sala é uma sala de verdade: paredes nos 4 lados, com a porta
+      // no topo (voltada para o corredor) e a parede de fundo sólida —
+      // é isso que faz o andar ler como um conjunto de escritórios, não
+      // uma única planta contínua.
       for (const z of plan.zones) {
-        if (z.kind !== "office") continue;
-        wallH(ctx, z.x, z.y, z.w);
         wallV(ctx, z.x, z.y, z.h);
         wallV(ctx, z.x + z.w - 0.45, z.y, z.h);
+        wallH(ctx, z.x, z.y + z.h - 0.5, z.w);
         const doorHalf = 1;
-        wallH(ctx, z.x, z.y + z.h - 0.5, z.doorX - doorHalf - z.x);
-        wallH(ctx, z.doorX + doorHalf, z.y + z.h - 0.5, z.x + z.w - (z.doorX + doorHalf));
-        frame(ctx, z.x + 3.2, z.y + 0.9, "#9fd0c4");
-        frame(ctx, z.x + z.w - 3.2, z.y + 0.9, "#e0c08a");
+        wallH(ctx, z.x, z.y, z.doorX - doorHalf - z.x);
+        wallH(ctx, z.doorX + doorHalf, z.y, z.x + z.w - (z.doorX + doorHalf));
+      }
+
+      // Decoração da sala da chefia, contra a parede de fundo
+      for (const z of plan.zones) {
+        if (z.kind !== "office") continue;
+        frame(ctx, z.x + 3.2, z.y + z.h - 5.6, "#9fd0c4");
+        frame(ctx, z.x + z.w - 3.2, z.y + z.h - 5.6, "#e0c08a");
         sofa(ctx, z.x + z.w / 2, z.y + z.h - 3.4, true);
         shelf(ctx, z.x + 2.2, z.y + z.h - 2.2);
         plant(ctx, z.x + 1.3, z.y + 2.2);
@@ -749,28 +806,42 @@ export const OfficeCanvas = ({
         plant(ctx, z.x + 0.9, z.y + z.h - 1);
       }
 
-      // Estar
+      // Estar — sofás, mesa de centro e estante, contra a parede de fundo
       for (const z of plan.zones) {
         if (z.kind !== "lounge") continue;
-        sofa(ctx, z.x + z.w / 2, z.y + 2, true);
-        sofa(ctx, z.x + 1.9, z.y + 5.4, false);
-        roundTable(ctx, z.x + z.w / 2, z.y + 5.2, 22);
+        sofa(ctx, z.x + z.w / 2, z.y + z.h - 3.4, true);
+        sofa(ctx, z.x + 1.9, z.y + z.h - 7.2, false);
+        roundTable(ctx, z.x + z.w / 2, z.y + z.h - 5.8, 22);
         shelf(ctx, z.x + z.w / 2, z.y + z.h - 1.2);
-        plant(ctx, z.x + z.w - 1.4, z.y + 1.6);
         plant(ctx, z.x + z.w - 1.4, z.y + z.h - 2.6);
+        plant(ctx, z.x + z.w - 1.4, z.y + z.h - 7.6);
+      }
+
+      // Copa — café e mesinhas para uma pausa entre uma repartição e outra
+      for (const z of plan.zones) {
+        if (z.kind !== "break") continue;
+        shelf(ctx, z.x + z.w / 2, z.y + z.h - 1.4);
+        roundTable(ctx, z.x + 3.4, z.y + z.h - 4.6, 20);
+        emptyChair(ctx, z.x + 3.4 - 1.7, z.y + z.h - 4.6);
+        emptyChair(ctx, z.x + 3.4 + 1.7, z.y + z.h - 4.6);
+        roundTable(ctx, z.x + z.w - 3.4, z.y + z.h - 4.6, 20);
+        emptyChair(ctx, z.x + z.w - 3.4 - 1.7, z.y + z.h - 4.6);
+        emptyChair(ctx, z.x + z.w - 3.4 + 1.7, z.y + z.h - 4.6);
+        plant(ctx, z.x + 1.2, z.y + z.h - 8.4);
+        plant(ctx, z.x + z.w - 1.2, z.y + z.h - 8.4);
       }
 
       // Reunião
       for (const z of plan.zones) {
         if (z.kind !== "meeting") continue;
         const cx = z.x + z.w / 2;
-        const cy = z.y + z.h / 2 - 0.6;
+        const cy = z.y + z.h - 5.4;
         roundTable(ctx, cx, cy, 42);
         for (let i = 0; i < 8; i++) {
           const a = (i / 8) * Math.PI * 2;
           emptyChair(ctx, cx + Math.cos(a) * 3.1, cy + Math.sin(a) * 2.6);
         }
-        frame(ctx, z.x + 2, z.y + 0.8, "#cfe0f5");
+        frame(ctx, z.x + 1.6, z.y + z.h - 1.3, "#cfe0f5");
         plant(ctx, z.x + z.w - 1.3, z.y + z.h - 1.3);
       }
 
