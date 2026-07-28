@@ -2,19 +2,23 @@ import { useEffect, useMemo, useRef } from "react";
 import { RS_OUTLINE, cityKeyFromName } from "./geo";
 
 // ---------------------------------------------------------------------------
-// MAPA DO RS EM PIXEL ART (CANVAS) — MESMA LINGUAGEM DOS ESCRITÓRIOS
+// MAPA DO RS — "VALE CORDIAL" (DIORAMA COZY EM PIXEL ART)
 //
 // O estado é pintado tile a tile a partir do contorno real do IBGE
-// (point-in-polygon pré-calculado): oceano com faixa de águas rasas e ondas
-// animadas na costa, interior em dois tons de verde com tufos de grama e
-// arvorezinhas, e a Lagoa dos Patos aparecendo naturalmente como água — a
-// restinga litorânea faz parte do contorno. A Reitoria e os 13 campi são
-// sprites de prédio (fachada verde, telhado vermelho, janelas acesas) na
-// coordenada geográfica real. Quando uma demanda está num campus, uma linha
-// pontilhada animada mostra o trajeto Reitoria -> campus sobre o mapa.
+// (point-in-polygon pré-calculado), no estilo de diorama acolhedor de jogo
+// indie (Stardew Valley/Eastward): o terreno é um prado verde com borda
+// creme arredondada e sombra suave, como se estivesse sobre uma mesa —
+// nada de oceano; a Lagoa dos Patos vira só um rio-fita azul-claro na
+// reentrância litorânea real do contorno. Bosques (tufos de círculos) e
+// morros (realce radial) decoram o interior. Estradinhas de terra
+// pontilhadas ligam a Reitoria a cada campus. A Reitoria e os 13 campi são
+// casinhas fofas (parede clara, telhado terracota, porta verde) na
+// coordenada geográfica real. Quando uma demanda está num campus, uma
+// trilha em destaque (mais grossa, cor de acento) marca o trajeto
+// Reitoria -> campus por cima das estradinhas fixas.
 //
 // O terreno é rasterizado UMA vez num canvas offscreen; o loop de animação
-// (limitado a ~10fps) só recompõe terreno + ondas + rota + prédios.
+// (limitado a ~10fps) só recompõe terreno + rota + casinhas.
 // ---------------------------------------------------------------------------
 
 interface MapLocation {
@@ -66,35 +70,136 @@ function hash01(s: string): number {
   return (h % 1000) / 1000;
 }
 
-// Paleta do mapa — clara e lúdica, harmonizada com a paleta dos escritórios.
+// ------------------------- RÓTULOS SEM SOBREPOSIÇÃO -------------------------
+//
+// Perto de Santa Maria, várias unidades caem a poucos pixels umas das
+// outras — uma simples alternância "acima/abaixo" não é suficiente (foi
+// exatamente essa aglomeração que motivou o redesenho do mapa). Em vez
+// disso, cada rótulo tenta uma lista de posições candidatas ao redor do
+// próprio marcador, em raios crescentes, e fica na primeira que não
+// colide com nenhum rótulo já posicionado nem com a casinha de ninguém.
+type Box = [number, number, number, number];
+
+function boxAt(cx: number, cy: number, w: number, h: number): Box {
+  return [cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2];
+}
+
+function boxesOverlap(a: Box, b: Box, pad = 4): boolean {
+  return !(a[2] + pad < b[0] || b[2] + pad < a[0] || a[3] + pad < b[1] || b[3] + pad < a[1]);
+}
+
+const LABEL_H = 19;
+const LABEL_CANDIDATES: [number, number][] = [
+  [0, -34],
+  [0, 36],
+  [0, -52],
+  [0, 56],
+  [42, -26],
+  [-42, -26],
+  [42, 30],
+  [-42, 30],
+  [58, -42],
+  [-58, -42],
+  [58, 44],
+  [-58, 44],
+  [0, -74],
+  [0, 78],
+  [74, 4],
+  [-74, 4],
+  [86, -58],
+  [-86, -58],
+  [86, 60],
+  [-86, 60],
+];
+
+function labelWidth(name: string): number {
+  return Math.max(52, name.length * 5.7 + 16);
+}
+
+interface LabelLayout {
+  left: number;
+  top: number;
+}
+
+function placeLabels(
+  locations: MapLocation[],
+  toPxFn: (p: [number, number]) => [number, number],
+): Map<string, LabelLayout> {
+  const markerBoxes: Box[] = locations.map((l) => {
+    const [mx, my] = toPxFn(l.pos);
+    return boxAt(mx, my - 24, 46, 54);
+  });
+
+  const order = [...locations].sort((a, b) => {
+    if (a.id === "1.1") return -1;
+    if (b.id === "1.1") return 1;
+    const da = Math.min(
+      ...locations.filter((o) => o.id !== a.id).map((o) => Math.hypot(o.pos[0] - a.pos[0], o.pos[1] - a.pos[1])),
+    );
+    const db = Math.min(
+      ...locations.filter((o) => o.id !== b.id).map((o) => Math.hypot(o.pos[0] - b.pos[0], o.pos[1] - b.pos[1])),
+    );
+    return da - db;
+  });
+
+  const placed: Box[] = [...markerBoxes];
+  const result = new Map<string, LabelLayout>();
+
+  for (const loc of order) {
+    const [mx, my] = toPxFn(loc.pos);
+    const w = labelWidth(cityKeyFromName(loc.nome));
+    let chosen: Box | null = null;
+    for (const [dx, dy] of LABEL_CANDIDATES) {
+      const cx = mx + dx;
+      const cy = my + dy;
+      if (cx - w / 2 < 4 || cx + w / 2 > CANVAS_W - 4 || cy - LABEL_H / 2 < 4 || cy + LABEL_H / 2 > CANVAS_H - 4) {
+        continue;
+      }
+      const b = boxAt(cx, cy, w, LABEL_H);
+      if (placed.some((ob) => boxesOverlap(b, ob))) continue;
+      chosen = b;
+      break;
+    }
+    if (!chosen) {
+      const [dx, dy] = LABEL_CANDIDATES[0];
+      chosen = boxAt(mx + dx, my + dy, w, LABEL_H);
+    }
+    placed.push(chosen);
+    result.set(loc.id, { left: (chosen[0] + chosen[2]) / 2, top: (chosen[1] + chosen[3]) / 2 });
+  }
+
+  return result;
+}
+
+// Paleta "Vale Cordial" — diorama cozy, quente e acolhedor.
 const M = {
-  water: "#79b7d6",
-  waterDeep: "#6cabcc",
-  shallow: "#a9d6e8",
-  wave: "#eef8fc",
-  landA: "#8fc177",
-  landB: "#88ba70",
-  tuft: "#6ea55c",
-  treeLeaf: "#3f8f5a",
-  treeLeafHi: "#4fae6c",
-  treeTrunk: "#7c4a2d",
-  facade: "#2e7d46",
-  facadeDark: "#1f5c32",
-  roof: "#d9534f",
-  roofDark: "#b23f3c",
-  window: "#ffe9a8",
-  windowFrame: "#1f2430",
-  door: "#7c4a2d",
-  flag: "#f59e0b",
-  routeDark: "#1f2430",
-  route: "#f59e0b",
+  table: "#fdf1de", // "mesa"/céu por trás do diorama, onde antes havia oceano
+  tableShadow: "rgba(122,90,58,0.28)", // sombra de contato do relevo na mesa
+  landA: "#9cc47a",
+  landB: "#93bd72",
+  border: "#f7ecd1", // borda creme arredondada do diorama
+  borderLine: "#6f9a52",
+  hillHi: "#c3e2a0",
+  hillLo: "#8fbc6a",
+  forestA: "#5c9a52",
+  forestB: "#6fae60",
+  trunk: "#8a6a45",
+  river: "#8fc7d9",
+  riverEdge: "#f7ecd1",
+  road: "#d9b98a",
+  wall: "#f2ded0",
+  wallEdge: "#5b4a3a",
+  roof: "#d97b5a",
+  door: "#3f8f5a",
+  flag: "#e8c05a",
+  routeAccent: "#c1553a",
+  ringAccent: "#c1553a",
 } as const;
 
 interface Terrain {
   cols: number;
   rows: number;
   land: Uint8Array;
-  shallowTiles: number[]; // índices (row*cols+col) de água rasa junto à costa
 }
 
 function buildTerrain(): Terrain {
@@ -108,94 +213,89 @@ function buildTerrain(): Terrain {
       land[r * cols + c] = pointInRS(x, z) ? 1 : 0;
     }
   }
-  const shallowTiles: number[] = [];
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const i = r * cols + c;
-      if (land[i]) continue;
-      const n =
-        (c > 0 && land[i - 1]) ||
-        (c < cols - 1 && land[i + 1]) ||
-        (r > 0 && land[i - cols]) ||
-        (r < rows - 1 && land[i + cols]);
-      if (n) shallowTiles.push(i);
-    }
-  }
-  return { cols, rows, land, shallowTiles };
+  return { cols, rows, land };
 }
 
-function drawBuilding(
+// Caminho do contorno real do RS em pixels de canvas — usado tanto para a
+// borda arredondada do diorama quanto para recortar (clip) o preenchimento
+// do prado, o que dá um litoral preciso sem depender da grade de tiles.
+function rsOutlinePath(ctx: CanvasRenderingContext2D) {
+  ctx.beginPath();
+  RS_OUTLINE.forEach(([x, z], i) => {
+    const [px, py] = toPx([x, z]);
+    if (i === 0) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  });
+  ctx.closePath();
+}
+
+function drawHouse(
   ctx: CanvasRenderingContext2D,
   bx: number,
   by: number,
   opts: { big: boolean; active: boolean; t: number },
 ) {
   const s = opts.big ? 1.35 : 1;
-  const w = 36 * s;
-  const fh = 20 * s; // altura da fachada
-  const rh = 12 * s; // altura do telhado
+  const w = 30 * s;
+  const wh = 16 * s; // altura da parede
+  const rh = 14 * s; // altura do telhado
   const left = bx - w / 2;
   const base = by;
 
   if (opts.active) {
-    const pulse = 24 * s + Math.sin(opts.t * 4) * 3;
-    ctx.strokeStyle = "rgba(245,158,11,0.8)";
+    const pulse = 22 * s + Math.sin(opts.t * 4) * 3;
+    ctx.strokeStyle = "rgba(193,85,58,0.75)";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.arc(bx, base - 6, pulse, 0, Math.PI * 2);
+    ctx.arc(bx, base - 4, pulse, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  // sombra no chão
-  ctx.fillStyle = "rgba(0,0,0,0.18)";
-  ctx.fillRect(left + 3, base - 3, w, 6);
+  // sombra de contato, ovalada — chão de diorama
+  ctx.fillStyle = "rgba(90,66,40,0.24)";
+  ctx.beginPath();
+  ctx.ellipse(bx, base + 3, w * 0.42, w * 0.14, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // fachada verde com contorno escuro
-  ctx.fillStyle = M.facadeDark;
-  ctx.fillRect(left - 2, base - fh - 2, w + 4, fh + 2);
-  ctx.fillStyle = M.facade;
-  ctx.fillRect(left, base - fh, w, fh);
+  // parede clara com contorno
+  ctx.fillStyle = M.wallEdge;
+  ctx.fillRect(left - 2, base - wh - 2, w + 4, wh + 2);
+  ctx.fillStyle = M.wall;
+  ctx.fillRect(left, base - wh, w, wh);
 
-  // janelas acesas (2 fileiras x 3 colunas)
-  const winW = 5 * s;
-  const winH = 5 * s;
-  for (let row = 0; row < 2; row++) {
-    for (let col = 0; col < 3; col++) {
-      const wx = left + (4 + col * 11) * s;
-      const wy = base - fh + (3 + row * 9) * s;
-      ctx.fillStyle = M.windowFrame;
-      ctx.fillRect(wx - 1, wy - 1, winW + 2, winH + 2);
-      ctx.fillStyle = M.window;
-      ctx.fillRect(wx, wy, winW, winH);
-    }
-  }
-
-  // porta
+  // porta verde
   ctx.fillStyle = M.door;
-  ctx.fillRect(bx - 3 * s, base - 8 * s, 6 * s, 8 * s);
+  ctx.fillRect(bx - 4 * s, base - 9 * s, 8 * s, 9 * s);
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.fillRect(bx - 4 * s, base - 9 * s, 8 * s, 2);
 
-  // telhado vermelho em duas faixas, com beiral
-  ctx.fillStyle = M.roofDark;
-  ctx.fillRect(left - 4, base - fh - rh * 0.45 - 2, w + 8, rh * 0.45 + 2);
+  // telhado terracota, com beiral
+  ctx.fillStyle = "#b8593d";
+  ctx.beginPath();
+  ctx.moveTo(left - 5, base - wh + 2);
+  ctx.lineTo(bx, base - wh - rh);
+  ctx.lineTo(left + w + 5, base - wh + 2);
+  ctx.closePath();
+  ctx.fill();
   ctx.fillStyle = M.roof;
   ctx.beginPath();
-  ctx.moveTo(left - 4, base - fh - rh * 0.45);
-  ctx.lineTo(bx, base - fh - rh - 4);
-  ctx.lineTo(left + w + 4, base - fh - rh * 0.45);
+  ctx.moveTo(left - 5, base - wh);
+  ctx.lineTo(bx, base - wh - rh - 2);
+  ctx.lineTo(left + w + 5, base - wh);
   ctx.closePath();
   ctx.fill();
 
-  // bandeira: fixa na Reitoria, animada no prédio ativo
+  // bandeirinha: fixa na Reitoria, animada no prédio ativo
   if (opts.big || opts.active) {
-    const px0 = bx + (opts.big ? 10 : 8);
-    const py0 = base - fh - rh - 4;
-    ctx.fillStyle = M.windowFrame;
-    ctx.fillRect(px0, py0 - 12, 2, 12);
+    const px0 = bx + (opts.big ? 3 : 2);
+    const py0 = base - wh - rh - 2;
+    ctx.fillStyle = M.wallEdge;
+    ctx.fillRect(px0, py0 - 11, 2, 11);
     const wave = opts.active ? Math.sin(opts.t * 6) * 2 : 0;
     ctx.fillStyle = M.flag;
     ctx.beginPath();
-    ctx.moveTo(px0 + 2, py0 - 12);
-    ctx.lineTo(px0 + 12, py0 - 10 + wave);
+    ctx.moveTo(px0 + 2, py0 - 11);
+    ctx.lineTo(px0 + 11, py0 - 9 + wave);
     ctx.lineTo(px0 + 2, py0 - 6);
     ctx.closePath();
     ctx.fill();
@@ -216,11 +316,11 @@ export const MapCanvas = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const terrain = useMemo(buildTerrain, []);
 
-  // Decoração (tufos de grama e árvores) — determinística por tile e longe
-  // dos prédios, para não brotar árvore em cima de campus.
+  // Decoração (bosques e morros) — determinística por tile e longe dos
+  // prédios, para não brotar árvore em cima de campus.
   const decor = useMemo(() => {
-    const tufts: [number, number][] = [];
-    const trees: [number, number][] = [];
+    const forest: [number, number][] = [];
+    const hills: [number, number][] = [];
     const { cols, rows, land } = terrain;
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
@@ -233,62 +333,99 @@ export const MapCanvas = ({
         if (nearBuilding) continue;
         const h = hash01(`d${c},${r}`);
         const [pxx, pxy] = toPx([x, z]);
-        if (h > 0.993) trees.push([pxx, pxy]);
-        else if (h > 0.95) tufts.push([pxx, pxy]);
+        if (h > 0.986) forest.push([pxx, pxy]);
+        else if (h > 0.965) hills.push([pxx, pxy]);
       }
     }
-    return { tufts, trees };
+    return { forest, hills };
   }, [terrain, locations]);
 
-  // Terreno rasterizado uma única vez (offscreen).
+  // Terreno rasterizado uma única vez (offscreen): prado recortado no
+  // contorno real do RS, com borda creme arredondada e sombra de contato —
+  // um diorama sobre a "mesa", sem oceano.
   const terrainCanvas = useMemo(() => {
     const off = document.createElement("canvas");
     off.width = CANVAS_W;
     off.height = CANVAS_H;
     const ctx = off.getContext("2d")!;
-    const { cols, rows, land, shallowTiles } = terrain;
     const ts = STEP * PX;
 
-    // água sólida com salpicos discretos — um tabuleiro de dois azuis lia
-    // como "fundo transparente de PNG", não como oceano
-    ctx.fillStyle = M.water;
+    ctx.fillStyle = M.table;
     ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
-    ctx.fillStyle = M.waterDeep;
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (land[r * cols + c]) continue;
-        if (hash01(`w${c},${r}`) > 0.94) ctx.fillRect(c * ts, r * ts + ts / 2, ts, 1.5);
-      }
-    }
-    for (const i of shallowTiles) {
-      const r = Math.floor(i / cols);
-      const c = i % cols;
-      ctx.fillStyle = M.shallow;
-      ctx.fillRect(c * ts, r * ts, ts, ts);
-    }
-    for (let r = 0; r < rows; r++) {
-      for (let c = 0; c < cols; c++) {
-        if (!land[r * cols + c]) continue;
+
+    // sombra suave do relevo na mesa, por trás da borda
+    ctx.save();
+    ctx.translate(0, 10);
+    rsOutlinePath(ctx);
+    ctx.fillStyle = M.tableShadow;
+    ctx.fill();
+    ctx.restore();
+
+    // borda creme arredondada (papercraft) + contorno fino por dentro
+    rsOutlinePath(ctx);
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = M.border;
+    ctx.lineWidth = 15;
+    ctx.stroke();
+
+    // prado, recortado com precisão no contorno real (sem serrilhado de tile)
+    ctx.save();
+    rsOutlinePath(ctx);
+    ctx.clip();
+    for (let r = 0; r < terrain.rows; r++) {
+      for (let c = 0; c < terrain.cols; c++) {
+        if (!terrain.land[r * terrain.cols + c]) continue;
         const checker = (Math.floor(c / 2) + Math.floor(r / 2)) % 2 === 0;
         ctx.fillStyle = checker ? M.landA : M.landB;
-        ctx.fillRect(c * ts, r * ts, ts, ts);
+        ctx.fillRect(c * ts - 2, r * ts - 2, ts + 4, ts + 4);
       }
     }
-    // tufos de grama
-    ctx.fillStyle = M.tuft;
-    for (const [x, y] of decor.tufts) {
-      ctx.fillRect(x - 2, y, 2, 2);
-      ctx.fillRect(x + 1, y - 1, 2, 2);
+    // morros: realce radial suave
+    for (const [x, y] of decor.hills) {
+      const g = ctx.createRadialGradient(x - 8, y - 10, 2, x, y, 30);
+      g.addColorStop(0, M.hillHi);
+      g.addColorStop(1, M.hillLo);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.ellipse(x, y, 30, 20, 0, 0, Math.PI * 2);
+      ctx.fill();
     }
-    // arvorezinhas
-    for (const [x, y] of decor.trees) {
-      ctx.fillStyle = M.treeTrunk;
-      ctx.fillRect(x - 1, y, 3, 4);
-      ctx.fillStyle = M.treeLeaf;
-      ctx.fillRect(x - 5, y - 8, 10, 9);
-      ctx.fillStyle = M.treeLeafHi;
-      ctx.fillRect(x - 3, y - 10, 6, 4);
+    // bosques: aglomerados de círculos, como no diorama
+    for (const [x, y] of decor.forest) {
+      ctx.fillStyle = M.trunk;
+      ctx.fillRect(x - 2, y + 6, 4, 7);
+      for (const [dx, dy, r2, col] of [
+        [-8, 2, 11, M.forestA],
+        [8, 3, 11, M.forestA],
+        [0, -7, 13, M.forestB],
+      ] as const) {
+        ctx.fillStyle = col;
+        ctx.beginPath();
+        ctx.arc(x + dx, y + dy, r2, 0, Math.PI * 2);
+        ctx.fill();
+      }
     }
+    // rio-fita azul-claro na reentrância litorânea real (Lagoa dos Patos)
+    const riverPts: [number, number][] = [
+      [30.77, 38.15],
+      [31.98, 38.71],
+      [31.1, 39.13],
+      [30.79, 40.19],
+    ].map(([x, z]) => toPx([x, z]));
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.strokeStyle = M.riverEdge;
+    ctx.lineWidth = 13;
+    ctx.beginPath();
+    riverPts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    ctx.stroke();
+    ctx.strokeStyle = M.river;
+    ctx.lineWidth = 8;
+    ctx.beginPath();
+    riverPts.forEach(([x, y], i) => (i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y)));
+    ctx.stroke();
+    ctx.restore();
+
     return off;
   }, [terrain, decor]);
 
@@ -300,39 +437,38 @@ export const MapCanvas = ({
     ctx.imageSmoothingEnabled = false;
 
     const sorted = [...locations].sort((a, b) => a.pos[1] - b.pos[1]);
-    const ts = STEP * PX;
-    const { cols } = terrain;
+    const hub = locations.find((l) => l.id === "1.1") ?? null;
 
     const draw = (t: number) => {
       ctx.drawImage(terrainCanvas, 0, 0);
 
-      // ondas animadas na faixa de águas rasas
-      ctx.fillStyle = M.wave;
-      const phase = Math.floor(t * 2);
-      for (let k = 0; k < terrain.shallowTiles.length; k++) {
-        if ((k + phase) % 5 !== 0) continue;
-        const i = terrain.shallowTiles[k];
-        const r = Math.floor(i / cols);
-        const c = i % cols;
-        ctx.fillRect(c * ts, r * ts + ts / 2, ts, 1.5);
+      // estradinhas de terra, fixas, ligando a Reitoria a cada campus
+      if (hub) {
+        const [hx, hy] = toPx(hub.pos);
+        ctx.lineCap = "round";
+        ctx.strokeStyle = M.road;
+        ctx.lineWidth = 3.5;
+        ctx.setLineDash([1, 9]);
+        for (const loc of locations) {
+          if (loc.id === hub.id) continue;
+          const [lx, ly] = toPx(loc.pos);
+          ctx.beginPath();
+          ctx.moveTo(hx, hy - 6);
+          ctx.lineTo(lx, ly - 6);
+          ctx.stroke();
+        }
+        ctx.setLineDash([]);
       }
 
-      // rota da demanda entre os dois últimos prédios, tracejado que "anda"
+      // trilha em destaque: trajeto da demanda atual entre dois prédios
       if (route) {
         const [x1, y1] = toPx(route.from);
         const [x2, y2] = toPx(route.to);
         ctx.lineCap = "round";
-        ctx.strokeStyle = M.routeDark;
+        ctx.strokeStyle = M.routeAccent;
         ctx.lineWidth = 5;
-        ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.moveTo(x1, y1 - 8);
-        ctx.lineTo(x2, y2 - 8);
-        ctx.stroke();
-        ctx.strokeStyle = M.route;
-        ctx.lineWidth = 2.5;
-        ctx.setLineDash([7, 7]);
-        ctx.lineDashOffset = -t * 30;
+        ctx.setLineDash([1, 11]);
+        ctx.lineDashOffset = -t * 26;
         ctx.beginPath();
         ctx.moveTo(x1, y1 - 8);
         ctx.lineTo(x2, y2 - 8);
@@ -342,7 +478,7 @@ export const MapCanvas = ({
 
       for (const loc of sorted) {
         const [bx, by] = toPx(loc.pos);
-        drawBuilding(ctx, bx, by, {
+        drawHouse(ctx, bx, by, {
           big: loc.id === "1.1",
           active: loc.id === activeLocationId,
           t,
@@ -354,7 +490,7 @@ export const MapCanvas = ({
     let lastFrame = -1;
     const loop = (ms: number) => {
       const t = ms / 1000;
-      // ~10fps bastam para ondas/tracejado e mantêm o custo perto de zero
+      // ~10fps bastam para o tracejado animado e mantêm o custo perto de zero
       const frame = Math.floor(t * 10);
       if (frame !== lastFrame) {
         lastFrame = frame;
@@ -366,13 +502,8 @@ export const MapCanvas = ({
     return () => cancelAnimationFrame(raf);
   }, [terrain, terrainCanvas, locations, activeLocationId, route]);
 
-  // Alternância de rótulo acima/abaixo na ordem oeste->leste: vizinhos em x
-  // ficam em alturas opostas, o que desfaz as colisões do aglomerado central
-  // sem nenhuma posição ajustada à mão.
-  const xOrder = useMemo(
-    () => [...locations].sort((a, b) => a.pos[0] - b.pos[0]).map((l) => l.id),
-    [locations],
-  );
+  // Posição de cada rótulo, sem sobreposição — ver placeLabels() acima.
+  const labelLayout = useMemo(() => placeLabels(locations, toPx), [locations]);
 
   // Zoom de câmera: origem travada no pixel exato do prédio em foco; ao
   // voltar para a visão geral, mantém a última origem para "sair" do mesmo
@@ -388,10 +519,10 @@ export const MapCanvas = ({
 
   return (
     <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
-      {/* Moldura de madeira fixa (igual à do escritório): o zoom acontece
-          DENTRO dela, como uma janela para o mundo do mapa. */}
+      {/* Moldura clara fixa (igual à do escritório): o zoom acontece DENTRO
+          dela, como uma janela para o diorama. */}
       <div
-        className="relative shrink-0 overflow-hidden rounded-2xl border-[6px] border-[#8a7a5c] shadow-2xl"
+        className="relative shrink-0 overflow-hidden rounded-2xl border-[6px] border-[#d9c8a8] shadow-2xl"
         style={{ width: CANVAS_W, height: CANVAS_H }}
       >
         <div
@@ -411,36 +542,35 @@ export const MapCanvas = ({
           {locations.map((loc) => {
             const [x, y] = toPx(loc.pos);
             const isActive = loc.id === activeLocationId;
-            // Reitoria sempre acima (sede, sprite maior); perto das bordas o
-            // rótulo vai para o lado que não é cortado pela moldura; nos
-            // demais, alterna pela ordem oeste->leste.
-            const above =
-              loc.id === "1.1" ||
-              (y <= 90
-                ? false
-                : y >= CANVAS_H - 40
-                  ? true
-                  : xOrder.indexOf(loc.id) % 2 === 1);
+            const lp = labelLayout.get(loc.id) ?? { left: x, top: y - 46 };
             return (
-              <button
-                key={loc.id}
-                onClick={() => onSelect(loc)}
-                className={`absolute -translate-x-1/2 flex flex-col items-center cursor-pointer group ${
-                  above ? "justify-start" : "justify-end"
-                }`}
-                style={{ left: x, top: above ? y - 76 : y - 46, width: 64, height: 72 }}
-                title={loc.nome}
-              >
-                <span
-                  className={`text-[8px] font-mono font-bold px-1.5 py-px rounded-full border shadow whitespace-nowrap transition-colors ${
-                    isActive
-                      ? "bg-amber-400 text-slate-950 border-amber-600"
-                      : "bg-[#1f2430]/90 text-stone-100 border-white/15 group-hover:bg-[#2b3244]"
-                  }`}
+              <div key={loc.id}>
+                {/* alvo de clique sobre a casinha em si */}
+                <button
+                  onClick={() => onSelect(loc)}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+                  style={{ left: x, top: y - 18, width: 46, height: 58 }}
+                  title={loc.nome}
+                  aria-label={loc.nome}
+                />
+                {/* rótulo, posicionado sem sobreposição por placeLabels() */}
+                <button
+                  onClick={() => onSelect(loc)}
+                  className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group"
+                  style={{ left: lp.left, top: lp.top }}
+                  title={loc.nome}
                 >
-                  {cityKeyFromName(loc.nome)}
-                </span>
-              </button>
+                  <span
+                    className={`text-[8px] font-bold px-1.5 py-px rounded-full border shadow whitespace-nowrap transition-colors ${
+                      isActive
+                        ? "bg-[#c1553a] text-[#fff6e6] border-[#8f3d28]"
+                        : "bg-[#fff6e6]/95 text-[#4a3b57] border-[#5b4a6a]/40 group-hover:bg-[#ffe9d6]"
+                    }`}
+                  >
+                    {cityKeyFromName(loc.nome)}
+                  </span>
+                </button>
+              </div>
             );
           })}
         </div>

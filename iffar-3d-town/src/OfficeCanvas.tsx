@@ -988,11 +988,19 @@ export const OfficeCanvas = ({
   const [visualActiveId, setVisualActiveId] = useState<string | null>(activeAgentId);
   const walkRef = useRef<WalkState | null>(null);
   const prevSeatRef = useRef<Seat | null>(null);
+  const prevPlanRef = useRef(plan);
 
   useEffect(() => {
     const newSeat = activeAgentId ? (seatById.get(activeAgentId) ?? null) : null;
-    const oldSeat = prevSeatRef.current;
+    // oldSeat.zoneIndex só é válido dentro do `plan` que o produziu — se o
+    // prédio mudou entre um render e outro (agents/plan trocaram antes de
+    // officeVisible cortar a cena), o índice antigo pode não existir mais
+    // no plano novo. Nesse caso não há corredor comum para o mensageiro
+    // andar: trata como um corte de cena, sem animação de trajeto.
+    const samePlan = prevPlanRef.current === plan;
+    const oldSeat = samePlan ? prevSeatRef.current : null;
     prevSeatRef.current = newSeat;
+    prevPlanRef.current = plan;
 
     if (newSeat && oldSeat && oldSeat.agentId !== newSeat.agentId) {
       const color = agents.find((a) => a.id === newSeat.agentId)?.color ?? "#f59e0b";
