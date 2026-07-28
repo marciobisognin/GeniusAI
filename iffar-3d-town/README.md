@@ -83,6 +83,22 @@ Quando a demanda muda de sala **dentro do mesmo prédio**, ninguém teleporta: u
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+### 👋 Proximidade dinâmica
+
+Passe o mouse sobre qualquer mesa: o cartão que aparece mostra cargo, competência regimental — e, para quem não está em foco, dois botões, como no vídeo. **Acenar** faz um 👋 flutuar sobre a mesa da pessoa e, pouco depois, abre um aviso "Fulano acenou de volta"; **Ir até lá** manda o avatar-mensageiro até a mesa (o mesmo efeito de clicar na mesa diretamente), uma forma explícita de "Walk over".
+
+</td>
+<td width="50%" valign="top">
+
+### 🐦 Visão de Pássaro
+
+Um botão no canto superior alterna entre o escritório em pixel art e um **mapa vetorial simplificado**: cada repartição vira um retângulo rotulado e cada pessoa um círculo colorido pelo cargo, com a área que está resolvendo a demanda destacada em âmbar — para enxergar de relance onde cada equipe está sem precisar rolar o andar inteiro. Clicar num círculo funciona como clicar na mesa: muda o foco e desencadeia o mensageiro.
+
+</td>
+</tr>
 </table>
 
 <img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em pixel art: oceano azul com ondas, o contorno oficial do estado em verde com a Lagoa dos Patos, e 14 sprites de prédio de fachada verde e telhado vermelho na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />

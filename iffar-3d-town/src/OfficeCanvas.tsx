@@ -943,6 +943,34 @@ export const OfficeCanvas = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const zoneRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [birdsEye, setBirdsEye] = useState(false);
+
+  // Proximidade dinâmica: acenar mostra um emoji flutuando sobre a mesa e,
+  // logo depois, um cartão "fulano acenou de volta" — como no vídeo, quando
+  // dois avatares se aproximam.
+  const [waveId, setWaveId] = useState<string | null>(null);
+  const [waveAck, setWaveAck] = useState<{ id: string; name: string } | null>(null);
+  const waveTimers = useRef<{ wave?: ReturnType<typeof setTimeout>; ack?: ReturnType<typeof setTimeout> }>({});
+
+  const handleWave = (agent: Agent) => {
+    clearTimeout(waveTimers.current.wave);
+    clearTimeout(waveTimers.current.ack);
+    setWaveAck(null);
+    setWaveId(agent.id);
+    waveTimers.current.wave = setTimeout(() => {
+      setWaveId(null);
+      setWaveAck({ id: agent.id, name: agent.name });
+      waveTimers.current.ack = setTimeout(() => setWaveAck(null), 2200);
+    }, 900);
+  };
+
+  useEffect(
+    () => () => {
+      clearTimeout(waveTimers.current.wave);
+      clearTimeout(waveTimers.current.ack);
+    },
+    [],
+  );
 
   const plan = useMemo(() => buildPlan(agents), [agents]);
 
@@ -1219,23 +1247,54 @@ export const OfficeCanvas = ({
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-[#2a2620] p-4 animate-fade-in">
+      {/* HUD fixo sobre a viewport — não rola junto com o andar, para
+          continuar clicável/visível não importa até onde o usuário tenha
+          rolado a planta (que pode ser muito mais larga que a tela). */}
+      <div className="absolute top-6 right-6 z-50 flex items-center gap-2">
+        <button
+          onClick={() => setBirdsEye((v) => !v)}
+          className="bg-[#1f2430] text-emerald-300 font-mono text-xs font-bold px-3 py-1 rounded-full border border-emerald-500/40 shadow-lg whitespace-nowrap hover:bg-[#262c3a] transition-colors"
+        >
+          {birdsEye ? "🎨 Pixel Art" : "🐦 Visão de Pássaro"}
+        </button>
+        <div className="bg-[#1f2430] text-amber-300 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 shadow-lg whitespace-nowrap">
+          🏛️ {buildingName}
+        </div>
+      </div>
+
+      {waveAck && (
+        <div className="absolute top-16 right-6 z-50">
+          <div className="flex items-center gap-2 bg-[#12151c]/97 text-stone-100 text-[10px] px-3 py-2 rounded-lg shadow-xl border border-emerald-500/40 font-mono animate-fade-in">
+            <span className="text-base">👋</span>
+            <div>
+              <div className="font-bold">{waveAck.name} acenou de volta</div>
+              <div className="text-stone-400 text-[9px]">Agora</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div
         className="relative max-w-full max-h-full overflow-auto rounded-2xl border-[6px] border-[#d9c8a8] shadow-2xl"
         style={{ lineHeight: 0 }}
       >
-        <div className="relative" style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}>
+        <div
+          className="relative"
+          style={{ width: plan.totalW * TILE, height: plan.totalH * TILE }}
+          onMouseLeave={() => setHoveredId(null)}
+        >
           <canvas
             ref={canvasRef}
-            style={{ width: plan.totalW * TILE, height: plan.totalH * TILE, imageRendering: "pixelated" }}
-            onMouseMove={(e) => handlePointer(e, false)}
-            onMouseLeave={() => setHoveredId(null)}
-            onClick={(e) => handlePointer(e, true)}
+            style={{
+              width: plan.totalW * TILE,
+              height: plan.totalH * TILE,
+              imageRendering: "pixelated",
+              visibility: birdsEye ? "hidden" : "visible",
+            }}
+            onMouseMove={(e) => (birdsEye ? undefined : handlePointer(e, false))}
+            onClick={(e) => (birdsEye ? undefined : handlePointer(e, true))}
             className="cursor-pointer"
           />
-
-          <div className="absolute top-1.5 right-2 z-30 bg-[#1f2430] text-amber-300 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 shadow-lg whitespace-nowrap">
-            🏛️ {buildingName}
-          </div>
 
           {/* âncoras invisíveis por zona — usadas só para o scrollIntoView */}
           {plan.zones.map((z, i) => (
@@ -1249,90 +1308,187 @@ export const OfficeCanvas = ({
             />
           ))}
 
-          {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") */}
-          {plan.zones.map((z, i) =>
-            z.label ? (
-              <div
-                key={`zone-${i}`}
-                className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
-                  activeZone && activeZone !== z ? "opacity-25" : "opacity-100"
-                }`}
-                style={{ left: z.x * TILE + 5, top: z.y * TILE + 4, maxWidth: z.w * TILE - 10 }}
-              >
-                <span className="bg-[#15171c]/90 text-stone-50 text-[9px] font-mono font-bold px-2.5 py-[3px] rounded-full shadow-md whitespace-nowrap block truncate">
-                  {z.label}
-                </span>
-              </div>
-            ) : null,
-          )}
-
-          {/* Plaquinha por agente: nome + linha de status, como no Gather 2.0 */}
-          {plan.seats.map((seat) => {
-            const agent = agents.find((a) => a.id === seat.agentId);
-            if (!agent) return null;
-            const isActive = agent.id === visualActiveId;
-            const dim = activeZone && plan.zones[seat.zoneIndex] !== activeZone;
-            return (
-              <div
-                key={`lbl-${agent.id}`}
-                className={`absolute z-20 -translate-x-1/2 pointer-events-none transition-opacity duration-300 ${
-                  dim ? "opacity-25" : "opacity-100"
-                }`}
-                style={{ left: seat.deskX * TILE, top: (seat.deskY + 2.6) * TILE }}
-              >
+          {/* Modo Visão de Pássaro: mapa vetorial simplificado — retângulos
+              por área e um círculo colorido por pessoa, como na referência,
+              para enxergar de relance onde cada equipe está. */}
+          {birdsEye && (
+            <div className="absolute inset-0 z-10 bg-[#eef0f2]">
+              {plan.zones.map((z, i) => (
                 <div
-                  className={`flex flex-col items-start px-2 py-[3px] rounded-xl shadow-md font-mono ${
-                    isActive ? "bg-amber-400 text-slate-950" : "bg-[#15171c]/92 text-stone-50"
-                  }`}
+                  key={`be-zone-${i}`}
+                  className="absolute rounded-2xl border-2 pointer-events-none transition-colors duration-300"
+                  style={{
+                    left: z.x * TILE,
+                    top: z.y * TILE,
+                    width: z.w * TILE,
+                    height: z.h * TILE,
+                    background: activeZone === z ? "#fef3c7" : "#f6f7f9",
+                    borderColor: activeZone === z ? "#f59e0b" : "#dbdfe4",
+                  }}
                 >
-                  <span className="flex items-center gap-1.5 text-[9px] font-bold leading-tight max-w-[88px]">
+                  {z.label && (
                     <span
-                      className={`w-[6px] h-[6px] rounded-full shrink-0 ${
-                        isActive ? "bg-red-600 animate-pulse" : "bg-emerald-400"
-                      }`}
-                    />
-                    <span className="truncate">{agent.name}</span>
-                  </span>
-                  <span className={`text-[8px] leading-tight pl-[13px] ${isActive ? "text-slate-800" : "text-stone-400"}`}>
-                    {isActive ? "Trabalhando agora" : "Disponível"}
-                  </span>
+                      className="absolute top-1.5 left-2.5 text-[10px] font-mono font-bold text-slate-500 truncate max-w-[90%]"
+                      style={{ lineHeight: "normal" }}
+                    >
+                      {z.label}
+                    </span>
+                  )}
                 </div>
-              </div>
-            );
-          })}
-
-          {/* Balão do que está sendo feito — flutua acima da estação ativa,
-              fora da faixa das plaquinhas, para não colidir com as vizinhas */}
-          {visualActiveId && statusMsg && visualActiveSeat && (
-            <div
-              className="absolute z-40 -translate-x-1/2 -translate-y-full pointer-events-none"
-              style={{ left: visualActiveSeat.deskX * TILE, top: (visualActiveSeat.deskY - 1.1) * TILE }}
-            >
-              <div className="bg-amber-400 text-slate-950 text-[9px] font-bold px-2 py-1 rounded-md shadow-xl border border-amber-600 max-w-[210px] truncate font-mono">
-                💭 {statusMsg}
-              </div>
+              ))}
+              {plan.seats.map((seat) => {
+                const agent = agents.find((a) => a.id === seat.agentId);
+                if (!agent) return null;
+                const isActive = agent.id === visualActiveId;
+                const size = isActive ? 30 : 20;
+                return (
+                  <button
+                    key={`be-seat-${agent.id}`}
+                    onClick={() => onSelectAgent(agent.id)}
+                    title={`${agent.name}${agent.cargo ? ` · ${agent.cargo}` : ""}`}
+                    className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full shadow-md cursor-pointer"
+                    style={{
+                      left: seat.deskX * TILE,
+                      top: seat.deskY * TILE,
+                      width: size,
+                      height: size,
+                      background: agent.color,
+                      border: isActive ? "3px solid #f59e0b" : "2px solid white",
+                    }}
+                  >
+                    {isActive && (
+                      <span className="absolute -inset-1.5 rounded-full border-2 border-amber-400/70 animate-ping" />
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
 
-          {hovered && hoveredSeat && (
-            <div
-              className="absolute z-40 pointer-events-none -translate-x-1/2 -translate-y-full max-w-[230px] bg-[#12151c]/97 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono"
-              style={{ left: hoveredSeat.deskX * TILE, top: (hoveredSeat.deskY - 1) * TILE }}
-            >
-              <div className="font-bold text-amber-400 whitespace-normal">{hovered.name}</div>
-              {hovered.cargo && (
-                <div className="text-stone-400">
-                  {hovered.cargo}
-                  {hovered.funcao ? ` · ${hovered.funcao}` : ""}
+          {!birdsEye && (
+            <>
+              {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") */}
+              {plan.zones.map((z, i) =>
+                z.label ? (
+                  <div
+                    key={`zone-${i}`}
+                    className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
+                      activeZone && activeZone !== z ? "opacity-25" : "opacity-100"
+                    }`}
+                    style={{ left: z.x * TILE + 5, top: z.y * TILE + 4, maxWidth: z.w * TILE - 10 }}
+                  >
+                    <span className="bg-[#15171c]/90 text-stone-50 text-[9px] font-mono font-bold px-2.5 py-[3px] rounded-full shadow-md whitespace-nowrap block truncate">
+                      {z.label}
+                    </span>
+                  </div>
+                ) : null,
+              )}
+
+              {/* Plaquinha por agente: nome + linha de status, como no Gather 2.0 */}
+              {plan.seats.map((seat) => {
+                const agent = agents.find((a) => a.id === seat.agentId);
+                if (!agent) return null;
+                const isActive = agent.id === visualActiveId;
+                const dim = activeZone && plan.zones[seat.zoneIndex] !== activeZone;
+                return (
+                  <div
+                    key={`lbl-${agent.id}`}
+                    className={`absolute z-20 -translate-x-1/2 pointer-events-none transition-opacity duration-300 ${
+                      dim ? "opacity-25" : "opacity-100"
+                    }`}
+                    style={{ left: seat.deskX * TILE, top: (seat.deskY + 2.6) * TILE }}
+                  >
+                    <div
+                      className={`flex flex-col items-start px-2 py-[3px] rounded-xl shadow-md font-mono ${
+                        isActive ? "bg-amber-400 text-slate-950" : "bg-[#15171c]/92 text-stone-50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-1.5 text-[9px] font-bold leading-tight max-w-[88px]">
+                        <span
+                          className={`w-[6px] h-[6px] rounded-full shrink-0 ${
+                            isActive ? "bg-red-600 animate-pulse" : "bg-emerald-400"
+                          }`}
+                        />
+                        <span className="truncate">{agent.name}</span>
+                      </span>
+                      <span
+                        className={`text-[8px] leading-tight pl-[13px] ${isActive ? "text-slate-800" : "text-stone-400"}`}
+                      >
+                        {isActive ? "Trabalhando agora" : "Disponível"}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Balão do que está sendo feito — flutua acima da estação ativa,
+                  fora da faixa das plaquinhas, para não colidir com as vizinhas */}
+              {visualActiveId && statusMsg && visualActiveSeat && (
+                <div
+                  className="absolute z-40 -translate-x-1/2 -translate-y-full pointer-events-none"
+                  style={{ left: visualActiveSeat.deskX * TILE, top: (visualActiveSeat.deskY - 1.1) * TILE }}
+                >
+                  <div className="bg-amber-400 text-slate-950 text-[9px] font-bold px-2 py-1 rounded-md shadow-xl border border-amber-600 max-w-[210px] truncate font-mono">
+                    💭 {statusMsg}
+                  </div>
                 </div>
               )}
-              {hovered.competencia && (
-                <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
-                  Art. {hovered.competencia.artigo}
-                  {hovered.competencia.resumo ? ` — ${hovered.competencia.resumo.slice(0, 140)}` : ""}
+
+              {/* Proximidade dinâmica: emoji de aceno flutuando sobre a mesa
+                  de quem recebeu o aceno */}
+              {waveId &&
+                (() => {
+                  const seat = seatById.get(waveId);
+                  if (!seat) return null;
+                  return (
+                    <div
+                      className="absolute z-40 -translate-x-1/2 -translate-y-full pointer-events-none animate-bounce"
+                      style={{ left: seat.deskX * TILE, top: (seat.deskY - 1.6) * TILE }}
+                    >
+                      <span className="text-2xl drop-shadow">👋</span>
+                    </div>
+                  );
+                })()}
+
+              {hovered && hoveredSeat && (
+                <div
+                  className="absolute z-40 -translate-x-1/2 -translate-y-full w-[220px] bg-[#12151c]/97 text-stone-200 text-[10px] px-2.5 py-2 rounded-lg shadow-xl border border-amber-500/40 font-mono"
+                  style={{ left: hoveredSeat.deskX * TILE, top: (hoveredSeat.deskY - 1) * TILE }}
+                >
+                  <div className="font-bold text-amber-400 whitespace-normal">{hovered.name}</div>
+                  {hovered.cargo && (
+                    <div className="text-stone-400">
+                      {hovered.cargo}
+                      {hovered.funcao ? ` · ${hovered.funcao}` : ""}
+                    </div>
+                  )}
+                  {hovered.competencia && (
+                    <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
+                      Art. {hovered.competencia.artigo}
+                      {hovered.competencia.resumo ? ` — ${hovered.competencia.resumo.slice(0, 140)}` : ""}
+                    </div>
+                  )}
+                  {/* Proximidade dinâmica: acenar ou ir até a mesa da pessoa,
+                      como no vídeo (Wave / Walk Over) */}
+                  {hovered.id !== visualActiveId && (
+                    <div className="flex gap-1.5 mt-2 pt-2 border-t border-white/15">
+                      <button
+                        onClick={() => handleWave(hovered)}
+                        className="flex-1 min-w-0 whitespace-nowrap bg-white/10 hover:bg-white/20 text-stone-100 text-[9px] font-bold py-1 rounded-md transition-colors"
+                      >
+                        👋 Acenar
+                      </button>
+                      <button
+                        onClick={() => onSelectAgent(hovered.id)}
+                        className="flex-1 min-w-0 whitespace-nowrap bg-amber-500/90 hover:bg-amber-400 text-slate-950 text-[9px] font-bold py-1 rounded-md transition-colors"
+                      >
+                        🏃 Ir até lá
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
+            </>
           )}
         </div>
       </div>
