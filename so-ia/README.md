@@ -1,5 +1,11 @@
 # SO-IA — Sistema Operacional de IA
 
+[![CI](https://github.com/marciobisognin/GeniusAI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/marciobisognin/GeniusAI/actions/workflows/ci.yml)
+![Next.js 16](https://img.shields.io/badge/Next.js-16-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS v4](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)
+![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
+
 > Um sistema de agentes de IA que se monta sozinho a partir do organograma
 > da sua empresa ou órgão público — em vez de vir pronto com um catálogo
 > genérico que ninguém pediu.
@@ -10,6 +16,19 @@ brasileiro** (âncora: Instituto Federal Farroupilha / Coordenação de
 Licitação e Contratos).
 
 ![Landing — nada pré-carregado até você configurar sua organização](docs/screenshots/01-landing.png)
+
+## Índice
+
+1. [Em uma frase](#em-uma-frase)
+2. [Por que não vem tudo pronto?](#por-que-não-vem-tudo-pronto)
+3. [Visão geral da arquitetura](#visão-geral-da-arquitetura)
+4. [Como funciona, passo a passo](#como-funciona-passo-a-passo)
+5. [Conceitos-chave](#conceitos-chave)
+6. [Rodando localmente](#rodando-localmente)
+7. [Mapa de telas](#mapa-de-telas)
+8. [Stack técnica](#stack-técnica)
+9. [O que ainda é simulado](#o-que-ainda-é-simulado-por-enquanto)
+10. [Próximos passos](#próximos-passos)
 
 ---
 
@@ -27,6 +46,30 @@ próprios cargos, suas próprias responsabilidades e sua própria hierarquia.
 Em vez de forçar isso num molde fixo (o antigo "Modo Empresa" / "Modo
 Governo" pré-carregado), o SO-IA começa **em branco** e só monta o sistema
 depois de entender a sua organização.
+
+---
+
+## Visão geral da arquitetura
+
+Tudo no sistema deriva de uma única fonte de verdade — o organograma. O
+diagrama abaixo resume o pipeline completo, do input até a tela final:
+
+```mermaid
+flowchart TD
+    I["Organograma<br/>(digitado ou importado de .json/.csv/.txt/.md/.pdf)"] --> M["Motor de correspondência/criação<br/>(matching.ts)"]
+    M --> AG["Agente por função<br/>(catálogo ou sob medida)"]
+    AG --> SQ["Squad por área<br/>(repositório ou Squad de Fundação)"]
+    AG --> GR["Grafo operacional<br/>(Núcleo de Conhecimento)"]
+    GR -- "Executar agora" --> EX["Execução registrada"]
+    EX --> DASH["Centro de Comando<br/>(KPIs e atividade reais)"]
+    AG --> COB["Regra de cobertura<br/>(relevance.ts)"]
+    COB --> UI["Aprovações · widgets · fontes · workflows<br/>— só o que a área do organograma cobre"]
+```
+
+Essa é a diferença central do SO-IA em relação a um catálogo fixo: **nada
+existe no sistema por padrão** — cada agente, squad, pendência, KPI e
+workflow só aparece porque uma função ou área real do seu organograma
+justifica a existência dele.
 
 ---
 
@@ -202,6 +245,8 @@ Na prática:
 
 ## Rodando localmente
 
+**Pré-requisitos:** Node.js 22+ e npm.
+
 ```bash
 cd so-ia
 npm install
@@ -211,6 +256,15 @@ npm run dev
 Abra `http://localhost:3000`. Sem uma organização configurada, qualquer
 tela do app (`/app/*`) redireciona automaticamente para o onboarding — não
 tem como "pular" a etapa de configuração.
+
+Outros scripts úteis:
+
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Sobe o servidor de desenvolvimento (Turbopack) em `localhost:3000`. |
+| `npm run build` | Build de produção — também roda a checagem de tipos do TypeScript. |
+| `npm run lint` | ESLint sobre todo o projeto. |
+| `npm start` | Serve o build de produção gerado por `npm run build`. |
 
 ## Mapa de telas
 
@@ -232,12 +286,35 @@ tem como "pular" a etapa de configuração.
 
 ## Stack técnica
 
-- **Next.js 16** (App Router, Turbopack) + **TypeScript**
-- **Tailwind CSS v4**
-- **shadcn/ui** (sobre `@base-ui/react`) para os componentes de base
-- **Framer Motion** para as animações (onboarding, gráfico radial, console de montagem, contadores)
-- **Recharts** para os gráficos do Centro de Comando
-- **next-themes** para dark/light mode
+| Tecnologia | Uso no projeto |
+|---|---|
+| **Next.js 16** (App Router, Turbopack) | Framework base, roteamento por pastas em `src/app`. |
+| **TypeScript** | Tipagem de ponta a ponta — dados, providers e componentes. |
+| **Tailwind CSS v4** | Estilização utilitária e os tokens de tema (dark/light, glass, gradientes). |
+| **shadcn/ui** (sobre `@base-ui/react`) | Componentes de base — atenção: usa a prop `render`, não `asChild`. |
+| **Framer Motion** | Animações: onboarding, gráfico radial, console de montagem, contadores. |
+| **Recharts** | Gráficos do Centro de Comando. |
+| **next-themes** | Alternância dark/light mode. |
+| **pdfjs-dist** | Extração de texto de PDF no navegador, para a importação de organograma. |
+
+### Estrutura de pastas
+
+```
+so-ia/
+├─ src/app/               # rotas (App Router)
+│  ├─ onboarding/         # passo 1–3: tipo, organograma, montagem
+│  └─ app/                # telas pós-montagem: dashboard, organograma,
+│                         # agentes, squads, workflows, aprovações, auditoria
+├─ src/components/
+│  ├─ onboarding/         # construtor de organograma + painel de importação
+│  ├─ graph/              # grafo operacional (Núcleo de Conhecimento)
+│  ├─ squads/ agents/ approvals/ dashboard/ case/  # componentes por tela
+│  ├─ providers/          # OrganizationProvider, ModeProvider
+│  └─ ui/                 # componentes de base (shadcn/ui)
+└─ src/lib/
+   ├─ data/               # dados-modelo: organograma, agentes, skills, workflows
+   └─ org/                # os "motores" do sistema (tabela abaixo)
+```
 
 Todo o estado do organograma e da montagem vive em `OrganizationProvider`
 (`src/components/providers/organization-provider.tsx`) e fica salvo no
