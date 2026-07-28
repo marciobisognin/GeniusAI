@@ -45,7 +45,7 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 
 ### 🗺️ Mapa real do Rio Grande do Sul
 
-O mapa inteiro é **pixel art em canvas**, na mesma linguagem dos escritórios: oceano com ondas animadas na costa, a **Lagoa dos Patos** aparecendo no traçado real do IBGE, campos com arvorezinhas — e a Reitoria (Santa Maria) e os 13 campi como **sprites de prédio** (fachada verde, telhado vermelho, janelas acesas) na coordenada geográfica real. Quando a demanda cruza prédios, um **tracejado animado** mostra o trajeto sobre o mapa. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo sobre **piso de tábua corrida creme**, com **pequenas salas de carpete pastel** (no máximo 3-4 mesas cada, nunca uma grade lotada) — sem paredes cortando o andar — e um **sprite sentado à mesa** para cada agente, na cadeira azul-marinho da referência.
+O mapa inteiro é **pixel art em canvas**, no estilo diorama cordial de jogos indie (Stardew Valley/Eastward): fundo creme quente sem oceano, o contorno oficial do Rio Grande do Sul (traçado real do IBGE) recortado como um **relevo de papercraft** — colinas em gradiente, bosques como aglomerados de círculos, a **Lagoa dos Patos** como uma fita de rio azul-clara — e a Reitoria (Santa Maria) e os 13 campi como **casinhas de telhado terracota** na coordenada geográfica real, ligadas por uma **malha permanente de estradinhas tracejadas** partindo da Reitoria. Os rótulos usam um algoritmo de posicionamento por anéis concêntricos que testa posições alternativas ao redor de cada marcador até achar uma livre de sobreposição — nenhuma etiqueta pisa na outra, mesmo no aglomerado denso de campi perto de Santa Maria. Quando a demanda cruza prédios, o trecho da estrada em uso ganha um **realce animado**. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo sobre **piso de tábua corrida creme**, com **pequenas salas de carpete pastel** (no máximo 3-4 mesas cada, nunca uma grade lotada) — sem paredes cortando o andar — e um **sprite sentado à mesa** para cada agente, na cadeira azul-marinho da referência.
 
 </td>
 <td width="33%" valign="top">
@@ -101,7 +101,7 @@ Um botão no canto superior alterna entre o escritório em pixel art e um **mapa
 </tr>
 </table>
 
-<img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em pixel art: oceano azul com ondas, o contorno oficial do estado em verde com a Lagoa dos Patos, e 14 sprites de prédio de fachada verde e telhado vermelho na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
+<img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em estilo diorama cordial: fundo creme sem oceano, o contorno oficial do estado recortado com colinas em gradiente e bosques em aglomerados de círculos, a Lagoa dos Patos como fita de rio azul-clara, uma malha de estradinhas tracejadas partindo da Reitoria, e 14 casinhas de telhado terracota com etiquetas arredondadas sem sobreposição na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
 
 ---
 
