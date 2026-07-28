@@ -57,9 +57,7 @@ const C = {
   floorSeam: "#e0d6c4",
   floorSeam2: "#e6dccb",
   // mesas
-  deskTop: "#f8f8f5",
   deskEdge: "#dcdcd4",
-  deskBack: "#c9cdd2",
   deskWood: "#e8c893",
   deskWoodEdge: "#c9a166",
   // cadeiras azul-marinho, como no vídeo
@@ -92,19 +90,12 @@ const DESK_ACCENTS = ["#f8f8f5", "#f8f8f5", "#e8c893", "#c9e8e0", "#f8f8f5", "#f
 const SCREEN_COLORS = ["#5b8fd4", "#d47fb0", "#5bb99a", "#e0ae5e", "#7b8ad4", "#4fc0c0"];
 const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a", "#e0c088"];
 
-// Cada repartição ganha seu próprio carpete pastel (como as ilhas de mesa
-// do vídeo — cinza-sálvia, lilás, azul, areia), sobre o mesmo piso de
-// tábua corrida: é a cor do carpete, e não uma parede, que diz onde uma
-// repartição termina e a próxima começa.
+// Piso neutro para as salas de repartição — nos organogramas de
+// referência, a cor de identidade de cada Pró-Reitoria/Diretoria mora na
+// moldura do bloco numerado, não no piso; a sala em si fica num tom claro
+// e discreto, quase igual de uma repartição para outra.
 const POD_PALETTE: readonly [string, string][] = [
-  ["#9aa8ad", "#a6b3b8"], // cinza-sálvia (o carpete das baias do vídeo)
-  ["#9298d4", "#9ba1da"], // lilás/periwinkle
-  ["#8fb0c4", "#9abaca"], // azul-cinza
-  ["#c4b49a", "#cdbea6"], // areia
-  ["#94b8a4", "#a0c2af"], // verde-água
-  ["#b8a0b4", "#c2acbe"], // rosa-acinzentado
-  ["#a0a8c8", "#acb3d0"], // azul-lavanda
-  ["#b0b89a", "#bac2a6"], // oliva claro
+  ["#d9dde2", "#d1d5da"], // cinza-azulado neutro
 ];
 
 function hash01(id: string): number {
@@ -146,16 +137,41 @@ interface Seat {
   zoneIndex: number;
 }
 
+// Bloco numerado — o agrupamento visual de uma Pró-Reitoria/Diretoria real
+// (uma ou mais salas lado a lado), com moldura colorida e número, como nos
+// organogramas de referência. Só repartições de fato (não a chefia, nem os
+// espaços de convivência, nem "Colegiados e Comissões") ganham número.
+interface Block {
+  index: number;
+  label: string;
+  color: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 interface Plan {
   zones: Zone[];
   seats: Seat[];
+  blocks: Block[];
   totalW: number;
   totalH: number;
   corridorY: number;
 }
 
-const START_X = 2;
-const START_Y = 2;
+// Paleta de molduras dos blocos numerados — uma cor institucional distinta
+// por Pró-Reitoria/Diretoria, como nos organogramas de referência (cada
+// bloco grande tem sua própria cor de contorno).
+const BLOCK_COLORS = ["#2f6b3f", "#2f5a8f", "#8a6a1f", "#6a3f8a", "#8a4a2f", "#2f7a7a"];
+
+// Faixa de jardim ao redor do prédio inteiro (não só na entrada) — grama e
+// árvores emolduram o piso de tábua corrida, como nos organogramas de
+// referência, em vez do prédio flutuar sozinho no canvas.
+const GARDEN_MARGIN = 2.4;
+
+const START_X = 2 + GARDEN_MARGIN;
+const START_Y = 2 + GARDEN_MARGIN;
 const CORRIDOR_H = 3;
 const ZONE_TOP = START_Y + CORRIDOR_H;
 const ZONE_GAP = 0.9;
@@ -324,13 +340,31 @@ function buildPlan(agents: Agent[]): Plan {
   });
   cursor.x += SOCIAL_W + ZONE_GAP;
 
-  // 3) uma ou mais salas por repartição, todas com a mesma cor de piso
+  // 3) uma ou mais salas por repartição, todas com a mesma cor de piso —
+  // cada repartição de fato (não a "Colegiados e Comissões" compartilhada)
+  // também vira um bloco numerado com moldura colorida, como nos
+  // organogramas de referência.
+  const blocks: Block[] = [];
   let paletteIndex = 0;
+  let blockIndex = 0;
   for (const dept of depts) {
     const isShared = dept.groupId === "__shared__";
     const floor = isShared ? (["#a8aeb2", "#b2b8bc"] as const) : POD_PALETTE[paletteIndex % POD_PALETTE.length];
     if (!isShared) paletteIndex++;
+    const blockStartX = cursor.x;
     pushCells(zones, seats, cursor, "pod", dept.groupLabel, dept.agentIds, agentsById, floor, rowH);
+    if (!isShared) {
+      blockIndex++;
+      blocks.push({
+        index: blockIndex,
+        label: dept.groupLabel,
+        color: BLOCK_COLORS[(blockIndex - 1) % BLOCK_COLORS.length],
+        x: blockStartX,
+        y: ZONE_TOP,
+        w: cursor.x - ZONE_GAP - blockStartX,
+        h: rowH,
+      });
+    }
   }
 
   // 4) Copa — espaço de convivência informal (café, mesas pequenas)
@@ -402,34 +436,81 @@ function buildPlan(agents: Agent[]): Plan {
   return {
     zones,
     seats,
-    totalW: cursor.x + 1,
-    totalH: ZONE_TOP + rowH + 2,
+    blocks,
+    totalW: cursor.x + 1 + GARDEN_MARGIN,
+    totalH: ZONE_TOP + rowH + 2 + GARDEN_MARGIN,
     corridorY: START_Y + CORRIDOR_H / 2,
   };
 }
 
 // --------------------------- DESENHO ----------------------------------------
 
-// Piso de tábua corrida do prédio inteiro: creme quente com juntas em
-// tijolo (fiadas deslocadas), exatamente como o chão de circulação do
-// vídeo. É o que dá o ar acolhedor em vez de xadrez industrial.
-function woodFloor(ctx: CanvasRenderingContext2D, w: number, h: number) {
-  ctx.fillStyle = C.floor;
+// Gramado ao redor do prédio inteiro — a base sobre a qual o piso de tábua
+// corrida "assenta", como o terreno em volta dos organogramas de
+// referência. Cobre o canvas inteiro; o piso de madeira é desenhado por
+// cima, só na área do prédio propriamente dito.
+function grassGround(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  ctx.fillStyle = "#a7c583";
   ctx.fillRect(0, 0, w * TILE, h * TILE);
+  ctx.fillStyle = "rgba(255,255,255,0.06)";
+  const stripeW = 3 * TILE;
+  for (let x = 0, i = 0; x < w * TILE; x += stripeW, i++) {
+    if (i % 2 === 0) ctx.fillRect(x, 0, stripeW, h * TILE);
+  }
+}
+
+// Árvore de jardim — a mesma copa em três lóbulos das plantas de vaso do
+// escritório, só que direto no chão (com tronco), para o gramado externo.
+function tree(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = "rgba(30,50,25,0.2)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 7, 11, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.woodDark;
+  ctx.fillRect(x - 2, y - 4, 4, 11);
+  ctx.fillStyle = C.leafDark;
+  ctx.beginPath();
+  ctx.arc(x - 7, y - 11, 8, 0, Math.PI * 2);
+  ctx.arc(x + 7, y - 11, 8, 0, Math.PI * 2);
+  ctx.arc(x, y - 19, 9, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.leaf;
+  ctx.beginPath();
+  ctx.arc(x - 6, y - 12, 6, 0, Math.PI * 2);
+  ctx.arc(x + 6, y - 12, 6, 0, Math.PI * 2);
+  ctx.arc(x, y - 20, 7, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.leafHi;
+  ctx.beginPath();
+  ctx.arc(x - 1.5, y - 21, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Piso de tábua corrida do prédio propriamente dito: creme quente com
+// juntas em tijolo (fiadas deslocadas), exatamente como o chão de
+// circulação do vídeo — desenhado só dentro do footprint do prédio
+// (x0,y0,w,h), com o gramado por baixo/ao redor.
+function woodFloor(ctx: CanvasRenderingContext2D, x0: number, y0: number, w: number, h: number) {
+  const px = x0 * TILE;
+  const py = y0 * TILE;
+  ctx.fillStyle = C.floor;
+  ctx.fillRect(px, py, w * TILE, h * TILE);
 
   const plankH = 1.15 * TILE;
   const plankW = 11 * TILE;
   const rows = Math.ceil((h * TILE) / plankH);
   for (let r = 0; r < rows; r++) {
-    const y = r * plankH;
+    const y = py + r * plankH;
     // junta entre fiadas: fininha e de baixo contraste, só o suficiente
     // para o olho ler "tábua corrida" sem virar uma grade
     ctx.fillStyle = C.floorSeam2;
-    ctx.fillRect(0, y, w * TILE, 1);
+    ctx.fillRect(px, y, w * TILE, 1);
     // topos de tábua, deslocados a cada fiada
     const offset = ((r % 3) * plankW) / 3;
     ctx.fillStyle = C.floorSeam;
-    for (let x = offset; x < w * TILE; x += plankW) {
+    for (let x = px + offset; x < px + w * TILE; x += plankW) {
       ctx.fillRect(x, y + 1, 1, plankH - 1);
     }
   }
@@ -740,24 +821,20 @@ function emptyChair(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
   officeChair(ctx, cx * TILE, cy * TILE);
 }
 
-// Estação de trabalho no formato do vídeo: um tampo claro e arredondado
-// encostado num painel de fundo, com monitores, teclado e objetos pessoais
-// EM CIMA dele; a cadeira e a pessoa ficam logo abaixo, de costas.
+// Estação de trabalho: um tampo de madeira simples com um único monitor
+// centralizado (a pessoa senta atrás, de frente, com o rosto acima da
+// tela) — mais perto da mesa única dos organogramas de referência do que
+// da baia dupla-monitor de antes.
 function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: number, t: number) {
   const x = cx * TILE;
   const y = cy * TILE;
-  const w = 3.9 * TILE;
-  const h = 1.45 * TILE;
+  const w = 3.3 * TILE;
+  const h = 1.35 * TILE;
   const left = x - w / 2;
   const top = y - h / 2;
 
   const accent = DESK_ACCENTS[Math.floor(seed * DESK_ACCENTS.length) % DESK_ACCENTS.length];
   const isWood = accent === C.deskWood;
-
-  // painel/divisória baixa atrás do tampo (o "fundo" cinza das baias)
-  ctx.fillStyle = C.deskBack;
-  roundRectPath(ctx, left - 3, top - 5, w + 6, 7, 2);
-  ctx.fill();
 
   // sombra de contato + tampo
   ctx.fillStyle = "rgba(70,60,45,0.14)";
@@ -770,54 +847,41 @@ function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: numbe
   roundRectPath(ctx, left, top, w, h, 3);
   ctx.fill();
 
-  // torre do computador, encostada na divisória
-  ctx.fillStyle = C.screenFrame;
-  roundRectPath(ctx, left + 4, top + 3, 9, 21, 2);
-  ctx.fill();
-  ctx.fillStyle = "#5b8fd4";
-  ctx.fillRect(left + 6, top + 6, 5, 2);
-
-  // monitor principal, com "conteúdo" na tela e um leve piscar de cursor
+  // monitor único, centralizado — o rosto da pessoa fica acima dele
   const s1 = SCREEN_COLORS[Math.floor(seed * 7) % SCREEN_COLORS.length];
+  const monW = 30;
+  const monH = 20;
+  const monTop = top - monH + 6;
   ctx.fillStyle = C.screenFrame;
-  roundRectPath(ctx, left + 17, top + 1, 28, 19, 2);
+  roundRectPath(ctx, x - monW / 2, monTop, monW, monH, 2);
   ctx.fill();
   ctx.fillStyle = s1;
-  ctx.fillRect(left + 19, top + 3, 24, 15);
+  ctx.fillRect(x - monW / 2 + 2, monTop + 2, monW - 4, monH - 6);
   ctx.fillStyle = "rgba(255,255,255,0.55)";
-  ctx.fillRect(left + 21, top + 5, 13, 2);
-  ctx.fillRect(left + 21, top + 9, 18, 2);
-  ctx.fillRect(left + 21, top + 13, 10, 2);
+  ctx.fillRect(x - monW / 2 + 4, monTop + 4, monW - 10, 2);
+  ctx.fillRect(x - monW / 2 + 4, monTop + 8, monW - 6, 2);
   if (Math.floor(t * 1.6 + seed * 10) % 2 === 0) {
     ctx.fillStyle = "rgba(255,255,255,0.85)";
-    ctx.fillRect(left + 32, top + 13, 2, 2);
+    ctx.fillRect(x + monW / 2 - 6, monTop + monH - 6, 2, 2);
   }
-
-  // segundo monitor
-  const s2 = SCREEN_COLORS[Math.floor(seed * 13) % SCREEN_COLORS.length];
   ctx.fillStyle = C.screenFrame;
-  roundRectPath(ctx, left + 48, top + 2, 20, 16, 2);
-  ctx.fill();
-  ctx.fillStyle = s2;
-  ctx.fillRect(left + 50, top + 4, 16, 12);
-  ctx.fillStyle = "rgba(255,255,255,0.4)";
-  ctx.fillRect(left + 52, top + 6, 9, 2);
+  ctx.fillRect(x - 3, monTop + monH - 2, 6, 6);
 
-  // teclado + mouse
+  // teclado + mouse, centralizados na borda da frente do tampo
   ctx.fillStyle = "#ececea";
-  roundRectPath(ctx, left + 21, top + 23, 27, 7, 2);
+  roundRectPath(ctx, x - 16, top + h - 9, 26, 7, 2);
   ctx.fill();
   ctx.fillStyle = "#c8c8c4";
-  ctx.fillRect(left + 23, top + 25, 23, 3);
+  ctx.fillRect(x - 14, top + h - 7, 22, 3);
   ctx.fillStyle = "#ececea";
   ctx.beginPath();
-  ctx.ellipse(left + 53, top + 26, 3.5, 4.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 15, top + h - 5, 3.2, 4, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // objeto pessoal — cada mesa é um pouco diferente, como no vídeo
+  // objeto pessoal — cada mesa é um pouco diferente
   const k = Math.floor(seed * 4) % 4;
-  const ox = left + w - 15;
-  const oy = top + 20;
+  const ox = left + w - 12;
+  const oy = top + h - 10;
   if (k === 0) {
     // caneca
     ctx.fillStyle = "#d9584f";
@@ -858,10 +922,11 @@ function desk(ctx: CanvasRenderingContext2D, cx: number, cy: number, seed: numbe
   }
 }
 
-// Pessoa SENTADA vista por trás: cabeça redonda com cabelo, ombros na cor
-// do cargo e a cadeira azul-marinho envolvendo — do jeito que as pessoas
-// trabalhando aparecem no vídeo. Todo mundo respira de leve (bob sutil,
-// defasado pelo seed), então o andar inteiro parece vivo, não congelado.
+// Pessoa sentada vista DE FRENTE — cabeça, cabelo e rosto simples, tronco
+// na cor do cargo com braços curtos, como os avatares chibi dos
+// organogramas de referência. É desenhada ANTES da mesa (que fica na
+// frente, escondendo a parte de baixo do tronco), para ler como alguém
+// sentado atrás do próprio tampo, olhando para quem está vendo o prédio.
 function seatedPerson(
   ctx: CanvasRenderingContext2D,
   cx: number,
@@ -872,38 +937,66 @@ function seatedPerson(
   t: number,
 ) {
   const x = cx * TILE;
-  // respiração de fundo para todos + digitação mais marcada para quem
-  // está resolvendo a demanda
-  const idle = Math.sin(t * 1.5 + seed * 6.28) * 0.55;
-  const bob = active ? Math.sin(t * 5) * 1.6 : idle;
+  // respiração de fundo para todos + um aceno de cabeça mais marcado para
+  // quem está resolvendo a demanda agora
+  const idle = Math.sin(t * 1.5 + seed * 6.28) * 0.5;
+  const bob = active ? Math.sin(t * 5) * 1.4 : idle;
   const y = cy * TILE + bob;
 
-  officeChair(ctx, x, y);
+  // sombra de contato
+  ctx.fillStyle = "rgba(60,52,40,0.14)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 21, 14, 4.5, 0, 0, Math.PI * 2);
+  ctx.fill();
 
-  // ombros na cor do cargo: uma faixa estreita, quase toda escondida atrás
-  // da cabeça — como no vídeo, onde o que se vê da pessoa é sobretudo o
-  // alto da cabeça, e a cadeira emoldura por baixo
+  // braços curtos nas laterais do tronco
   ctx.fillStyle = shirt;
-  roundRectPath(ctx, x - 8.5, y - 7, 17, 9, 4);
+  roundRectPath(ctx, x - 15, y - 2, 6, 15, 3);
   ctx.fill();
-  ctx.fillStyle = "rgba(0,0,0,0.10)";
-  roundRectPath(ctx, x - 8.5, y - 1, 17, 3, 2);
+  roundRectPath(ctx, x + 9, y - 2, 6, 15, 3);
   ctx.fill();
 
-  // cabeça vista por trás — nuca de cabelo, com uma nesga de pele no
-  // pescoço para não virar uma bola chapada
-  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
+  // tronco na cor do cargo
+  ctx.fillStyle = shirt;
+  roundRectPath(ctx, x - 11, y - 7, 22, 27, 9);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  roundRectPath(ctx, x - 11, y - 7, 22, 8, 8);
+  ctx.fill();
+
+  // pescoço
   ctx.fillStyle = C.skin;
   roundRectPath(ctx, x - 3.5, y - 11, 7, 6, 2);
   ctx.fill();
+
+  // cabeça de frente
+  ctx.fillStyle = C.skin;
+  ctx.beginPath();
+  ctx.arc(x, y - 19.5, 9.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // cabelo: topo + duas mechas laterais, cor variando pelo seed
+  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
   ctx.fillStyle = hair;
   ctx.beginPath();
-  ctx.arc(x, y - 13, 7, 0, Math.PI * 2);
+  ctx.arc(x, y - 23.5, 9.6, Math.PI, 0);
   ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.14)";
   ctx.beginPath();
-  ctx.arc(x - 2.4, y - 15.2, 2.8, 0, Math.PI * 2);
+  ctx.ellipse(x - 8.2, y - 18, 2.8, 8, 0, 0, Math.PI * 2);
+  ctx.ellipse(x + 8.2, y - 18, 2.8, 8, 0, 0, Math.PI * 2);
   ctx.fill();
+
+  // rosto: dois olhos e um sorriso discreto
+  ctx.fillStyle = "#2b241e";
+  ctx.beginPath();
+  ctx.arc(x - 3.3, y - 19.5, 1.05, 0, Math.PI * 2);
+  ctx.arc(x + 3.3, y - 19.5, 1.05, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "#9a6a4e";
+  ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.arc(x, y - 16, 2.2, 0.2, Math.PI - 0.2);
+  ctx.stroke();
 }
 
 // Mensageiro: a mesma linguagem visual dos avatares sentados, só que de pé
@@ -1137,7 +1230,15 @@ export const OfficeCanvas = ({
     ctx.imageSmoothingEnabled = false;
 
     const drawScene = (t: number, walkerPos: Point | null, walkerColor: string) => {
-      woodFloor(ctx, plan.totalW, plan.totalH);
+      grassGround(ctx, plan.totalW, plan.totalH);
+      woodFloor(ctx, GARDEN_MARGIN, GARDEN_MARGIN, plan.totalW - GARDEN_MARGIN * 2, plan.totalH - GARDEN_MARGIN * 2);
+
+      // fileira de árvores emoldurando o prédio pelo alto e pelo pé, como
+      // o gramado dos organogramas de referência
+      for (let tx = GARDEN_MARGIN * 0.6; tx < plan.totalW - GARDEN_MARGIN * 0.4; tx += 5.5) {
+        tree(ctx, tx, GARDEN_MARGIN * 0.5);
+        tree(ctx, tx + 2.75, plan.totalH - GARDEN_MARGIN * 0.35);
+      }
 
       for (const z of plan.zones) {
         carpet(ctx, z.x, z.y, z.w, z.h, z.floorA, z.floorB);
@@ -1246,13 +1347,15 @@ export const OfficeCanvas = ({
         plant(ctx, z.x + z.w - 1.1, z.y + 2.4);
       }
 
-      // Mesas + pessoas sentadas
+      // Pessoas sentadas + mesas — a pessoa é desenhada primeiro (atrás),
+      // depois a mesa (na frente, escondendo a parte de baixo do tronco),
+      // como alguém sentado de frente atrás do próprio tampo.
       for (const seat of plan.seats) {
         const agent = agents.find((a) => a.id === seat.agentId);
         if (!agent) continue;
         const seed = hash01(agent.id);
+        seatedPerson(ctx, seat.deskX, seat.deskY - 0.85, agent.color, seed, agent.id === visualActiveId, t);
         desk(ctx, seat.deskX, seat.deskY, seed, t);
-        seatedPerson(ctx, seat.deskX, seat.deskY + 1.6, agent.color, seed, agent.id === visualActiveId, t);
       }
 
       if (walkerPos) drawWalker(ctx, walkerPos.x * TILE, walkerPos.y * TILE, walkerColor, t);
@@ -1369,8 +1472,8 @@ export const OfficeCanvas = ({
         >
           {birdsEye ? "🎨 Pixel Art" : "🐦 Visão de Pássaro"}
         </button>
-        <div className="bg-[#1f2430] text-amber-300 font-mono text-xs font-bold px-3 py-1 rounded-full border border-amber-500/40 shadow-lg whitespace-nowrap">
-          🏛️ {buildingName}
+        <div className="bg-[#2f5233] text-[#f2ead2] text-xs font-extrabold uppercase tracking-wide px-4 py-1.5 rounded-full border-2 border-[#e7dcc0]/70 shadow-lg whitespace-nowrap">
+          🏛️ Organograma — {buildingName}
         </div>
       </div>
 
@@ -1440,7 +1543,7 @@ export const OfficeCanvas = ({
                 >
                   {z.label && (
                     <span
-                      className="absolute top-1.5 left-2.5 text-[10px] font-mono font-bold text-slate-500 truncate max-w-[90%]"
+                      className="absolute top-1.5 left-2.5 text-[10px] font-bold text-slate-500 truncate max-w-[90%]"
                       style={{ lineHeight: "normal" }}
                     >
                       {z.label}
@@ -1479,13 +1582,56 @@ export const OfficeCanvas = ({
 
           {!birdsEye && (
             <>
+              {/* Bloco numerado com moldura colorida por Pró-Reitoria/
+                  Diretoria real — a mesma leitura de "1, 2, 3..." dos
+                  organogramas de referência, envolvendo uma ou mais salas
+                  da mesma repartição. */}
+              {plan.blocks.map((b, i) => {
+                const dim = Boolean(activeZone && !(activeZone.x >= b.x && activeZone.x < b.x + b.w));
+                return (
+                  <div
+                    key={`block-${i}`}
+                    className={`absolute z-10 pointer-events-none rounded-2xl transition-opacity duration-300 ${
+                      dim ? "opacity-30" : "opacity-100"
+                    }`}
+                    style={{
+                      left: b.x * TILE - 8,
+                      top: b.y * TILE - 28,
+                      width: b.w * TILE + 16,
+                      height: b.h * TILE + 36,
+                      border: `3px solid ${b.color}`,
+                      boxShadow: "0 0 0 1px rgba(0,0,0,0.15)",
+                    }}
+                  >
+                    <div className="absolute -top-[13px] left-3 flex items-center gap-1.5">
+                      <span
+                        className="flex items-center justify-center w-[22px] h-[22px] rounded-full text-[11px] font-extrabold text-white shadow"
+                        style={{ background: b.color }}
+                      >
+                        {b.index}
+                      </span>
+                      <span
+                        className="text-[10px] font-extrabold uppercase tracking-wide px-2.5 py-[3px] rounded-full text-white shadow whitespace-nowrap"
+                        style={{ background: b.color }}
+                      >
+                        {b.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+
               {/* Faixa com o nome real da repartição, no topo de cada sala —
                   a mesma assinatura visual dos organogramas de referência
                   (banner escuro com o nome do setor), na cor do próprio
                   carpete daquela sala, só que mais escura, para continuar
-                  distinguindo uma repartição da outra à primeira vista. */}
+                  distinguindo uma repartição da outra à primeira vista.
+                  Salas que já pertencem a um bloco numerado não repetem o
+                  nome — o cabeçalho do bloco já diz qual é a repartição. */}
               {plan.zones.map((z, i) =>
-                z.label && z.kind !== "entrance" ? (
+                z.label &&
+                z.kind !== "entrance" &&
+                !plan.blocks.some((b) => z.x >= b.x && z.x < b.x + b.w) ? (
                   <div
                     key={`zone-${i}`}
                     className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
@@ -1495,7 +1641,7 @@ export const OfficeCanvas = ({
                   >
                     <div
                       className="text-stone-50 text-[10px] font-bold uppercase tracking-wide text-center px-2 py-[5px] rounded-b-lg shadow-md truncate"
-                      style={{ background: darken(z.floorA, 0.62), fontFamily: "monospace" }}
+                      style={{ background: darken(z.floorA, 0.62) }}
                     >
                       {z.label}
                     </div>
@@ -1518,7 +1664,7 @@ export const OfficeCanvas = ({
                     style={{ left: seat.deskX * TILE, top: (seat.deskY + 2.6) * TILE }}
                   >
                     <div
-                      className={`flex flex-col items-start px-2 py-[3px] rounded-xl shadow-md font-mono ${
+                      className={`flex flex-col items-start px-2 py-[3px] rounded-xl shadow-md ${
                         isActive ? "bg-amber-400 text-slate-950" : "bg-[#15171c]/92 text-stone-50"
                       }`}
                     >
