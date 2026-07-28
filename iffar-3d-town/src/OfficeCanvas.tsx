@@ -113,10 +113,21 @@ function hash01(id: string): number {
   return (h % 1000) / 1000;
 }
 
+// Escurece uma cor hex — usado para tirar o tom do banner de cada sala a
+// partir da própria cor do carpete, como as faixas escuras com o nome da
+// repartição nos organogramas de referência.
+function darken(hex: string, amt: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const r = ((n >> 16) & 255) * (1 - amt);
+  const g = ((n >> 8) & 255) * (1 - amt);
+  const b = (n & 255) * (1 - amt);
+  return `rgb(${r | 0}, ${g | 0}, ${b | 0})`;
+}
+
 // --------------------------- PLANTA -----------------------------------------
 
 interface Zone {
-  kind: "office" | "pod" | "lounge" | "meeting" | "break" | "zen";
+  kind: "office" | "pod" | "lounge" | "meeting" | "break" | "zen" | "entrance";
   x: number;
   y: number;
   w: number;
@@ -236,6 +247,7 @@ function placeSeats(members: Agent[], zone: Zone, cols: number, topPad: number, 
 }
 
 const SOCIAL_W = 13;
+const ENTRANCE_W = 16;
 
 // Cria uma ou mais salas pequenas (no máximo CELL_MAX mesas cada) para um
 // grupo de pessoas, todas com a mesma cor de carpete — para que, mesmo
@@ -368,6 +380,24 @@ function buildPlan(agents: Agent[]): Plan {
     floorB: "#cbddcc",
   });
   cursor.x += SOCIAL_W + ZONE_GAP;
+
+  // 7) Entrada — pátio de acesso ao prédio, sempre no fim do corredor:
+  // banco, jardineiras e o letreiro de boas-vindas, como no portão de
+  // entrada dos organogramas de referência (IFFar — Campus X).
+  const entranceX = cursor.x;
+  zones.push({
+    kind: "entrance",
+    x: entranceX,
+    y: ZONE_TOP,
+    w: ENTRANCE_W,
+    h: rowH,
+    label: "Entrada",
+    agentIds: [],
+    doorX: entranceX + ENTRANCE_W / 2,
+    floorA: "#c7c2b3",
+    floorB: "#bdb8a9",
+  });
+  cursor.x += ENTRANCE_W + ZONE_GAP;
 
   return {
     zones,
@@ -619,6 +649,65 @@ function pond(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) 
   ctx.beginPath();
   ctx.arc(x, y - 2, r * 0.5, 0.3, 2.6);
   ctx.stroke();
+}
+
+// Banco de praça de madeira, para o pátio de entrada.
+function bench(ctx: CanvasRenderingContext2D, cx: number, cy: number) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  ctx.fillStyle = "rgba(60,52,40,0.16)";
+  ctx.beginPath();
+  ctx.ellipse(x, y + 7, 17, 4, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = C.woodDark;
+  ctx.fillRect(x - 12, y + 1, 3, 7);
+  ctx.fillRect(x + 9, y + 1, 3, 7);
+  roundRectPath(ctx, x - 16, y - 5, 32, 8, 2);
+  ctx.fill();
+  ctx.fillStyle = C.wood;
+  roundRectPath(ctx, x - 16, y - 7, 32, 5, 2);
+  ctx.fill();
+}
+
+// Letreiro de boas-vindas do pátio de entrada — a mesma assinatura visual
+// dos organogramas de referência (faixa verde-institucional com
+// "BEM-VINDO(A)!" e o nome do prédio), sempre no fim do corredor.
+function welcomeSign(ctx: CanvasRenderingContext2D, cx: number, cy: number, w: number, title: string) {
+  const x = cx * TILE;
+  const y = cy * TILE;
+  const pw = w * TILE - 24;
+  const ph = 2.9 * TILE;
+
+  ctx.fillStyle = "rgba(60,52,40,0.18)";
+  roundRectPath(ctx, x - pw / 2, y - ph / 2 + 4, pw, ph, 10);
+  ctx.fill();
+
+  // dois postes
+  ctx.fillStyle = C.woodDark;
+  ctx.fillRect(x - pw / 2 + 6, y + ph / 2 - 6, 6, 16);
+  ctx.fillRect(x + pw / 2 - 12, y + ph / 2 - 6, 6, 16);
+
+  ctx.fillStyle = "#2f5233";
+  roundRectPath(ctx, x - pw / 2, y - ph / 2, pw, ph, 10);
+  ctx.fill();
+  ctx.strokeStyle = "#e7dcc0";
+  ctx.lineWidth = 3;
+  roundRectPath(ctx, x - pw / 2 + 3, y - ph / 2 + 3, pw - 6, ph - 6, 8);
+  ctx.stroke();
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#f2ead2";
+  ctx.font = "bold 15px monospace";
+  ctx.fillText("BEM-VINDO(A)!", x, y - ph / 2 + 18);
+  ctx.font = "bold 12px monospace";
+  ctx.fillStyle = "#cfe4cb";
+  ctx.fillText("IFFar", x, y);
+  ctx.font = "10px monospace";
+  ctx.fillStyle = "#e7dcc0";
+  const maxChars = Math.floor(pw / 6.2);
+  const shown = title.length > maxChars ? title.slice(0, maxChars - 1) + "…" : title;
+  ctx.fillText(shown, x, y + ph / 2 - 16);
 }
 
 // Cadeira de escritório vista de cima: encosto arredondado azul-marinho
@@ -1142,6 +1231,21 @@ export const OfficeCanvas = ({
         plant(ctx, z.x + z.w - 1.3, z.y + z.h - 9.6);
       }
 
+      // Entrada — pátio com bancos, jardineiras e o letreiro de
+      // boas-vindas, sempre no fim do corredor (a mesma assinatura visual
+      // dos organogramas de referência).
+      for (const z of plan.zones) {
+        if (z.kind !== "entrance") continue;
+        const cx = z.x + z.w / 2;
+        welcomeSign(ctx, cx, z.y + z.h - 8.4, z.w, buildingName);
+        bench(ctx, z.x + 2.6, z.y + z.h - 2.4);
+        bench(ctx, z.x + z.w - 2.6, z.y + z.h - 2.4);
+        plant(ctx, z.x + 1.1, z.y + z.h - 5.6);
+        plant(ctx, z.x + z.w - 1.1, z.y + z.h - 5.6);
+        plant(ctx, z.x + 1.1, z.y + 2.4);
+        plant(ctx, z.x + z.w - 1.1, z.y + 2.4);
+      }
+
       // Mesas + pessoas sentadas
       for (const seat of plan.seats) {
         const agent = agents.find((a) => a.id === seat.agentId);
@@ -1229,7 +1333,7 @@ export const OfficeCanvas = ({
     };
     raf = requestAnimationFrame(render);
     return () => cancelAnimationFrame(raf);
-  }, [plan, agents, visualActiveId, activeZone]);
+  }, [plan, agents, visualActiveId, activeZone, buildingName]);
 
   const handlePointer = (e: React.MouseEvent<HTMLCanvasElement>, click: boolean) => {
     const canvas = canvasRef.current;
@@ -1375,19 +1479,26 @@ export const OfficeCanvas = ({
 
           {!birdsEye && (
             <>
-              {/* Plaquinha de grupo por zona (como "Daud, Aaron, Philip") */}
+              {/* Faixa com o nome real da repartição, no topo de cada sala —
+                  a mesma assinatura visual dos organogramas de referência
+                  (banner escuro com o nome do setor), na cor do próprio
+                  carpete daquela sala, só que mais escura, para continuar
+                  distinguindo uma repartição da outra à primeira vista. */}
               {plan.zones.map((z, i) =>
-                z.label ? (
+                z.label && z.kind !== "entrance" ? (
                   <div
                     key={`zone-${i}`}
                     className={`absolute z-20 pointer-events-none transition-opacity duration-300 ${
                       activeZone && activeZone !== z ? "opacity-25" : "opacity-100"
                     }`}
-                    style={{ left: z.x * TILE + 5, top: z.y * TILE + 4, maxWidth: z.w * TILE - 10 }}
+                    style={{ left: z.x * TILE, top: z.y * TILE, width: z.w * TILE }}
                   >
-                    <span className="bg-[#15171c]/90 text-stone-50 text-[9px] font-mono font-bold px-2.5 py-[3px] rounded-full shadow-md whitespace-nowrap block truncate">
+                    <div
+                      className="text-stone-50 text-[10px] font-bold uppercase tracking-wide text-center px-2 py-[5px] rounded-b-lg shadow-md truncate"
+                      style={{ background: darken(z.floorA, 0.62), fontFamily: "monospace" }}
+                    >
                       {z.label}
-                    </span>
+                    </div>
                   </div>
                 ) : null,
               )}
@@ -1464,12 +1575,7 @@ export const OfficeCanvas = ({
                   style={{ left: hoveredSeat.deskX * TILE, top: (hoveredSeat.deskY - 1) * TILE }}
                 >
                   <div className="font-bold text-amber-400 whitespace-normal">{hovered.name}</div>
-                  {hovered.cargo && (
-                    <div className="text-stone-400">
-                      {hovered.cargo}
-                      {hovered.funcao ? ` · ${hovered.funcao}` : ""}
-                    </div>
-                  )}
+                  {hovered.cargo && <div className="text-stone-400">{hovered.cargo}</div>}
                   {hovered.competencia && (
                     <div className="mt-1 text-stone-300 whitespace-normal leading-snug">
                       Art. {hovered.competencia.artigo}
