@@ -1,4 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import avatarUrl1 from "./assets/office/avatar1.png";
+import avatarUrl2 from "./assets/office/avatar2.png";
+import avatarUrl3 from "./assets/office/avatar3.png";
+import avatarUrl4 from "./assets/office/avatar4.png";
+import avatarUrl5 from "./assets/office/avatar5.png";
+
+// Avatares recortados diretamente dos organogramas de referência enviados
+// pelo dono do repositório (busto, sem o piso ao redor) — em vez de
+// desenhados via código, para a aparência bater com a referência de fato.
+// Um número pequeno de pessoas distintas se repete pelo prédio (mesma
+// limitação de qualquer spritesheet finito), escolhida por hash do id do
+// agente para ser estável entre renders.
+const AVATAR_SPRITES = [avatarUrl1, avatarUrl2, avatarUrl3, avatarUrl4, avatarUrl5].map((src) => {
+  const img = new Image();
+  img.src = src;
+  return img;
+});
 
 // ---------------------------------------------------------------------------
 // ESCRITÓRIO EM PIXEL ART (CANVAS) — MODELO GATHER 2.0, COM O ORGANOGRAMA
@@ -88,7 +105,6 @@ const C = {
 // no vídeo, onde uma mesa é verde-água e outra tem tampo de madeira.
 const DESK_ACCENTS = ["#f8f8f5", "#f8f8f5", "#e8c893", "#c9e8e0", "#f8f8f5", "#f2dce4"];
 const SCREEN_COLORS = ["#5b8fd4", "#d47fb0", "#5bb99a", "#e0ae5e", "#7b8ad4", "#4fc0c0"];
-const HAIRS = ["#3b2412", "#7a4a22", "#c98a3f", "#2b2b2b", "#5a3a5a", "#8a5a3a", "#e0c088"];
 
 // Piso neutro para as salas de repartição — nos organogramas de
 // referência, a cor de identidade de cada Pró-Reitoria/Diretoria mora na
@@ -931,7 +947,7 @@ function seatedPerson(
   ctx: CanvasRenderingContext2D,
   cx: number,
   cy: number,
-  shirt: string,
+  _shirt: string,
   seed: number,
   active: boolean,
   t: number,
@@ -949,54 +965,15 @@ function seatedPerson(
   ctx.ellipse(x, y + 21, 14, 4.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // braços curtos nas laterais do tronco
-  ctx.fillStyle = shirt;
-  roundRectPath(ctx, x - 15, y - 2, 6, 15, 3);
-  ctx.fill();
-  roundRectPath(ctx, x + 9, y - 2, 6, 15, 3);
-  ctx.fill();
-
-  // tronco na cor do cargo
-  ctx.fillStyle = shirt;
-  roundRectPath(ctx, x - 11, y - 7, 22, 27, 9);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.12)";
-  roundRectPath(ctx, x - 11, y - 7, 22, 8, 8);
-  ctx.fill();
-
-  // pescoço
-  ctx.fillStyle = C.skin;
-  roundRectPath(ctx, x - 3.5, y - 11, 7, 6, 2);
-  ctx.fill();
-
-  // cabeça de frente
-  ctx.fillStyle = C.skin;
-  ctx.beginPath();
-  ctx.arc(x, y - 19.5, 9.5, 0, Math.PI * 2);
-  ctx.fill();
-
-  // cabelo: topo + duas mechas laterais, cor variando pelo seed
-  const hair = HAIRS[Math.floor(seed * HAIRS.length) % HAIRS.length];
-  ctx.fillStyle = hair;
-  ctx.beginPath();
-  ctx.arc(x, y - 23.5, 9.6, Math.PI, 0);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(x - 8.2, y - 18, 2.8, 8, 0, 0, Math.PI * 2);
-  ctx.ellipse(x + 8.2, y - 18, 2.8, 8, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // rosto: dois olhos e um sorriso discreto
-  ctx.fillStyle = "#2b241e";
-  ctx.beginPath();
-  ctx.arc(x - 3.3, y - 19.5, 1.05, 0, Math.PI * 2);
-  ctx.arc(x + 3.3, y - 19.5, 1.05, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = "#9a6a4e";
-  ctx.lineWidth = 1.1;
-  ctx.beginPath();
-  ctx.arc(x, y - 16, 2.2, 0.2, Math.PI - 0.2);
-  ctx.stroke();
+  // busto recortado do organograma de referência — um pequeno elenco de
+  // pessoas distintas se repete pelo prédio, escolhido pelo seed do agente
+  const img = AVATAR_SPRITES[Math.floor(seed * AVATAR_SPRITES.length) % AVATAR_SPRITES.length];
+  if (img.complete && img.naturalWidth > 0) {
+    const scale = 1.85;
+    const w = img.naturalWidth * scale;
+    const h = img.naturalHeight * scale;
+    ctx.drawImage(img, x - w / 2, y - h + 8, w, h);
+  }
 }
 
 // Mensageiro: a mesma linguagem visual dos avatares sentados, só que de pé
