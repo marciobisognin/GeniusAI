@@ -97,7 +97,11 @@ function runClaude(prompt: string, opts: ClaudeCallOptions = {}): string {
     model = "sonnet",
     allowSearch = false,
     maxBudgetUsd = 0.8,
-    timeoutMs = 5 * 60 * 1000,
+    // Seções pesquisadas podem pedir bem mais que um parecer curto (um PDI
+    // real, por exemplo, pode ter seções de 5000+ palavras) — o timeout de
+    // uma chamada de conteúdo precisa acompanhar isso, não ficar fixo em 5
+    // minutos independente do tamanho pedido.
+    timeoutMs = 10 * 60 * 1000,
   } = opts;
 
   const args = [
@@ -195,6 +199,34 @@ function writeChapterOnce(slug: string, generate: () => string): string {
   const content = generate();
   writeFileSync(path, content);
   return content;
+}
+
+// Uma seção falhar (timeout, orçamento, instabilidade de rede) não deve
+// derrubar um documento que já levou dezenas de minutos e chamadas reais
+// para chegar até ali — vira uma nota pendente no artefato desta execução,
+// sem gravar nada em disco, então uma nova tentativa do mesmo ticket
+// regenera só o que faltou, nunca o que já deu certo.
+function safeChapter(slug: string, generate: () => string): string {
+  try {
+    return writeChapterOnce(slug, generate);
+  } catch (err) {
+    console.warn(
+      `[real-engine] Seção "${slug}" falhou (${(err as Error).message}); será retomada em nova execução deste ticket.`,
+    );
+    return `_[Esta seção ainda não pôde ser gerada — execute novamente este ticket para completá-la.]_`;
+  }
+}
+
+// Chamadas de conteúdo escalam com o tamanho pedido: uma seção de 5000+
+// palavras (comum quando a pesquisa aponta um documento de verdade longo)
+// leva bem mais que os 5-10 minutos de um parecer curto, e o orçamento por
+// chamada precisa acompanhar isso também.
+function timeoutForWords(words: number): number {
+  return Math.min(20 * 60 * 1000, Math.max(8 * 60 * 1000, words * 200));
+}
+
+function budgetForWords(words: number): number {
+  return Math.min(4, Math.max(0.4, words / 1000));
 }
 
 function competenciaFor(unit: OrgUnit, competencias: Competencia[] | null): string {
@@ -329,8 +361,14 @@ Com base no que encontrar, reporte:
 - a estrutura de seções que esse tipo de documento costuma ter, com uma
   estimativa de palavras por seção que, somadas${numCampi > 1 ? " (mais as subseções de campus, se aplicável)" : ""},
   cheguem a aproximadamente ${WORDS_PER_PAGE} palavras por página × o total de
-  páginas estimado;
-${numCampi > 1 ? `- se esse tipo de documento costuma ter uma subseção por campus/unidade regional (esta demanda tem ${numCampi} campi envolvidos) e, se sim, quantas palavras cada uma deve ter, de modo que a soma total (seções gerais + palavras_por_campus × ${numCampi}) corresponda à extensão real estimada;` : "- inclui_secao_por_campus deve ser false e palavras_por_campus deve ser 0, já que esta demanda não envolve múltiplos campi;"}
+  páginas estimado. IMPORTANTE: cada seção listada será escrita em UMA ÚNICA
+  chamada, então nenhuma pode pedir mais de ~2500 palavras — se o documento
+  real tiver um capítulo naturalmente maior que isso (comum em documentos de
+  100+ páginas, como um PDI), QUEBRE esse capítulo em várias seções na lista
+  (ex.: "Planejamento Estratégico — Parte 1: Ensino", "Planejamento
+  Estratégico — Parte 2: Pesquisa e Extensão"), cada uma com até ~2500
+  palavras, em vez de uma seção única enorme;
+${numCampi > 1 ? `- se esse tipo de documento costuma ter uma subseção por campus/unidade regional (esta demanda tem ${numCampi} campi envolvidos) e, se sim, quantas palavras cada uma deve ter (também até ~2500), de modo que a soma total (seções gerais + palavras_por_campus × ${numCampi}) corresponda à extensão real estimada;` : "- inclui_secao_por_campus deve ser false e palavras_por_campus deve ser 0, já que esta demanda não envolve múltiplos campi;"}
 - as fontes concretas que encontrou.`;
 
   try {
@@ -364,6 +402,28 @@ ${numCampi > 1 ? `- se esse tipo de documento costuma ter uma subseção por cam
         }
       }
     }
+
+    // Rede de segurança 2: mesmo pedindo no prompt para não passar de
+    // ~2500 palavras por seção, o modelo pode ocasionalmente devolver uma
+    // seção maior — quebra em partes aqui em vez de arriscar uma chamada de
+    // conteúdo única e muito longa (mais lenta e mais fácil de falhar).
+    const MAX_WORDS_PER_SECTION = 2800;
+    plan_.estrutura = plan_.estrutura.flatMap((s) => {
+      if (s.palavras_alvo <= MAX_WORDS_PER_SECTION) return [s];
+      const parts = Math.ceil(s.palavras_alvo / MAX_WORDS_PER_SECTION);
+      const wordsPerPart = Math.round(s.palavras_alvo / parts);
+      console.log(
+        `[real-engine] Seção "${s.titulo}" (${s.palavras_alvo}p) dividida em ${parts} partes de ~${wordsPerPart}p.`,
+      );
+      return Array.from({ length: parts }, (_, i) => ({
+        titulo: `${s.titulo} — Parte ${i + 1} de ${parts}`,
+        palavras_alvo: wordsPerPart,
+      }));
+    });
+    if (plan_.inclui_secao_por_campus && plan_.palavras_por_campus > MAX_WORDS_PER_SECTION) {
+      plan_.palavras_por_campus = MAX_WORDS_PER_SECTION;
+    }
+
     return plan_;
   } catch (err) {
     console.warn(
@@ -444,7 +504,7 @@ function generateDocument(
       : "";
 
   const secoes = docPlan.estrutura.map((secao, i) =>
-    writeChapterOnce(slugify(secao.titulo, i), () => {
+    safeChapter(slugify(secao.titulo, i), () => {
       const body = runClaude(
         `Escreva a seção "${secao.titulo}" de um documento do tipo "${docPlan.tipo_documento}" do
 Instituto Federal Farroupilha (IFFar), motivado pela demanda: "${problem}".
@@ -460,7 +520,8 @@ para uma seção deste tamanho.`,
         {
           model: "sonnet",
           allowSearch: true,
-          maxBudgetUsd: Math.max(0.4, Math.min(1.6, secao.palavras_alvo / 1200)),
+          maxBudgetUsd: budgetForWords(secao.palavras_alvo),
+          timeoutMs: timeoutForWords(secao.palavras_alvo),
         },
       );
       return `# ${secao.titulo}\n\n${body}`;
@@ -470,7 +531,7 @@ para uma seção deste tamanho.`,
   const campiContent = docPlan.inclui_secao_por_campus
     ? plan.campusChains.map(({ campus, chain }) => {
         const slug = `campus-${campus.slug}`;
-        return writeChapterOnce(slug, () => {
+        return safeChapter(slug, () => {
           const unidades = chain.map((u) => u.nome).join(", ") || "estrutura reduzida (Arts. 114-120)";
           const body = runClaude(
             `Escreva a subseção de contribuição do "${campus.nome}" para o documento
@@ -483,7 +544,8 @@ Produza aproximadamente ${docPlan.palavras_por_campus} palavras em Markdown.`,
             {
               model: "sonnet",
               allowSearch: false,
-              maxBudgetUsd: Math.max(0.4, Math.min(1.2, docPlan.palavras_por_campus / 1200)),
+              maxBudgetUsd: budgetForWords(docPlan.palavras_por_campus),
+              timeoutMs: timeoutForWords(docPlan.palavras_por_campus),
             },
           );
           return `## Contribuição — ${campus.nome}\n\n${body}`;
