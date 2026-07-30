@@ -4,7 +4,7 @@
 
 # IFFar 3D Town
 
-### Um escritório virtual 2D (estilo Gather Town) sobre o mapa do Rio Grande do Sul, para explorar agentes, responsabilidades e fluxos institucionais do Instituto Federal Farroupilha.
+### Um escritório virtual 2D (estilo Gather Town), sem mapa geográfico, para explorar agentes, responsabilidades e fluxos institucionais do Instituto Federal Farroupilha.
 
 <p>
   <img src="https://img.shields.io/badge/status-protótipo_demonstrativo-F59E0B?style=for-the-badge" alt="Status: protótipo demonstrativo" />
@@ -32,7 +32,7 @@
 
 ## ✨ Visão geral
 
-O **IFFar 3D Town** transforma o organograma real do Instituto Federal Farroupilha — extraído da **Portaria Eletrônica nº 876/2026 - GRE** — em um escritório virtual demonstrativo, no espírito de um [virtual office](https://www.gather.town/pt/virtual-office): um mapa 2D com a Reitoria e os 13 campi como prédios estilizados, e uma câmera que "entra" no escritório certo — com as pessoas e a função de cada uma — assim que uma tarefa é despachada. A cena é montada **dinamicamente** a partir de `businesses/iffar/org-chart.yaml`: nenhuma unidade é fixa no frontend. Uma demanda em linguagem natural é classificada por um motor de regras declarativo (`routing.yaml`) que segue as competências reais do Anexo I da portaria, e a interface reproduz visualmente a cadeia de handoffs entre Reitoria, setor responsável e campus.
+O **IFFar 3D Town** transforma o organograma real do Instituto Federal Farroupilha — extraído da **Portaria Eletrônica nº 876/2026 - GRE** — em um escritório virtual demonstrativo, no espírito de um [virtual office](https://www.gather.town/pt/virtual-office): a Reitoria e os 13 campi são escritórios em pixel art, um por vez em tela cheia, e uma transição suave leva de um prédio a outro — com um cartão mostrando a unidade de origem e a de destino — assim que uma tarefa é despachada. Não existe mapa nem sobrevoo: a navegação é sempre escritório-a-escritório. A cena é montada **dinamicamente** a partir de `businesses/iffar/org-chart.yaml`: nenhuma unidade é fixa no frontend. Uma demanda em linguagem natural é classificada por um motor de regras declarativo (`routing.yaml`) que segue as competências reais do Anexo I da portaria, e a interface reproduz visualmente a cadeia de handoffs entre Reitoria, setor responsável e campus.
 
 O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridge local em **Bun**. Esse bridge conecta a interface ao **Nirvana OS**, dispara o fluxo institucional e devolve os artefatos produzidos para leitura dentro da própria aplicação.
 
@@ -43,9 +43,9 @@ O projeto combina uma experiência visual em **React + SVG/CSS 2D** com um bridg
 <tr>
 <td width="33%" valign="top">
 
-### 🗺️ Mapa real do Rio Grande do Sul
+### 🏢 Só escritórios — sem mapa, com transição suave entre prédios
 
-O mapa inteiro é **pixel art em canvas**, no estilo diorama cordial de jogos indie (Stardew Valley/Eastward): fundo creme quente sem oceano, o contorno oficial do Rio Grande do Sul (traçado real do IBGE) recortado como um **relevo de papercraft** — colinas em gradiente, bosques como aglomerados de círculos, a **Lagoa dos Patos** como uma fita de rio azul-clara — e a Reitoria (Santa Maria) e os 13 campi como **casinhas de telhado terracota** na coordenada geográfica real, ligadas por uma **malha permanente de estradinhas tracejadas** partindo da Reitoria. Os rótulos usam um algoritmo de posicionamento por anéis concêntricos que testa posições alternativas ao redor de cada marcador até achar uma livre de sobreposição — nenhuma etiqueta pisa na outra, mesmo no aglomerado denso de campi perto de Santa Maria. Quando a demanda cruza prédios, o trecho da estrada em uso ganha um **realce animado**. Ao entrar num prédio, a câmera revela o escritório — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo sobre **piso de tábua corrida creme**, com **pequenas salas de carpete pastel** (no máximo 3-4 mesas cada, nunca uma grade lotada) — sem paredes cortando o andar — e um **sprite sentado à mesa** para cada agente, na cadeira azul-marinho da referência.
+Não há mapa nem sobrevoo geográfico: a tela mostra sempre **um escritório em pixel art por vez** — o da Reitoria ou o de um dos 13 campi — modelado no [Gather 2.0](https://www.gather.town/pt/virtual-office): um prédio único e contínuo sobre **piso de tábua corrida creme**, com **pequenas salas de carpete pastel** (no máximo 3-4 mesas cada, nunca uma grade lotada) — sem paredes cortando o andar — e um **sprite sentado à mesa** para cada agente, na cadeira azul-marinho da referência. Ao abrir o app, a Reitoria já aparece direto — sem tela inicial neutra. Quando a demanda (ou você mesmo, pelos atalhos do cabeçalho) muda de PRÉDIO, o escritório atual esmaece e um **cartão com o nome da unidade de origem e da de destino** ("Reitoria ↓ Alegrete", por exemplo) aparece por cima antes do novo escritório assumir — a mesma transição vale para Reitoria → campus, campus → Reitoria ou campus → campus. Trocar de **sala dentro do mesmo prédio** não aciona essa transição — ver "Um andar só" abaixo.
 
 </td>
 <td width="33%" valign="top">
@@ -68,7 +68,7 @@ Cada execução gera um `ticketId` único; o artefato só entra no Inbox depois 
 
 ### 🔦 Foco suave na área que está resolvendo a demanda
 
-Quando a demanda passa por uma unidade, a câmera **não corta de cena**: o andar inteiro continua visível e legível — ele apenas recua um pouco, e a área responsável ganha por cima um **cartão creme** com moldura clara, a mesma leitura de foco discreta do Gather 2.0 (nada de holofote de palco sobre um andar apagado). Você vê *quem* está trabalhando sem perder *onde* aquilo está na instituição. O corte de cena com flash ficou reservado para o que é de fato uma troca de lugar: quando a cadeia muda de prédio (Reitoria ↔ campus).
+Quando a demanda passa por uma unidade **dentro do mesmo prédio**, a câmera **não corta de cena**: o andar inteiro continua visível e legível — ele apenas recua um pouco, e a área responsável ganha por cima um **cartão creme** com moldura clara, a mesma leitura de foco discreta do Gather 2.0 (nada de holofote de palco sobre um andar apagado). Você vê *quem* está trabalhando sem perder *onde* aquilo está na instituição. A transição com esmaecimento e cartão de nome (ver acima) fica reservada para o que é de fato uma troca de lugar: quando a cadeia muda de PRÉDIO (Reitoria ↔ campus, ou campus ↔ campus).
 
 </td>
 </tr>
@@ -100,8 +100,6 @@ Um botão no canto superior alterna entre o escritório em pixel art e um **mapa
 </td>
 </tr>
 </table>
-
-<img src="./src/assets/mapa-rs-overview.png" alt="Mapa do Rio Grande do Sul em estilo diorama cordial: fundo creme sem oceano, o contorno oficial do estado recortado com colinas em gradiente e bosques em aglomerados de círculos, a Lagoa dos Patos como fita de rio azul-clara, uma malha de estradinhas tracejadas partindo da Reitoria, e 14 casinhas de telhado terracota com etiquetas arredondadas sem sobreposição na coordenada geográfica real da Reitoria (Santa Maria) e dos 13 campi do IFFar." width="100%" />
 
 ---
 
@@ -145,7 +143,7 @@ A **Portaria Eletrônica nº 876/2026 - GRE** (03/07/2026, processo 23873.000543
 
 ## 🏛️ Organograma completo do IFFar
 
-A estrutura abaixo é a mesma servida dinamicamente por `GET /api/org-chart` — o diagrama documenta o nível Reitoria + Pró-Reitorias + 13 campi; a árvore completa (453 unidades, até coordenações e setores) está em `businesses/iffar/org-chart.yaml` e pode ser explorada clicando em qualquer prédio do mapa.
+A estrutura abaixo é a mesma servida dinamicamente por `GET /api/org-chart` — o diagrama documenta o nível Reitoria + Pró-Reitorias + 13 campi; a árvore completa (453 unidades, até coordenações e setores) está em `businesses/iffar/org-chart.yaml` e pode ser explorada abrindo o escritório de qualquer prédio (Reitoria ou campus) pelos atalhos do cabeçalho.
 
 ```mermaid
 flowchart TD
@@ -266,7 +264,7 @@ sequenceDiagram
 
 | Experiência                                  | O que acontece na prática                                                                                 |
 | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Explorar a sede virtual**                    | Navegue pelo mapa do RS e pelos escritórios montados a partir do organograma real; filtre por campus no cabeçalho. |
+| **Explorar a sede virtual**                    | Navegue pelos escritórios montados a partir do organograma real (um prédio por vez, com transição suave entre eles); filtre por campus no cabeçalho. |
 | **Enviar uma demanda em linguagem natural**    | Digite um briefing ou use um playbook pronto para iniciar uma execução.                                      |
 | **Observar o handoff entre agentes**           | A câmera reproduz a cadeia devolvida pelo bridge, derivada da hierarquia real do organograma.                |
 | **Aplicar rotas por competência**              | O tema da demanda (contratos, ensino, extensão, auditoria, TI, gestão de pessoas...) segue a Uorg competente conforme o Anexo I. |
@@ -328,7 +326,7 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 ## ⚡ Início rápido
 
-O mapa e os escritórios são montados a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em todas as opções abaixo. A diferença entre elas é só **quem gera o artefato final**.
+Os escritórios são montados a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em todas as opções abaixo. A diferença entre elas é só **quem gera o artefato final**.
 
 ### Opção A — motor real embutido (padrão), via CLI `claude`
 
@@ -414,7 +412,7 @@ Resultado esperado:
 │ Cabeçalho: status, filtros e identificação da central           │
 ├───────────────────────────────────────────┬─────────────────────┤
 │                                           │ PLAYBOOKS           │
-│     Mapa do RS + escritórios do IFFar     │ INBOX               │
+│     Escritório em pixel art (1 por vez)   │ INBOX               │
 │                                           │ HISTORY             │
 │   câmera + avatares + mesas de trabalho   │ prompt personalizado│
 │                                           │ artefatos gerados   │
@@ -466,6 +464,9 @@ Essa verificação reduz exposições acidentais, mas **não substitui autentica
 ---
 
 ## 🎬 Demonstração: elaborando o novo PDI
+
+> [!NOTE]
+> As três gravações desta seção (PDI, fiscalização de contrato e convênio de estágio) são anteriores à remoção do mapa do RS — mostram a câmera sobrevoando o mapa antes de entrar no prédio. Na versão atual não há mapa: a transição vai direto de um escritório para o outro, com um cartão mostrando a unidade de origem e a de destino (ver [🏢 Só escritórios](#-visão-geral)).
 
 O GIF abaixo é uma gravação real da interface (não uma montagem) processando o playbook **"Novo PDI Institucional"**: um briefing pedindo a elaboração do novo Plano de Desenvolvimento Institucional do IFFar, alinhado a tendências como IA, ensino híbrido, inclusão digital e sustentabilidade.
 
@@ -614,7 +615,7 @@ flowchart TD
 
 - React 19
 - TypeScript 6
-- Canvas 2D em pixel art (mapa — `src/MapCanvas.tsx`; escritório — `src/OfficeCanvas.tsx`)
+- Canvas 2D em pixel art (`src/OfficeCanvas.tsx` + `src/components/organogram/*`)
 - Tailwind CSS 4
 - Lucide React
 
@@ -665,7 +666,11 @@ iffar-3d-town/
 ├── public/                 # assets públicos
 ├── src/
 │   ├── assets/             # identidade visual
-│   ├── App.tsx             # mapa, escritório, interface, estados e integração HTTP
+│   ├── components/organogram/  # primitivas do escritório em pixel art (salas, mesas, decoração)
+│   ├── types/organogram.ts # tipos compartilhados do organograma/escritório
+│   ├── App.tsx             # escritório ativo, transição entre unidades, interface e integração HTTP
+│   ├── OfficeCanvas.tsx    # renderização Canvas 2D do escritório em pixel art
+│   ├── geo.ts              # nome de exibição da unidade (sem prefixo "Campus ")
 │   ├── App.css             # estilos específicos da aplicação
 │   ├── index.css           # estilos globais e Tailwind
 │   └── main.tsx            # entrada do React
@@ -750,7 +755,7 @@ Tarefa:
 [DESCREVA A ALTERAÇÃO]
 
 Restrições:
-- Preserve React + TypeScript + Bun (mapa e escritório em canvas 2D pixel art, sem engine 3D).
+- Preserve React + TypeScript + Bun (escritório em canvas 2D pixel art, sem mapa geográfico e sem engine 3D).
 - Não exponha segredos nem caminhos locais reais.
 - Não versione .env, node_modules, dist, tickets ou outputs.
 - Mantenha o bridge limitado a 127.0.0.1 por padrão.
@@ -824,7 +829,7 @@ Prompt inicial:
 
 ```text
 Faça uma leitura do projeto sem editar arquivos. Explique a arquitetura em cinco blocos:
-interface, mapa/escritório, roteamento, bridge e artefatos. Depois proponha um plano para [TAREFA].
+interface, escritório, roteamento, bridge e artefatos. Depois proponha um plano para [TAREFA].
 ```
 
 Após revisar o plano, autorize a implementação e exija os três gates:

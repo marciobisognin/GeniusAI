@@ -1,8 +1,7 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { parse as parseYaml } from "yaml";
 import { OfficeCanvas } from "./OfficeCanvas";
-import { MapCanvas } from "./MapCanvas";
-import { RS_CITY_COORDS, cityKeyFromName } from "./geo";
+import { cityKeyFromName } from "./geo";
 
 // Types
 
@@ -33,13 +32,6 @@ interface AgentNode {
   color: string;
   cargo?: string;
   funcao?: string;
-}
-
-interface MapLocation {
-  id: string;
-  nome: string;
-  pos: [number, number];
-  primaryAgentId: string;
 }
 
 interface InboxItem {
@@ -273,19 +265,13 @@ export default function App() {
   const [expandedCampusId, setExpandedCampusId] = useState<string | null>(null);
   const [campusFilterId, setCampusFilterId] = useState<string | null>(null);
 
-  // "Corte" de cena: um flash rápido quando a câmera pula de um prédio para
-  // outro (Reitoria <-> campus, ou campus -> campus), para reforçar a
-  // sensação de mudança de cenário em vez de um sobrevoo contínuo.
-  const [sceneFlash, setSceneFlash] = useState(false);
-  const triggerSceneFlash = () => {
-    setSceneFlash(true);
-    setTimeout(() => setSceneFlash(false), 260);
-  };
-
-  // Só revela o escritório (interior) depois que o zoom de câmera no mapa
-  // termina — dá a sensação de "a câmera entra no prédio" em vez de um corte
-  // seco direto para a sala.
+  // Transição suave entre escritórios (Reitoria <-> campus, ou campus ->
+  // campus): o escritório atual esmaece, um cartão com o nome da unidade de
+  // origem e a de destino aparece por cima, e o novo escritório assume no
+  // lugar — sem mapa nenhum de permeio, só a troca de cena em si.
   const [officeVisible, setOfficeVisible] = useState(false);
+  const [transition, setTransition] = useState<{ fromName: string; toName: string } | null>(null);
+  const transitionTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevLocationRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -414,60 +400,41 @@ export default function App() {
     return list.map(toAgentNode);
   }, [orgUnits, unitsById, childrenByParent, campusRoots, expandedCampusId, campusFilterId, toAgentNode]);
 
-  // Os 14 prédios do mapa (Reitoria + 13 campi) — sempre visíveis, com
-  // posição real derivada de RS_CITY_COORDS, independentemente de qual
-  // agente está ativo ou de qual campus está expandido/filtrado.
-  const mapLocations: MapLocation[] = useMemo(() => {
-    const reitoria = unitsById.get("1.1");
-    if (!reitoria) return [];
-    const list = [reitoria, ...campusRoots];
-    return list.map((unit) => {
-      const cityKey = cityKeyFromName(unit.nome);
-      const [x, z] = RS_CITY_COORDS[cityKey] ?? [0, 0];
-      // O prédio no mapa representa a unidade-sede fisicamente ali (a
-      // Reitoria em si, ou o Gabinete do(a) Diretor(a) Geral do campus) —
-      // é esse id que precisa existir em `agents` para a câmera focar.
-      const primaryAgentId =
-        unit.id === "1.1"
-          ? "1.1"
-          : ((childrenByParent.get(unit.id) ?? []).find((u) =>
-              normalizeName(u.nome).includes("gabinete"),
-            )?.id ?? unit.id);
-      return {
-        id: unit.id,
-        nome: unit.nome,
-        pos: [x, z] as [number, number],
-        primaryAgentId,
-      };
-    });
-  }, [unitsById, campusRoots, childrenByParent]);
-
-  // Local físico (prédio) do agente ativo — usado pela câmera para saber
-  // aonde "voar" e para decidir se houve mudança de cenário (novo prédio).
+  // Local físico (prédio) do agente ativo — usado para decidir se houve
+  // mudança de cenário (novo prédio) e para acionar a transição entre
+  // escritórios. Sem agente selecionado, o "prédio" default é a própria
+  // Reitoria — não há mais mapa para servir de tela inicial neutra.
   const activeLocationId = useMemo(() => {
-    if (!activeAgentId) return null;
-    return physicalLocationId(activeAgentId, unitsById);
+    if (activeAgentId) return physicalLocationId(activeAgentId, unitsById);
+    return unitsById.has("1.1") ? "1.1" : null;
   }, [activeAgentId, unitsById]);
 
+  // Prédio de fato renderizado no escritório — fica "atrasado" em relação a
+  // activeLocationId enquanto a transição some com a cena atual, para que o
+  // escritório antigo continue visível (esmaecendo) até o momento de trocar
+  // por baixo do cartão de nome, em vez de trocar de agentes no mesmo
+  // instante em que o alvo muda.
+  const [displayedLocationId, setDisplayedLocationId] = useState<string | null>(null);
+
   const activeLocationUnit = useMemo(
-    () => (activeLocationId ? mapLocations.find((l) => l.id === activeLocationId) ?? null : null),
-    [activeLocationId, mapLocations],
+    () => (displayedLocationId ? unitsById.get(displayedLocationId) ?? null : null),
+    [displayedLocationId, unitsById],
   );
 
-  // TODAS as unidades e cargos do prédio em foco — não só o atalho do
-  // cabeçalho. Cada unidade já vem com a repartição a que pertence
-  // (groupId/groupLabel/isHead), calculada subindo a cadeia de pais até o
-  // filho direto da raiz do prédio; é essa repartição que vira uma sala do
-  // OfficeCanvas.
+  // TODAS as unidades e cargos do prédio efetivamente exibido — não só o
+  // atalho do cabeçalho. Cada unidade já vem com a repartição a que
+  // pertence (groupId/groupLabel/isHead), calculada subindo a cadeia de
+  // pais até o filho direto da raiz do prédio; é essa repartição que vira
+  // uma sala do OfficeCanvas.
   const agentsHere = useMemo(() => {
-    if (!activeLocationId) return [];
-    const gabinete = (childrenByParent.get(activeLocationId) ?? []).find((u) =>
+    if (!displayedLocationId) return [];
+    const gabinete = (childrenByParent.get(displayedLocationId) ?? []).find((u) =>
       normalizeName(u.nome).includes("gabinete"),
     );
     return allAgents
-      .filter((a) => physicalLocationId(a.id, unitsById) === activeLocationId)
+      .filter((a) => physicalLocationId(a.id, unitsById) === displayedLocationId)
       .map((a) => {
-        const dept = departmentOf(a.id, activeLocationId, unitsById, gabinete?.id ?? null);
+        const dept = departmentOf(a.id, displayedLocationId, unitsById, gabinete?.id ?? null);
         return {
           ...a,
           competencia: competenciaByName.get(normalizeName(a.title)) ?? null,
@@ -476,25 +443,30 @@ export default function App() {
           isHead: dept.isHead,
         };
       });
-  }, [activeLocationId, allAgents, unitsById, childrenByParent, competenciaByName]);
+  }, [displayedLocationId, allAgents, unitsById, childrenByParent, competenciaByName]);
 
-  // Máquina de estados da câmera: zoom de drone para dentro do prédio em
-  // foco (a partir da visão geral do mapa) revela o escritório só depois que
-  // a animação termina; ao trocar de PRÉDIO (não só de agente dentro dele),
-  // corta a cena com um flash em vez de deslizar sobre o mapa inteiro.
-  // Rota da demanda sobre o mapa: registrada no momento do salto entre
-  // prédios e mantida por alguns segundos, independente de qual prédio está
-  // em foco — assim o tracejado aparece na transição e também se o usuário
-  // voltar à visão geral (ou quando a câmera sai no fim da execução).
-  const [mapRoute, setMapRoute] = useState<{
-    from: [number, number];
-    to: [number, number];
-  } | null>(null);
-  const routeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Transição entre escritórios: ao trocar de PRÉDIO (não só de agente
+  // dentro dele), esmaece o escritório atual, mostra um cartão com a
+  // unidade de origem e a de destino, e revela o novo escritório já
+  // esmaecendo o cartão — funciona igual para Reitoria -> campus, campus ->
+  // Reitoria ou campus -> campus, sempre a partir do mesmo par (origem,
+  // destino) de nomes reais do organograma.
+  // `unitsById` é só consultado para os nomes do cartão — não deve disparar
+  // esta transição de novo sozinho. Sem essa indireção por ref, um
+  // Map novo com o MESMO conteúdo (ex.: o efeito de carregar o organograma
+  // rodando de novo em StrictMode) reexecuta o efeito, cancela o timer de
+  // revelação pendente pela cleanup, e o próximo disparo já vê
+  // `previous === activeLocationId` e desiste sem reagendar nada — o
+  // escritório nunca aparece.
+  const unitsByIdRef = useRef(unitsById);
+  useEffect(() => {
+    unitsByIdRef.current = unitsById;
+  }, [unitsById]);
 
   useEffect(() => {
     if (!activeLocationId) {
       setOfficeVisible(false);
+      setDisplayedLocationId(null);
       prevLocationRef.current = null;
       return;
     }
@@ -503,21 +475,33 @@ export default function App() {
     prevLocationRef.current = activeLocationId;
     if (previous === activeLocationId) return; // mesmo prédio, outro agente: cena não muda
 
-    setOfficeVisible(false);
-    if (previous !== null) {
-      triggerSceneFlash();
-      const fromLoc = mapLocations.find((l) => l.id === previous);
-      const toLoc = mapLocations.find((l) => l.id === activeLocationId);
-      if (fromLoc && toLoc) {
-        setMapRoute({ from: fromLoc.pos, to: toLoc.pos });
-        if (routeTimerRef.current) clearTimeout(routeTimerRef.current);
-        routeTimerRef.current = setTimeout(() => setMapRoute(null), 8000);
-      }
+    if (transitionTimerRef.current) clearTimeout(transitionTimerRef.current);
+
+    if (previous === null) {
+      // primeira carga: sem cartão de transição, só revela o escritório.
+      setDisplayedLocationId(activeLocationId);
+      const timer = setTimeout(() => setOfficeVisible(true), 300);
+      return () => clearTimeout(timer);
     }
-    const delay = previous === null ? 900 : 500;
-    const timer = setTimeout(() => setOfficeVisible(true), delay);
-    return () => clearTimeout(timer);
-  }, [activeLocationId, mapLocations]);
+
+    // troca de prédio: esmaece o escritório atual (que continua mostrando a
+    // unidade ANTERIOR, via displayedLocationId, enquanto isso), mostra o
+    // cartão de nome, e só troca por baixo quando a cena já sumiu.
+    setOfficeVisible(false);
+    const fromUnit = unitsByIdRef.current.get(previous);
+    const toUnit = unitsByIdRef.current.get(activeLocationId);
+    setTransition({
+      fromName: fromUnit ? cityKeyFromName(fromUnit.nome) : "",
+      toName: toUnit ? cityKeyFromName(toUnit.nome) : "",
+    });
+    transitionTimerRef.current = setTimeout(() => setTransition(null), 2200);
+
+    const swapTimer = setTimeout(() => {
+      setDisplayedLocationId(activeLocationId);
+      setOfficeVisible(true);
+    }, 550);
+    return () => clearTimeout(swapTimer);
+  }, [activeLocationId]);
 
   const handleSelectAgent = (agentId: string) => {
     const ownerCampus = campusRoots.find((c) =>
@@ -778,39 +762,41 @@ export default function App() {
           className="flex-1 relative bg-[#120f11] overflow-hidden"
           style={{ contain: "paint" }}
         >
-          {/* Flash de corte de cena — sobe a opacidade rapidamente e cai,
-              simulando um corte de câmera ao mudar de prédio/campus */}
+          {/* Escritório em foco: esmaece/revela em vez de trocar de cena
+              seco — o crossfade + a key por prédio garantem que o canvas
+              reinicia limpo a cada troca de unidade. */}
           <div
-            className={`pointer-events-none absolute inset-0 z-30 bg-white transition-opacity duration-150 ${
-              sceneFlash ? "opacity-80" : "opacity-0"
+            className={`absolute inset-0 transition-opacity duration-500 ${
+              officeVisible ? "opacity-100" : "opacity-0"
             }`}
-          />
+          >
+            {activeLocationUnit && (
+              <OfficeCanvas
+                key={activeLocationUnit.id}
+                buildingName={cityKeyFromName(activeLocationUnit.nome)}
+                agents={agentsHere}
+                activeAgentId={activeAgentId}
+                statusMsg={activeStatusMsg}
+                onSelectAgent={handleSelectAgent}
+              />
+            )}
+          </div>
 
-          {/* Mapa do RS em pixel art — o próprio MapCanvas cuida do zoom de
-              câmera até o prédio em foco (origem travada no pixel exato). */}
-          <MapCanvas
-            locations={mapLocations}
-            activeLocationId={activeLocationId}
-            route={mapRoute}
-            onSelect={(loc) => {
-              if (loc.id !== "1.1") {
-                setExpandedCampusId((prev) => (prev === loc.id ? null : loc.id));
-              }
-              setActiveAgentId((prev) =>
-                prev === loc.primaryAgentId ? null : loc.primaryAgentId,
-              );
-            }}
-          />
-
-          {/* Escritório: só aparece depois do zoom de drone terminar */}
-          {officeVisible && activeLocationUnit && (
-            <OfficeCanvas
-              buildingName={cityKeyFromName(activeLocationUnit.nome)}
-              agents={agentsHere}
-              activeAgentId={activeAgentId}
-              statusMsg={activeStatusMsg}
-              onSelectAgent={handleSelectAgent}
-            />
+          {/* Cartão de transição: nome da unidade de origem e da de destino,
+              sobreposto enquanto o escritório troca — cobre Reitoria -> campus,
+              campus -> Reitoria e campus -> campus, sempre do mesmo jeito. */}
+          {transition && (
+            <div className="pointer-events-none absolute inset-0 z-40 flex items-center justify-center">
+              <div className="bg-[#120f11]/95 border border-amber-500/40 rounded-2xl px-8 py-6 shadow-2xl backdrop-blur text-center animate-fade-in">
+                {transition.fromName && (
+                  <>
+                    <div className="text-sm font-mono text-stone-400">{transition.fromName}</div>
+                    <div className="text-amber-500 text-lg leading-tight">↓</div>
+                  </>
+                )}
+                <div className="text-xl font-mono font-bold text-amber-400">{transition.toName}</div>
+              </div>
+            </div>
           )}
 
           {/* Canvas Shortcut Controls */}
@@ -823,8 +809,8 @@ export default function App() {
                   : "bg-[#181517]/90 text-stone-400 border-stone-700/80 hover:text-stone-200"
               }`}
             >
-              <span>🔍</span>
-              <span>VISÃO GERAL</span>
+              <span>🏛️</span>
+              <span>REITORIA</span>
             </button>
             {activeAgentId && (
               <span className="text-[11px] font-mono text-amber-400 bg-[#181517]/90 border border-amber-500/40 px-2.5 py-1 rounded-lg backdrop-blur truncate max-w-xs">
