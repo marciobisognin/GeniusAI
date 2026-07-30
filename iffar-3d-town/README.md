@@ -482,10 +482,10 @@ Reitoria
           ⇄ contribuição de cada campus devolvida e consolidada pela Reitoria
 ```
 
-O GIF acima captura a versão anterior do motor (uma cadeia curta, um único parecer simulado). Com o motor real padrão (`tools/real-engine.ts`, ver [Início rápido](#-início-rápido)), este mesmo playbook aciona o **modo de documento longo**: uma chamada real à CLI `claude` por eixo temático (ensino, pesquisa e inovação, extensão, gestão, infraestrutura, assistência estudantil, internacionalização) e uma por campus, cada uma gerando uma contribuição de verdade — com pesquisa na web quando faz sentido — consolidadas em um único PDF formatado no final. Por envolver ~25 chamadas reais, essa execução leva dezenas de minutos; pareceres de temas comuns (um só campus) continuam levando segundos a poucos minutos.
+O GIF acima captura a versão anterior do motor (uma cadeia curta, um único parecer simulado). Com o motor real padrão (`tools/real-engine.ts`, ver [Início rápido](#-início-rápido)), antes de escrever qualquer conteúdo o motor **pesquisa de verdade** (busca na web) como esse tipo de demanda é executado na prática — nessa ordem: (1) se o próprio IFFar já tem um documento real desse tipo publicado, (2) senão, o mesmo tipo de documento em outro Instituto Federal, (3) senão, o equivalente em outro órgão público — e usa a extensão (páginas) e a estrutura (seções) que encontrar para dimensionar a geração, seção por seção, com uma chamada real à CLI `claude` cada. Não há tamanho fixo no código: a mesma lógica que descobre que um PDI real gira em torno de ~200 páginas e dezenas de seções decide, para uma fiscalização de contrato pontual, que o documento real equivalente (o próprio Manual de Fiscalização de Contratos do IFFar) tem ~5 páginas — e gera cada um dentro dessa extensão. Para o PDI especificamente, isso significa uma contribuição por campus além das seções gerais que a pesquisa determinar (consolidadas em um único PDF no final); por envolver dezenas de chamadas reais, essa execução leva dezenas de minutos. Pareceres de temas comuns (um só campus, extensão curta) continuam levando segundos a poucos minutos.
 
 > [!NOTE]
-> O conteúdo gerado é sintetizado por IA a partir de diretrizes públicas (MEC/ForPDI) e da estrutura institucional real — não substitui a consulta à comunidade acadêmica de cada campus, etapa que um PDI real exige e que nenhum sistema automatizado pode substituir. Ver [Limites atuais do protótipo](#️-limites-atuais-do-protótipo).
+> O conteúdo gerado é sintetizado por IA a partir de precedentes reais (o próprio IFFar, outros Institutos Federais, diretrizes públicas como MEC/ForPDI) e da estrutura institucional real — não substitui a consulta à comunidade acadêmica de cada campus, etapa que um PDI real exige e que nenhum sistema automatizado pode substituir. Ver [Limites atuais do protótipo](#️-limites-atuais-do-protótipo).
 
 ### 🎥 Vídeo: mudança de cenário entre Reitoria e campus
 
@@ -583,7 +583,7 @@ flowchart TD
     BRIDGE -->|carrega no boot| DATA[(org-chart.yaml<br/>routing.yaml<br/>competencias.yaml)]
     BRIDGE -->|lib/routing.ts: classify + buildContributionPlan| DATA
     BRIDGE -->|spawn bun + ticketId, em background| ENGINE[real-engine.ts<br/>via CLI claude -p]
-    ENGINE -->|claude -p por unidade/eixo/campus| CLAUDE[(CLI claude<br/>sessão local autenticada)]
+    ENGINE -->|claude -p: pesquisa de extensão + 1 chamada por seção/campus| CLAUDE[(CLI claude<br/>sessão local autenticada)]
     ENGINE -->|playwright-core + chromium| PDF[(result.pdf)]
     ENGINE --> TICKETS[(tickets/ticketId/result.md + result.pdf)]
     TICKETS --> BRIDGE
