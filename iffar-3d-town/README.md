@@ -466,7 +466,7 @@ Essa verificação reduz exposições acidentais, mas **não substitui autentica
 ## 🎬 Demonstração: elaborando o novo PDI
 
 > [!NOTE]
-> As três gravações desta seção (PDI, fiscalização de contrato e convênio de estágio) são anteriores à remoção do mapa do RS — mostram a câmera sobrevoando o mapa antes de entrar no prédio. Na versão atual não há mapa: a transição vai direto de um escritório para o outro, com um cartão mostrando a unidade de origem e a de destino (ver [🏢 Só escritórios](#-visão-geral)).
+> As três gravações originais desta seção (PDI, fiscalização de contrato e convênio de estágio) são anteriores à remoção do mapa do RS — mostram a câmera sobrevoando o mapa antes de entrar no prédio. Na versão atual não há mapa: a transição vai direto de um escritório para o outro, com um cartão mostrando a unidade de origem e a de destino (ver [🏢 Só escritórios](#-visão-geral)). A gravação mais recente, [🎞️ GIF: permanência e êxito](#️-gif-permanência-e-êxito--plano-local-para-o-campus-frederico-westphalen), já reflete o comportamento atual sem mapa.
 
 O GIF abaixo é uma gravação real da interface (não uma montagem) processando o playbook **"Novo PDI Institucional"**: um briefing pedindo a elaboração do novo Plano de Desenvolvimento Institucional do IFFar, alinhado a tendências como IA, ensino híbrido, inclusão digital e sustentabilidade.
 
@@ -525,6 +525,23 @@ Reitoria (recebe o briefing)
 ```
 
 O trecho do meio (a barra "gerando o artefato real...") está acelerado — é aí que o motor pesquisa de verdade (achou o próprio Regulamento de Estágios do IFFar e precedentes de outros institutos como IFBA e UNIVASF) e conclui, corretamente, que este tipo de demanda gera um parecer curto de poucas páginas, não um documento longo. O início (mapa → escritório) e o fim (artefato pronto) estão em velocidade real.
+
+### 🎞️ GIF: permanência e êxito — plano local para o Campus Frederico Westphalen
+
+Um quarto exemplo, gravado já sem o mapa do RS (ver [🏢 Só escritórios](#-visão-geral)) — a transição usa o cartão de nome direto entre escritórios. O briefing: **"Criação de um projeto de permanência e êxito para o campus Frederico Westphalen que atinja em 4 anos acima de 90% de sucesso"**.
+
+<img src="./src/assets/demo-permanencia-exito.gif" alt="Gravação da interface do IFFar 3D Town, já sem mapa, processando o briefing 'Criação de um projeto de permanência e êxito para o campus Frederico Westphalen que atinja em 4 anos acima de 90% de sucesso' — transição direta Reitoria → Campus Frederico Westphalen com cartão de nome, e no final o PDF real de 35 páginas aberto no leitor." width="100%" />
+
+```
+Reitoria (recebe o briefing)
+  → Pró-Reitoria de Ensino
+    → Campus Frederico Westphalen — Gabinete Do(a) Diretor(a) Geral
+      → Diretoria de Ensino
+        → Coordenação de Assistência Estudantil
+          ⇄ plano devolvido pela mesma cadeia até o artefato final
+```
+
+A pesquisa de extensão/estrutura encontrou que o IFFar já opera formalmente o **Programa de Permanência e Êxito (PPE)**, estruturado em três níveis de documento (Planejamento Estratégico institucional, Plano de Ação Institucional e Planos de Ação Locais por campus) — e usou como precedente concreto o "Plano de Ações 2022 do Campus Santa Rosa" (48 páginas reais) para dimensionar a geração em ~44 páginas-alvo, 15 seções. O resultado real: um PDF de 35 páginas com diagnóstico do campus, base legal (Anexo I, Arts. 62, 99, 100), seis eixos de ação, metas e cronograma de 4 anos, e sistema de monitoramento — como no trecho de estágios acima, o meio (pesquisa + geração seção a seção) está acelerado, e o início e o fim estão em velocidade real.
 
 ---
 

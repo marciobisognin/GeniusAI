@@ -103,7 +103,8 @@ rules:
     base_legal: ["Anexo I, Arts. 69, 106"]
 
   - tema: assistencia-estudantil
-    keywords: ["assistencia estudantil", "auxilio permanencia", "moradia estudantil", "bolsa auxilio"]
+    keywords: ["assistencia estudantil", "auxilio permanencia", "moradia estudantil", "bolsa auxilio",
+               "permanencia e exito", "evasao escolar", "evasao"]
     prioridade: 9
     cadeia_sistemica: ["1.1.16", "1.1.16.1"]
     cadeia_campus: ["Diretoria de Ensino", "Coordenação de Assistência Estudantil"]
