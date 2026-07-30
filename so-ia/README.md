@@ -7,7 +7,7 @@
 Baseado no [PRD v2.0](docs/PRD-so-ia-v2.md), pensado para atender tanto
 **empresas privadas (20–500 colaboradores)** quanto o **setor público
 brasileiro** (âncora: Instituto Federal Farroupilha / Coordenação de
-Licitação e Contratos). Para a operação espacial auditável baseada na Portaria nº 876/2026-GRE, o ecossistema também inclui o [IFFar Pixel Art](../iffar-pixel-art/README.md).
+Licitação e Contratos).
 
 ![Landing — nada pré-carregado até você configurar sua organização](docs/screenshots/01-landing.png)
 
