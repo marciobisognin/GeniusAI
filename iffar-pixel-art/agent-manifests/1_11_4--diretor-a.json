@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.11.4:1:diretor-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "DIRETOR(A)",
+  "roleType": "CD",
+  "unit": {
+    "nodeId": "1.11.4",
+    "code": "1.11.4",
+    "name": "DIRETORIA DE ADMINISTRAÇÃO",
+    "rootCode": "1.11",
+    "parentNodeId": "1.11"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 14,
+    "unitTableRow": 22,
+    "articleReferences": [
+      {
+        "article": 4,
+        "title": "Atribuições do Colégio de Dirigentes - Codir"
+      },
+      {
+        "article": 5,
+        "title": "Atribuições da Comissão de Ética - CE"
+      },
+      {
+        "article": 8,
+        "title": "Atribuições da Unidade Correcional Instituída - UCI"
+      }
+    ],
+    "titleFromSource": "DIRETOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "administracao-publica",
+      "label": "Organizar instrução administrativa e controles de processo",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: DIRETORIA DE ADMINISTRAÇÃO"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-11-4-1-diretor-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

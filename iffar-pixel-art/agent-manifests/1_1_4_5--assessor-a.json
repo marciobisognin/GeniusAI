@@ -1,0 +1,66 @@
+{
+  "id": "agent:1.1.4.5:1:assessor-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "ASSESSOR(A)",
+  "roleType": "FG",
+  "unit": {
+    "nodeId": "1.1.4.5",
+    "code": "1.1.4.5",
+    "name": "ASSESSORIA",
+    "rootCode": "1.1",
+    "parentNodeId": "1.1.4"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 1,
+    "unitTableRow": 11,
+    "articleReferences": [
+      {
+        "article": 12,
+        "title": "Atribuições da Procuradoria Federal"
+      },
+      {
+        "article": 16,
+        "title": "Atribuições da Secretaria de Comunicação - Secom"
+      },
+      {
+        "article": 22,
+        "title": "Atribuições da Diretoria de Gestão de Pessoas - DGP"
+      }
+    ],
+    "titleFromSource": "ASSESSOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-1-4-5-1-assessor-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

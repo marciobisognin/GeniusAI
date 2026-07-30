@@ -1,0 +1,66 @@
+{
+  "id": "agent:1.10.3.3:1:cargo-nao-especificado-na-fonte",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "Cargo não especificado na fonte",
+  "roleType": "Membro",
+  "unit": {
+    "nodeId": "1.10.3.3",
+    "code": "1.10.3.3",
+    "name": "UNIDADE DE GESTÃO DE DOCUMENTOS",
+    "rootCode": "1.10",
+    "parentNodeId": "1.10.3"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 13,
+    "unitTableRow": 18,
+    "articleReferences": [
+      {
+        "article": 1,
+        "title": "Atribuições de todas as unidades organizacionais do IFFar"
+      },
+      {
+        "article": 2,
+        "title": "Atribuições do Conselho Superior - Consup:"
+      },
+      {
+        "article": 3,
+        "title": "Atribuições da Auditoria Interna"
+      }
+    ],
+    "titleFromSource": "-"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-10-3-3-1-cargo-nao-especificado-na-fonte",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

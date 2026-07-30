@@ -1,0 +1,66 @@
+{
+  "id": "agent:1.1.17.1.3:1:coordenador-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "COORDENADOR(A)",
+  "roleType": "FG",
+  "unit": {
+    "nodeId": "1.1.17.1.3",
+    "code": "1.1.17.1.3",
+    "name": "COORDENAÇÃO DE PÓS- GRADUAÇÃO",
+    "rootCode": "1.1",
+    "parentNodeId": "1.1.17.1"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 3,
+    "unitTableRow": 23,
+    "articleReferences": [
+      {
+        "article": 18,
+        "title": "Atribuições da Diretoria de Governança, Riscos e Controles - DGRC"
+      },
+      {
+        "article": 19,
+        "title": "Atribuições da Coordenação de Governança e Gestão da Integridade - CGGI"
+      },
+      {
+        "article": 20,
+        "title": "Atribuições da Coordenação de Centro de Referência"
+      }
+    ],
+    "titleFromSource": "COORDENADOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-1-17-1-3-1-coordenador-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}
