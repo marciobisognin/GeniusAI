@@ -623,7 +623,12 @@ function renderHtml(markdown: string): string {
       .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
       .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, "<em>$1</em>");
 
-  const blocks = markdown.split(/\n{2,}/);
+  // Garante que todo título (# / ## / ###) vire seu próprio bloco, mesmo
+  // quando o texto gerado (ou a capa montada à mão) não deixa uma linha em
+  // branco entre dois títulos consecutivos — sem isso, "# Título\n##
+  // Subtítulo" colapsava num h1 só, com o "##" sobrando como texto literal.
+  const withIsolatedHeadings = markdown.replace(/^(#{1,3}\s.*)$/gm, "\n$1\n");
+  const blocks = withIsolatedHeadings.split(/\n{2,}/);
   const html: string[] = [];
   let listBuffer: string[] = [];
   const flushList = () => {

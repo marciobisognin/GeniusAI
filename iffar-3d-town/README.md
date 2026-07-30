@@ -509,6 +509,22 @@ Repare no flash de corte de cena exatamente nos dois momentos em que a cadeia mu
 > [!NOTE]
 > Se o seu visualizador de markdown não renderizar o `<video>` inline (alguns leitores de README fora do github.com não suportam a tag), baixe ou abra `src/assets/demo-fiscalizacao.webm` diretamente.
 
+### 🎞️ GIF: um exemplo diferente — renovação de convênio de estágio
+
+Os exemplos acima usam sempre os mesmos temas (PDI, fiscalização de contrato). O GIF abaixo mostra um terceiro caso, com tema e campus diferentes de tudo visto até aqui — **"Renovar o convênio de estágio com uma empresa parceira do Campus São Borja"** — já com o motor real (`tools/real-engine.ts`) por trás, incluindo a etapa de pesquisa de extensão/estrutura:
+
+<img src="./src/assets/demo-estagios.gif" alt="Gravação da interface do IFFar 3D Town processando o briefing 'Renovar o convênio de estágio com uma empresa parceira do Campus São Borja' — a câmera entra no mapa do RS, revela o escritório do Campus São Borja seguindo a cadeia Reitoria → Pró-Reitoria de Extensão → Gabinete → Diretoria de Pesquisa, Extensão e Produção, e termina com o parecer real (PDF) aberto no Inbox." width="100%" />
+
+```
+Reitoria (recebe o briefing)
+  → Pró-Reitoria de Extensão
+    → Campus São Borja — Gabinete Do(a) Diretor(a) Geral
+      → Diretoria de Pesquisa, Extensão e Produção
+        ⇄ parecer devolvido pela mesma cadeia até o artefato final
+```
+
+O trecho do meio (a barra "gerando o artefato real...") está acelerado — é aí que o motor pesquisa de verdade (achou o próprio Regulamento de Estágios do IFFar e precedentes de outros institutos como IFBA e UNIVASF) e conclui, corretamente, que este tipo de demanda gera um parecer curto de poucas páginas, não um documento longo. O início (mapa → escritório) e o fim (artefato pronto) estão em velocidade real.
+
 ---
 
 ## ⚙️ Configuração
