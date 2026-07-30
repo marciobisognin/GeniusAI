@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.13.4.5:1:coordenador-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "COORDENADOR(A)",
+  "roleType": "FG",
+  "unit": {
+    "nodeId": "1.13.4.5",
+    "code": "1.13.4.5",
+    "name": "COORDENAÇÃO DE PLANEJAMENTO E DESENVOLVIMENTO INSTITUCIONAL",
+    "rootCode": "1.13",
+    "parentNodeId": "1.13.4"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 17,
+    "unitTableRow": 11,
+    "articleReferences": [
+      {
+        "article": 2,
+        "title": "Atribuições do Conselho Superior - Consup:"
+      },
+      {
+        "article": 5,
+        "title": "Atribuições da Comissão de Ética - CE"
+      },
+      {
+        "article": 6,
+        "title": "Atribuições da Comissão Interna de Supervisão do Plano de Carreira dos Servidores Técnico-"
+      }
+    ],
+    "titleFromSource": "COORDENADOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "planejamento-e-governanca",
+      "label": "Organizar evidências de planejamento, avaliação e governança",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: COORDENAÇÃO DE PLANEJAMENTO E DESENVOLVIMENTO INSTITUCIONAL"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-13-4-5-1-coordenador-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

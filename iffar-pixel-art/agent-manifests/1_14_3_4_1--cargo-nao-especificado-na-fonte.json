@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.14.3.4.1:1:cargo-nao-especificado-na-fonte",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "Cargo não especificado na fonte",
+  "roleType": "Membro",
+  "unit": {
+    "nodeId": "1.14.3.4.1",
+    "code": "1.14.3.4.1",
+    "name": "SETOR DE ASSESSORIA PEDAGÓGICA",
+    "rootCode": "1.14",
+    "parentNodeId": "1.14.3.4"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 18,
+    "unitTableRow": 2,
+    "articleReferences": [
+      {
+        "article": 11,
+        "title": "Atribuições da Ouvidoria"
+      },
+      {
+        "article": 12,
+        "title": "Atribuições da Procuradoria Federal"
+      },
+      {
+        "article": 16,
+        "title": "Atribuições da Secretaria de Comunicação - Secom"
+      }
+    ],
+    "titleFromSource": "-"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "ensino-e-ppc",
+      "label": "Preparar insumos acadêmicos e de PPC",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: SETOR DE ASSESSORIA PEDAGÓGICA"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-14-3-4-1-1-cargo-nao-especificado-na-fonte",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

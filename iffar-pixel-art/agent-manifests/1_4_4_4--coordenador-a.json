@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.4.4.4:1:coordenador-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "COORDENADOR(A)",
+  "roleType": "FG",
+  "unit": {
+    "nodeId": "1.4.4.4",
+    "code": "1.4.4.4",
+    "name": "COORDENAÇÃO DE ORÇAMENTO E FINANÇAS",
+    "rootCode": "1.4",
+    "parentNodeId": "1.4.4"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 7,
+    "unitTableRow": 4,
+    "articleReferences": [
+      {
+        "article": 3,
+        "title": "Atribuições da Auditoria Interna"
+      },
+      {
+        "article": 10,
+        "title": "Atribuições da Comitê de Tecnologia da Informação - CTI"
+      },
+      {
+        "article": 18,
+        "title": "Atribuições da Diretoria de Governança, Riscos e Controles - DGRC"
+      }
+    ],
+    "titleFromSource": "COORDENADOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "administracao-publica",
+      "label": "Organizar instrução administrativa e controles de processo",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: COORDENAÇÃO DE ORÇAMENTO E FINANÇAS"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-4-4-4-1-coordenador-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

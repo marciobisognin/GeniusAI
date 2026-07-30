@@ -1,0 +1,23 @@
+duplicate_codes_preserved:
+  1.1.16.3.1: 2
+  1.1.16.3.2: 2
+  1.6.5.5: 2
+missing_direct_parents_in_source:
+- node_id: 1.8.3.1
+  expected_parent: 1.8.3
+  attached_to: '1.8'
+- node_id: 1.8.3.2
+  expected_parent: 1.8.3
+  attached_to: '1.8'
+- node_id: 1.8.3.3
+  expected_parent: 1.8.3
+  attached_to: '1.8'
+extraction_corrections:
+- code: 1.6.2
+  action: reconstructed_row_across_page_break
+  evidence: PDF pages 8-9; extracted text lines 1561-1579
+- articles:
+  - 54
+  - 55
+  action: recovered_articles_without_art_prefix
+  evidence: Extracted text lines 5717-5800

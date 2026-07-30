@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "executors": [
+    {
+      "id": "codex",
+      "label": "Codex CLI",
+      "command": "codex",
+      "availabilityArgs": ["--version"],
+      "authenticationArgs": ["login", "status"],
+      "args": ["exec"],
+      "input": "stdin"
+    },
+    {
+      "id": "claude-code",
+      "label": "Claude Code",
+      "command": "claude",
+      "availabilityArgs": ["--version"],
+      "requiresAuthentication": true,
+      "args": ["-p", "{prompt}"],
+      "input": "none"
+    },
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "command": "opencode",
+      "availabilityArgs": ["--version"],
+      "requiresAuthentication": true,
+      "args": ["run", "{prompt}"],
+      "input": "none"
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.3.5.5.2:1:chefe",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "CHEFE",
+  "roleType": "Membro",
+  "unit": {
+    "nodeId": "1.3.5.5.2",
+    "code": "1.3.5.5.2",
+    "name": "SETOR DE ASSESSORIA PEDAGÓGICA",
+    "rootCode": "1.3",
+    "parentNodeId": "1.3.5.5"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 6,
+    "unitTableRow": 10,
+    "articleReferences": [
+      {
+        "article": 11,
+        "title": "Atribuições da Ouvidoria"
+      },
+      {
+        "article": 12,
+        "title": "Atribuições da Procuradoria Federal"
+      },
+      {
+        "article": 16,
+        "title": "Atribuições da Secretaria de Comunicação - Secom"
+      }
+    ],
+    "titleFromSource": "CHEFE"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "ensino-e-ppc",
+      "label": "Preparar insumos acadêmicos e de PPC",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: SETOR DE ASSESSORIA PEDAGÓGICA"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-3-5-5-2-1-chefe",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

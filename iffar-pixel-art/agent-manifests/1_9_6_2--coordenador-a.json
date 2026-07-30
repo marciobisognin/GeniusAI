@@ -1,0 +1,72 @@
+{
+  "id": "agent:1.9.6.2:1:coordenador-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "COORDENADOR(A)",
+  "roleType": "FG",
+  "unit": {
+    "nodeId": "1.9.6.2",
+    "code": "1.9.6.2",
+    "name": "COORDENAÇÃO DE PESQUISA, PÓS-GRADUAÇÃO E INOVAÇÃO",
+    "rootCode": "1.9",
+    "parentNodeId": "1.9.6"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 13,
+    "unitTableRow": 5,
+    "articleReferences": [
+      {
+        "article": 9,
+        "title": "Atribuições da Comissão Própria de Avaliação - CPA"
+      },
+      {
+        "article": 10,
+        "title": "Atribuições da Comitê de Tecnologia da Informação - CTI"
+      },
+      {
+        "article": 16,
+        "title": "Atribuições da Secretaria de Comunicação - Secom"
+      }
+    ],
+    "titleFromSource": "COORDENADOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    },
+    {
+      "id": "pesquisa-e-inovacao",
+      "label": "Organizar evidências de pesquisa, inovação e pós-graduação",
+      "provenance": "operational-derived",
+      "basis": "Termos da Uorg/cargo: COORDENAÇÃO DE PESQUISA, PÓS-GRADUAÇÃO E INOVAÇÃO"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-9-6-2-1-coordenador-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}

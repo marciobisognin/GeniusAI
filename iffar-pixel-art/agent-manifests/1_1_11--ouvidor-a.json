@@ -1,0 +1,66 @@
+{
+  "id": "agent:1.1.11:1:ouvidor-a",
+  "schema": "iffar-pixel-art-agent/1.0",
+  "displayName": "OUVIDOR(A)",
+  "roleType": "Membro",
+  "unit": {
+    "nodeId": "1.1.11",
+    "code": "1.1.11",
+    "name": "OUVIDORIA GERAL",
+    "rootCode": "1.1",
+    "parentNodeId": "1.1"
+  },
+  "normativeSource": {
+    "title": "Portaria Eletrônica nº 876/2026-GRE",
+    "date": "2026-07-03",
+    "unitPage": 2,
+    "unitTableRow": 3,
+    "articleReferences": [
+      {
+        "article": 10,
+        "title": "Atribuições da Comitê de Tecnologia da Informação - CTI"
+      },
+      {
+        "article": 11,
+        "title": "Atribuições da Ouvidoria"
+      },
+      {
+        "article": 13,
+        "title": "Atribuições do Serviço de Informação ao Cidadão"
+      }
+    ],
+    "titleFromSource": "OUVIDOR(A)"
+  },
+  "skills": [
+    {
+      "id": "evidencia-rastreavel",
+      "label": "Registrar evidências e handoffs rastreáveis",
+      "provenance": "operational-derived",
+      "basis": "Contrato de execução do IFFar Pixel Art"
+    },
+    {
+      "id": "revisao-normativa",
+      "label": "Conferir a aderência à fonte normativa disponível",
+      "provenance": "operational-derived",
+      "basis": "Portaria nº 876/2026-GRE"
+    }
+  ],
+  "runbook": {
+    "id": "runbook:agent-1-1-11-1-ouvidor-a",
+    "command": "node scripts/execute-agent-runbook.mjs --agent {agentId} --event-file {eventFile} --brief {briefFile}",
+    "inputs": [
+      "briefFile",
+      "eventFile"
+    ],
+    "outputs": [
+      "observed agent event",
+      "handoff record"
+    ],
+    "source": "operational-derived"
+  },
+  "limitations": [
+    "Não representa pessoa física nem ocupante de cargo.",
+    "Não produz ato administrativo, publicação ou comunicação externa sem aprovação humana.",
+    "Competências operacionais são derivadas para orquestração e não substituem atribuições legais específicas."
+  ]
+}
