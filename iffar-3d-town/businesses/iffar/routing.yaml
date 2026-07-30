@@ -88,6 +88,12 @@ rules:
     cadeia_sistemica: ["1.1.14", "1.1.14.3", "1.1.14.3.1"]
     cadeia_campus: ["Diretoria de Planejamento e Desenvolvimento Institucional", "Coordenação de Avaliação Institucional"]
     base_legal: ["Anexo I, Arts. 28, 29, 83, 120"]
+    # O PDI é, por natureza, um documento de toda a instituição — não faz
+    # sentido restringir a um único campus "detectado" no texto do briefing.
+    # A cadeia de campus abaixo é resolvida dentro da subárvore de CADA um
+    # dos 13 campi, e cada um contribui com sua própria realidade local para
+    # o documento final consolidado pela Reitoria.
+    broadcast_all_campi: true
 
   - tema: registros-academicos
     keywords: ["matricula", "diploma", "historico escolar", "registro academico"]
