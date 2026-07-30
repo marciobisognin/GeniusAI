@@ -4,10 +4,17 @@
  * `stub-engine.ts` como padrão de `NIRVANA_ENGINE_PATH`. Diferente do stub
  * (que só escreve um `result.md` de exemplo), este motor de fato gera o
  * artefato: usa a CLI `claude` local, já autenticada nesta máquina, em modo
- * não-interativo (`claude -p`) para produzir um parecer real (temas comuns)
- * ou um documento institucional completo em capítulos (temas de alcance
- * institucional, como o PDI, que envolvem os 13 campi via
- * `broadcast_all_campi` em routing.yaml).
+ * não-interativo (`claude -p`) para produzir o documento pedido.
+ *
+ * Antes de escrever qualquer conteúdo, o motor faz uma PESQUISA REAL (busca
+ * na web) para descobrir como aquele tipo de demanda é, de fato, executado
+ * na prática — primeiro no próprio IFFar, depois em outros Institutos
+ * Federais e, na ausência de precedente, em outros órgãos públicos — e usa
+ * o que encontrar (extensão em páginas, seções que costumam existir) para
+ * dimensionar a geração. Isso é genérico: não há lista fixa de "eixos do
+ * PDI" nem tamanho fixo de parecer — a mesma pesquisa que decide que um PDI
+ * tem ~200 páginas e 10 seções decide, para outra demanda qualquer, que um
+ * parecer de fiscalização de contrato tem 2-4 páginas e 3 seções.
  *
  * Requisitos do ambiente onde o bridge roda: a CLI `claude` instalada e
  * autenticada (ver README). Sem isso, aponte `NIRVANA_ENGINE_PATH` para
@@ -62,8 +69,8 @@ mkdirSync(chaptersDir, { recursive: true });
 // conteúdo; `--system-prompt` custom mantém o overhead de tokens (e custo)
 // baixo em vez do prompt de sistema completo do Claude Code. `--permission-
 // mode dontAsk` é necessário porque a sessão roda como root (bypassPermissions
-// é recusado nesse caso) — WebSearch continua sendo o único tipo de tool
-// habilitado, então o risco de uma ação indevida é mínimo.
+// é recusado nesse caso) — WebSearch/WebFetch continuam sendo os únicos
+// tipos de tool habilitados, então o risco de uma ação indevida é mínimo.
 // ---------------------------------------------------------------------------
 
 const WRITER_SYSTEM_PROMPT =
@@ -72,6 +79,11 @@ const WRITER_SYSTEM_PROMPT =
   "formal. Responda SOMENTE com o texto pedido, em Markdown simples (títulos com #, " +
   "parágrafos, listas com -, negrito com **), sem comentários sobre o que você vai fazer, " +
   "sem introduções do tipo 'aqui está' e sem repetir estas instruções.";
+
+const RESEARCH_SYSTEM_PROMPT =
+  "Você pesquisa, na web, como documentos institucionais reais são de fato produzidos — " +
+  "sua tarefa é descobrir precedentes concretos (não estimar de memória) e reportar dados " +
+  "estruturados e realistas a partir do que encontrar.";
 
 interface ClaudeCallOptions {
   model?: "sonnet" | "haiku";
@@ -102,12 +114,9 @@ function runClaude(prompt: string, opts: ClaudeCallOptions = {}): string {
     WRITER_SYSTEM_PROMPT,
     "--max-budget-usd",
     String(maxBudgetUsd),
+    "--allowedTools",
+    allowSearch ? "WebSearch,WebFetch" : "",
   ];
-  if (allowSearch) {
-    args.push("--allowedTools", "WebSearch");
-  } else {
-    args.push("--allowedTools", "");
-  }
 
   const result = spawnSync("claude", args, {
     encoding: "utf8",
@@ -123,6 +132,55 @@ function runClaude(prompt: string, opts: ClaudeCallOptions = {}): string {
     throw new Error(`claude -p falhou (status ${result.status}): ${err.slice(0, 500)}`);
   }
   return result.stdout.trim();
+}
+
+// Variante que devolve dados estruturados (JSON Schema), usada só pela
+// pesquisa de extensão/estrutura — muito mais confiável que pedir um bloco
+// de código JSON em texto livre e torcer para o parsing dar certo.
+function runClaudeStructured<T>(prompt: string, schema: object, opts: ClaudeCallOptions = {}): T {
+  const {
+    model = "sonnet",
+    allowSearch = true,
+    maxBudgetUsd = 0.7,
+    timeoutMs = 4 * 60 * 1000,
+  } = opts;
+
+  const args = [
+    "-p",
+    prompt,
+    "--output-format",
+    "json",
+    "--json-schema",
+    JSON.stringify(schema),
+    "--permission-mode",
+    "dontAsk",
+    "--safe-mode",
+    "--model",
+    model,
+    "--system-prompt",
+    RESEARCH_SYSTEM_PROMPT,
+    "--max-budget-usd",
+    String(maxBudgetUsd),
+    "--allowedTools",
+    allowSearch ? "WebSearch,WebFetch" : "",
+  ];
+
+  const result = spawnSync("claude", args, {
+    encoding: "utf8",
+    timeout: timeoutMs,
+    maxBuffer: 32 * 1024 * 1024,
+  });
+
+  if (result.error) throw new Error(`pesquisa estruturada falhou ao rodar: ${result.error.message}`);
+  if (result.status !== 0) {
+    const err = (result.stderr || result.stdout || "erro desconhecido").trim();
+    throw new Error(`pesquisa estruturada falhou (status ${result.status}): ${err.slice(0, 500)}`);
+  }
+  const envelope = JSON.parse(result.stdout);
+  if (!envelope.structured_output) {
+    throw new Error("pesquisa estruturada não devolveu structured_output.");
+  }
+  return envelope.structured_output as T;
 }
 
 // Chapters já escritos (por causa de uma execução anterior com o mesmo
@@ -155,264 +213,293 @@ function normalizeLoose(s: string): string {
     .toLowerCase();
 }
 
+function slugify(titulo: string, index: number): string {
+  const base = normalizeLoose(titulo)
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 50);
+  return `${String(index + 1).padStart(2, "0")}-${base || "secao"}`;
+}
+
 // ---------------------------------------------------------------------------
-// MODO 1 — PARECER CURTO: a maioria dos playbooks (fiscalização de contrato,
-// minuta de PPC, relatório de extensão etc.), que envolvem no máximo um
-// campus e uma cadeia sistêmica curta. Uma única chamada real, com pesquisa
-// na web quando fizer sentido, produz um parecer completo e citável.
+// PESQUISA REAL DE EXTENSÃO E ESTRUTURA — antes de gerar qualquer conteúdo,
+// pergunta (com busca na web de verdade) como esse TIPO de demanda é
+// executado na prática: primeiro procura um precedente real do próprio
+// IFFar; sem isso, em outros Institutos Federais; sem isso, em outros
+// órgãos públicos equivalentes. O resultado dimensiona a geração — nada de
+// tamanho de documento hardcoded no código.
 // ---------------------------------------------------------------------------
 
-function generateShortParecer(plan: ContributionPlan, competencias: Competencia[] | null): string {
+interface DocumentSection {
+  titulo: string;
+  palavras_alvo: number;
+}
+
+interface DocumentPlan {
+  tipo_documento: string;
+  paginas_alvo: number;
+  estrutura: DocumentSection[];
+  inclui_secao_por_campus: boolean;
+  palavras_por_campus: number;
+  fontes: string[];
+  justificativa: string;
+}
+
+const DOCUMENT_PLAN_SCHEMA = {
+  type: "object",
+  properties: {
+    tipo_documento: {
+      type: "string",
+      description: "Nome do tipo de documento/artefato que esta demanda produz (ex.: 'Parecer de Fiscalização Contratual', 'Plano de Desenvolvimento Institucional').",
+    },
+    paginas_alvo: {
+      type: "number",
+      description: "Número de páginas típico/real para este tipo de documento, baseado no precedente encontrado.",
+    },
+    estrutura: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          titulo: { type: "string" },
+          palavras_alvo: { type: "number" },
+        },
+        required: ["titulo", "palavras_alvo"],
+      },
+      description: "Seções gerais do documento (sem contar eventuais subseções por campus), na ordem em que devem aparecer.",
+    },
+    inclui_secao_por_campus: {
+      type: "boolean",
+      description: "true se este tipo de documento, pelo precedente encontrado, costuma ter uma subseção dedicada a cada campus/unidade regional envolvida.",
+    },
+    palavras_por_campus: {
+      type: "number",
+      description: "Se inclui_secao_por_campus, quantas palavras cada subseção de campus deve ter. 0 caso contrário.",
+    },
+    fontes: {
+      type: "array",
+      items: { type: "string" },
+      description: "URLs ou referências concretas encontradas na pesquisa que embasaram esta estimativa.",
+    },
+    justificativa: {
+      type: "string",
+      description: "1-2 frases explicando de onde veio a estimativa (ex.: 'baseado no PDI 2024-2028 do IFC, 210 páginas').",
+    },
+  },
+  required: ["tipo_documento", "paginas_alvo", "estrutura", "inclui_secao_por_campus", "palavras_por_campus", "fontes", "justificativa"],
+};
+
+const WORDS_PER_PAGE = 450; // densidade média da formatação usada em renderHtml()
+
+function researchDocumentPlan(plan: ContributionPlan): DocumentPlan {
+  const numCampi = plan.campusChains.length;
+  const chainNames = [plan.reitoria.nome, ...plan.systemicUnits.map((u) => u.nome)];
+
+  const prompt = `Uma demanda institucional real do Instituto Federal Farroupilha (IFFar) precisa
+virar um documento/artefato. Antes de escrever qualquer conteúdo, descubra
+como esse TIPO de demanda é executado NA PRÁTICA:
+
+Demanda: "${problem}"
+Tema classificado: ${plan.nomeRota}
+Cadeia institucional até aqui: ${chainNames.join(" → ")}
+Base legal do trâmite: ${plan.baseLegal.join("; ") || "regimento interno do IFFar"}
+${numCampi > 1 ? `Esta demanda envolve ${numCampi} campi simultaneamente (é de alcance institucional).` : numCampi === 1 ? "Esta demanda envolve um único campus." : "Esta demanda não envolve diretamente nenhum campus (fica no âmbito sistêmico/Reitoria)."}
+
+PESQUISE NA WEB (nessa ordem de prioridade, pare assim que achar um precedente
+usável — não precisa exaurir todas as fontes):
+1. Se o IFFar (iffarroupilha.edu.br) já tem publicamente um documento real
+   deste mesmo tipo (ex.: um PDI vigente, um regimento, um manual, um
+   relatório de gestão) — use-o como referência principal de extensão e
+   estrutura.
+2. Se não achar no IFFar, procure o mesmo tipo de documento em outros
+   Institutos Federais (IFRS, IFC, IFSul, IFPA, IFES, IFMS, IFAL etc.) —
+   documentos da Rede Federal seguem padrões muito parecidos entre si.
+3. Se não for um documento típico de Instituto Federal, procure em outros
+   órgãos públicos brasileiros que produzam algo equivalente (ex.: um
+   parecer de auditoria, um manual de fiscalização de contratos, um
+   relatório de ouvidoria).
+4. Se a demanda for pequena/rotineira (ex.: um parecer técnico pontual, uma
+   resposta a uma solicitação simples) e não existir um "tipo de documento"
+   formal e longo associado a ela, é válido concluir que a extensão real e
+   esperada é curta (poucas páginas) — não infle artificialmente.
+
+Com base no que encontrar, reporte:
+- o tipo de documento e uma estimativa REAL de página (não um chute
+  redondo arbitrário — baseie-se no precedente encontrado, citando a fonte);
+- a estrutura de seções que esse tipo de documento costuma ter, com uma
+  estimativa de palavras por seção que, somadas${numCampi > 1 ? " (mais as subseções de campus, se aplicável)" : ""},
+  cheguem a aproximadamente ${WORDS_PER_PAGE} palavras por página × o total de
+  páginas estimado;
+${numCampi > 1 ? `- se esse tipo de documento costuma ter uma subseção por campus/unidade regional (esta demanda tem ${numCampi} campi envolvidos) e, se sim, quantas palavras cada uma deve ter, de modo que a soma total (seções gerais + palavras_por_campus × ${numCampi}) corresponda à extensão real estimada;` : "- inclui_secao_por_campus deve ser false e palavras_por_campus deve ser 0, já que esta demanda não envolve múltiplos campi;"}
+- as fontes concretas que encontrou.`;
+
+  try {
+    const plan_ = runClaudeStructured<DocumentPlan>(prompt, DOCUMENT_PLAN_SCHEMA, {
+      model: "sonnet",
+      allowSearch: true,
+      maxBudgetUsd: 0.8,
+      timeoutMs: 4 * 60 * 1000,
+    });
+
+    // Rede de segurança: se a aritmética do modelo não bater com o total de
+    // páginas que ele mesmo estimou, escala as seções proporcionalmente em
+    // vez de confiar cegamente — a extensão final ainda vem da pesquisa
+    // (paginas_alvo), só a distribuição por seção é corrigida.
+    const targetWords = plan_.paginas_alvo * WORDS_PER_PAGE;
+    const estruturaWords = plan_.estrutura.reduce((sum, s) => sum + s.palavras_alvo, 0);
+    const campusWords = plan_.inclui_secao_por_campus ? plan_.palavras_por_campus * numCampi : 0;
+    const impliedTotal = estruturaWords + campusWords;
+    if (impliedTotal > 0 && targetWords > 0) {
+      const ratio = targetWords / impliedTotal;
+      if (ratio < 0.6 || ratio > 1.7) {
+        console.log(
+          `[real-engine] Ajustando distribuição de palavras (implícito ${impliedTotal} vs. alvo ${Math.round(targetWords)}, fator ${ratio.toFixed(2)}).`,
+        );
+        plan_.estrutura = plan_.estrutura.map((s) => ({
+          ...s,
+          palavras_alvo: Math.max(200, Math.round(s.palavras_alvo * ratio)),
+        }));
+        if (plan_.inclui_secao_por_campus) {
+          plan_.palavras_por_campus = Math.max(300, Math.round(plan_.palavras_por_campus * ratio));
+        }
+      }
+    }
+    return plan_;
+  } catch (err) {
+    console.warn(
+      `[real-engine] Pesquisa de extensão/estrutura falhou (${(err as Error).message}); usando plano padrão de parecer curto.`,
+    );
+    return {
+      tipo_documento: plan.nomeRota,
+      paginas_alvo: 2,
+      estrutura: [
+        { titulo: "Contexto", palavras_alvo: 250 },
+        { titulo: "Análise Técnica", palavras_alvo: 350 },
+        { titulo: "Conclusão e Encaminhamento", palavras_alvo: 200 },
+      ],
+      inclui_secao_por_campus: false,
+      palavras_por_campus: 0,
+      fontes: [],
+      justificativa: "Pesquisa indisponível — usado um parecer curto padrão como fallback seguro.",
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// GERAÇÃO DO DOCUMENTO — genérica: itera a estrutura que a pesquisa
+// determinou (não uma lista fixa de "eixos do PDI"), e opcionalmente uma
+// subseção por campus, cada uma gerada por uma chamada real (com pesquisa
+// na web quando a seção se beneficiar de referência externa). Escrita
+// incremental em chapters/ para que uma execução longa seja retomável.
+// ---------------------------------------------------------------------------
+
+function generateDocument(
+  plan: ContributionPlan,
+  docPlan: DocumentPlan,
+  competencias: Competencia[] | null,
+): string {
   const executingUnit =
     plan.campusChains[0]?.chain.at(-1) ?? plan.systemicUnits.at(-1) ?? plan.reitoria;
   const chainNames = [
     plan.reitoria.nome,
     ...plan.systemicUnits.map((u) => u.nome),
-    ...(plan.campusChains[0]?.chain.map((u) => u.nome) ?? []),
+    ...(plan.campusChains.length === 1 ? plan.campusChains[0]!.chain.map((u) => u.nome) : []),
   ];
   const competenciaNote = competenciaFor(executingUnit, competencias);
 
-  const prompt = `Redija um parecer/resposta institucional REAL e completo do Instituto Federal
-Farroupilha (IFFar) para a seguinte demanda, como se fosse emitido pela unidade
-"${executingUnit.nome}" (${executingUnit.cargo ?? "responsável técnico"}), após
-tramitar pela cadeia: ${chainNames.join(" → ")}.
-
-Demanda recebida: "${problem}"
-
-${competenciaNote}
-Base legal do trâmite: ${plan.baseLegal.join("; ") || "regimento interno do IFFar"}.
-
-Estruture como um parecer/documento técnico real (não uma simulação): contexto,
-análise técnica fundamentada, e conclusão/encaminhamento objetivo. Se a demanda
-pedir um dado externo verificável (legislação, norma técnica, prazo legal),
-faça uma pesquisa rápida antes de responder. Cite a base legal do IFFar listada
-acima. Produza entre 500 e 1200 palavras.`;
-
-  const body = runClaude(prompt, { model: "sonnet", allowSearch: true, maxBudgetUsd: 1.5 });
-
-  return [
-    `# ${executingUnit.nome} — Parecer`,
-    "",
-    `**Ticket:** ${ticketId}`,
-    `**Trâmite:** ${chainNames.join(" → ")}`,
-    `**Base legal:** ${plan.baseLegal.join("; ") || "—"}`,
-    "",
-    "---",
-    "",
-    "## Demanda recebida",
-    "",
-    problem,
-    "",
-    "---",
-    "",
-    body,
-  ].join("\n");
-}
-
-// ---------------------------------------------------------------------------
-// MODO 2 — DOCUMENTO INSTITUCIONAL LONGO (broadcast a todos os campi, ex.:
-// o novo PDI): um capítulo por eixo temático + um por campus, cada um
-// gerado por uma chamada real (com pesquisa na web nos eixos, que se
-// beneficiam de referências externas), escritos incrementalmente em
-// chapters/ para que uma execução longa possa ser retomada sem regerar o
-// que já ficou pronto.
-// ---------------------------------------------------------------------------
-
-const PDI_EIXOS = [
-  {
-    slug: "eixo-ensino",
-    titulo: "Eixo 1 — Ensino, Currículo e Formação Integral",
-    foco: "expansão e qualidade dos cursos técnicos e superiores, currículos integrados, avaliação pedagógica, permanência e êxito estudantil",
-  },
-  {
-    slug: "eixo-pesquisa-inovacao",
-    titulo: "Eixo 2 — Pesquisa, Pós-Graduação e Inovação",
-    foco: "iniciação científica, programas de pós-graduação, núcleos de inovação tecnológica, patentes e transferência de tecnologia",
-  },
-  {
-    slug: "eixo-extensao",
-    titulo: "Eixo 3 — Extensão e Relação com a Comunidade",
-    foco: "programas de extensão, arranjos produtivos locais, estágios, parcerias com o setor produtivo e a sociedade civil",
-  },
-  {
-    slug: "eixo-gestao",
-    titulo: "Eixo 4 — Gestão, Governança e Pessoas",
-    foco: "governança institucional, gestão de riscos, gestão de pessoas, capacitação de servidores, tecnologia da informação",
-  },
-  {
-    slug: "eixo-infraestrutura",
-    titulo: "Eixo 5 — Infraestrutura e Sustentabilidade",
-    foco: "infraestrutura física, obras, acessibilidade, sustentabilidade ambiental, gestão de resíduos e uso racional de recursos",
-  },
-  {
-    slug: "eixo-assistencia-estudantil",
-    titulo: "Eixo 6 — Assistência Estudantil e Inclusão",
-    foco: "permanência estudantil, auxílios, ações afirmativas, inclusão de pessoas com deficiência, apoio psicopedagógico",
-  },
-  {
-    slug: "eixo-internacionalizacao",
-    titulo: "Eixo 7 — Internacionalização e Educação a Distância",
-    foco: "mobilidade acadêmica internacional, parcerias externas, expansão da educação a distância e dos polos de apoio presencial",
-  },
-] as const;
-
-function generateLongPdi(plan: ContributionPlan): string {
-  const totalCampi = plan.campusChains.length;
-  console.log(`[real-engine] Documento longo: ${PDI_EIXOS.length} eixos + ${totalCampi} campi.`);
+  console.log(
+    `[real-engine] Plano documental: "${docPlan.tipo_documento}" (~${docPlan.paginas_alvo}pg) — ` +
+      `${docPlan.estrutura.length} seções${docPlan.inclui_secao_por_campus ? ` + ${plan.campusChains.length} campi` : ""}. ${docPlan.justificativa}`,
+  );
 
   const capa = writeChapterOnce("00-capa", () =>
     [
-      "# Plano de Desenvolvimento Institucional",
+      `# ${docPlan.tipo_documento}`,
       "## Instituto Federal Farroupilha",
       "",
-      `**Documento gerado a partir da demanda:** "${problem}"`,
-      "",
+      `**Demanda:** "${problem}"`,
       `**Ticket:** ${ticketId}`,
+      `**Trâmite:** ${chainNames.join(" → ")}${plan.campusChains.length > 1 ? ` → contribuição de ${plan.campusChains.length} campi` : ""}`,
+      `**Base legal:** ${plan.baseLegal.join("; ") || "—"}`,
       `**Data de geração:** ${new Date().toLocaleDateString("pt-BR")}`,
-      `**Unidades envolvidas na elaboração:** Reitoria, ${plan.systemicUnits.map((u) => u.nome).join(", ")}, e os ${totalCampi} campi do IFFar.`,
       "",
-      "> Documento gerado automaticamente pelo motor real do IFFar 3D Town " +
-        "(protótipo demonstrativo) a partir do organograma oficial da Portaria " +
-        "Eletrônica nº 876/2026 - GRE. O conteúdo é sintetizado por IA a partir de " +
-        "diretrizes públicas (MEC/ForPDI) e da estrutura institucional real — não " +
-        "substitui a coleta de dados junto à comunidade acadêmica de cada campus, " +
-        "etapa que um PDI real exige e que nenhum sistema automatizado pode substituir.",
+      `> Documento gerado automaticamente pelo motor real do IFFar 3D Town (protótipo ` +
+        `demonstrativo). A extensão e a estrutura deste documento (~${docPlan.paginas_alvo} ` +
+        `páginas) foram definidas a partir de pesquisa real de precedentes — ${docPlan.justificativa} ` +
+        (docPlan.fontes.length > 0 ? `Fontes consultadas: ${docPlan.fontes.slice(0, 5).join(", ")}. ` : "") +
+        `O conteúdo em si é sintetizado por IA a partir da estrutura institucional real e de ` +
+        `diretrizes públicas — não substitui a coleta de dados/consulta às pessoas e unidades ` +
+        `de fato responsáveis, etapa que nenhum sistema automatizado pode substituir.`,
     ].join("\n"),
   );
 
-  const introducao = writeChapterOnce("01-introducao", () => {
-    const body = runClaude(
-      `Escreva o capítulo de INTRODUÇÃO E MARCO LEGAL de um Plano de Desenvolvimento
-Institucional (PDI) do Instituto Federal Farroupilha (IFFar), motivado pela
-demanda: "${problem}".
+  const sumario =
+    docPlan.estrutura.length > 1 || docPlan.inclui_secao_por_campus
+      ? [
+          "# Sumário",
+          "",
+          ...docPlan.estrutura.map((s, i) => `${i + 1}. ${s.titulo}`),
+          ...(docPlan.inclui_secao_por_campus ? [`${docPlan.estrutura.length + 1}. Contribuições dos Campi`] : []),
+        ].join("\n")
+      : "";
 
-Use estes fatos institucionais reais como base (não invente outros números):
-- Missão: "Promover a educação profissional, científica e tecnológica, pública
-  e gratuita, por meio do ensino, pesquisa e extensão, com foco na formação
-  integral do cidadão e no desenvolvimento sustentável."
-- Visão: "Ser excelência na formação de técnicos de nível médio, professores
-  para a educação básica e demais profissionais de nível superior, por meio da
-  pesquisa, da extensão e da inovação."
-- Valores: Ética, Solidariedade, Responsabilidade Social/Ambiental/Econômica,
-  Comprometimento, Transparência, Respeito, Gestão Democrática, Inovação.
-- A estrutura administrativa vigente é a Portaria Eletrônica nº 876/2026 - GRE
-  (03/07/2026), que reorganiza a Reitoria e os 13 campi do IFFar.
-- Base legal do trâmite desta demanda: ${plan.baseLegal.join("; ")}.
-
-Estruture com: contextualização do PDI como instrumento de gestão, marco legal
-(cite a Lei nº 11.892/2008 de criação dos Institutos Federais, e o papel do
-PDI perante o MEC), e a relação entre este documento e a missão/visão acima.
-Produza entre 900 e 1400 palavras, em Markdown com subtítulos (##).`,
-      { model: "sonnet", allowSearch: true, maxBudgetUsd: 1.0 },
-    );
-    return `# ${"Introdução e Marco Legal"}\n\n${body}`;
-  });
-
-  const metodologia = writeChapterOnce("02-metodologia", () => {
-    const body = runClaude(
-      `Escreva o capítulo de METODOLOGIA de um PDI do Instituto Federal Farroupilha,
-explicando como o documento foi elaborado: cadeia de elaboração institucional
-(Reitoria → ${plan.systemicUnits.map((u) => u.nome).join(" → ")} → contribuição de
-cada um dos ${totalCampi} campi → consolidação final pela Reitoria), alinhamento
-com diretrizes do MEC para PDI de Institutos Federais (pesquise rapidamente as
-diretrizes atuais — ex.: plataforma ForPDI, Plano Nacional de Educação — e cite
-o que encontrar de forma geral, sem inventar números específicos que não
-encontrar). Produza entre 500 e 900 palavras em Markdown.`,
-      { model: "sonnet", allowSearch: true, maxBudgetUsd: 1.0 },
-    );
-    return `# Metodologia\n\n${body}`;
-  });
-
-  const diagnostico = writeChapterOnce("03-diagnostico", () => {
-    const campusNames = plan.campusChains.map((c) => c.campus.nome).join(", ");
-    const body = runClaude(
-      `Escreva o capítulo de DIAGNÓSTICO INSTITUCIONAL de um PDI do Instituto Federal
-Farroupilha. A instituição tem uma Reitoria (Santa Maria/RS) e ${totalCampi}
-campi: ${campusNames}. Descreva, em termos gerais e plausíveis (sem inventar
-números específicos de matrícula/orçamento que você não tenha certeza), o
-panorama de uma rede federal de educação profissional desse porte no Rio
-Grande do Sul: diversidade regional dos campi, papel de cada um no
-desenvolvimento local, desafios comuns (evasão, infraestrutura, expansão) e
-oportunidades (arranjos produtivos locais, parcerias). Produza entre 900 e
-1400 palavras em Markdown com subtítulos.`,
-      { model: "sonnet", allowSearch: false, maxBudgetUsd: 0.8 },
-    );
-    return `# Diagnóstico Institucional\n\n${body}`;
-  });
-
-  const eixosContent = PDI_EIXOS.map((eixo) =>
-    writeChapterOnce(eixo.slug, () => {
+  const secoes = docPlan.estrutura.map((secao, i) =>
+    writeChapterOnce(slugify(secao.titulo, i), () => {
       const body = runClaude(
-        `Escreva um capítulo completo de PDI sobre "${eixo.titulo}" para o Instituto
-Federal Farroupilha, com foco em: ${eixo.foco}. O capítulo deve conter:
-diagnóstico do eixo, objetivos estratégicos, metas (com horizonte 2026-2030,
-plausíveis para uma rede federal de 13 campi), indicadores de acompanhamento
-e ações prioritárias. Pesquise rapidamente por referências/boas práticas
-atuais do MEC ou de outros Institutos Federais para este eixo, e cite-as de
-forma geral. Produza entre 1800 e 2600 palavras em Markdown com subtítulos
-(##) e ao menos uma lista de metas.`,
-        { model: "sonnet", allowSearch: true, maxBudgetUsd: 1.3 },
+        `Escreva a seção "${secao.titulo}" de um documento do tipo "${docPlan.tipo_documento}" do
+Instituto Federal Farroupilha (IFFar), motivado pela demanda: "${problem}".
+
+Contexto institucional: tramitou pela cadeia ${chainNames.join(" → ")}, com base legal
+${plan.baseLegal.join("; ") || "o regimento interno do IFFar"}. ${competenciaNote}
+
+Esta seção deve ter aproximadamente ${secao.palavras_alvo} palavras. Se a seção se
+beneficiar de dados/normas/referências externas verificáveis, pesquise rapidamente
+antes de escrever e cite o que encontrar; não invente números específicos que não
+consiga confirmar. Produza em Markdown, com subtítulos (##) quando fizer sentido
+para uma seção deste tamanho.`,
+        {
+          model: "sonnet",
+          allowSearch: true,
+          maxBudgetUsd: Math.max(0.4, Math.min(1.6, secao.palavras_alvo / 1200)),
+        },
       );
-      return `# ${eixo.titulo}\n\n${body}`;
+      return `# ${secao.titulo}\n\n${body}`;
     }),
   );
 
-  const campiContent = plan.campusChains.map(({ campus, chain }) => {
-    const slug = `campus-${campus.slug}`;
-    return writeChapterOnce(slug, () => {
-      const unidades = chain.map((u) => u.nome).join(", ") || "estrutura reduzida (Arts. 114-120)";
-      const body = runClaude(
-        `Escreva a subseção de contribuição do "${campus.nome}" para o PDI do Instituto
-Federal Farroupilha. Este campus participa da elaboração através das unidades:
-${unidades}. Descreva a realidade local plausível desse campus (perfil da
-região do Rio Grande do Sul onde ele está, cursos que campi desse porte
-costumam oferecer, prioridades de curto/médio prazo para os eixos de ensino,
-pesquisa, extensão e infraestrutura) e proponha 4 a 6 metas locais alinhadas
-ao PDI institucional. Produza entre 700 e 1100 palavras em Markdown.`,
-        { model: "sonnet", allowSearch: false, maxBudgetUsd: 0.7 },
-      );
-      return `## Contribuição — ${campus.nome}\n\n${body}`;
-    });
-  });
-
-  const fechamento = writeChapterOnce("99-fechamento", () => {
-    const body = runClaude(
-      `Escreva o capítulo final de um PDI do Instituto Federal Farroupilha, com:
-CRONOGRAMA DE IMPLEMENTAÇÃO (2026-2030, por fase), SISTEMA DE ACOMPANHAMENTO
-E AVALIAÇÃO (papel da Comissão Própria de Avaliação e da Coordenação de
-Avaliação Institucional, periodicidade de revisão) e CONSIDERAÇÕES FINAIS.
-Produza entre 900 e 1300 palavras em Markdown com subtítulos.`,
-      { model: "sonnet", allowSearch: false, maxBudgetUsd: 0.8 },
-    );
-    return `# Cronograma, Acompanhamento e Considerações Finais\n\n${body}`;
-  });
+  const campiContent = docPlan.inclui_secao_por_campus
+    ? plan.campusChains.map(({ campus, chain }) => {
+        const slug = `campus-${campus.slug}`;
+        return writeChapterOnce(slug, () => {
+          const unidades = chain.map((u) => u.nome).join(", ") || "estrutura reduzida (Arts. 114-120)";
+          const body = runClaude(
+            `Escreva a subseção de contribuição do "${campus.nome}" para o documento
+"${docPlan.tipo_documento}" do Instituto Federal Farroupilha, motivado pela demanda:
+"${problem}". Este campus participa através das unidades: ${unidades}. Descreva a
+realidade local plausível desse campus (perfil da região do Rio Grande do Sul onde
+ele está, cursos que campi desse porte costumam oferecer, prioridades locais
+relevantes ao tema do documento) e proponha contribuições/metas locais concretas.
+Produza aproximadamente ${docPlan.palavras_por_campus} palavras em Markdown.`,
+            {
+              model: "sonnet",
+              allowSearch: false,
+              maxBudgetUsd: Math.max(0.4, Math.min(1.2, docPlan.palavras_por_campus / 1200)),
+            },
+          );
+          return `## Contribuição — ${campus.nome}\n\n${body}`;
+        });
+      })
+    : [];
 
   return [
     capa,
+    sumario ? `\n\n---\n\n${sumario}` : "",
     "\n\n---\n\n",
-    "# Sumário",
-    "",
-    "1. Introdução e Marco Legal",
-    "2. Metodologia",
-    "3. Diagnóstico Institucional",
-    ...PDI_EIXOS.map((e, i) => `${4 + i}. ${e.titulo}`),
-    `${4 + PDI_EIXOS.length}. Contribuições dos Campi`,
-    `${5 + PDI_EIXOS.length}. Cronograma, Acompanhamento e Considerações Finais`,
-    "\n\n---\n\n",
-    introducao,
-    "\n\n---\n\n",
-    metodologia,
-    "\n\n---\n\n",
-    diagnostico,
-    "\n\n---\n\n",
-    eixosContent.join("\n\n---\n\n"),
-    "\n\n---\n\n",
-    "# Contribuições dos Campi",
-    "",
-    campiContent.join("\n\n"),
-    "\n\n---\n\n",
-    fechamento,
-  ].join("\n");
+    secoes.join("\n\n---\n\n"),
+    campiContent.length > 0 ? "\n\n---\n\n# Contribuições dos Campi\n\n" + campiContent.join("\n\n") : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -547,10 +634,18 @@ async function main() {
   const competencias = loadCompetencias(COMPETENCIAS_PATH);
   const plan = buildContributionPlan(problem, org, routing);
 
-  const isLongDocument = plan.campusChains.length > 3;
-  const markdown = isLongDocument
-    ? generateLongPdi(plan)
-    : generateShortParecer(plan, competencias);
+  const docPlanPath = join(ticketDir, "document-plan.json");
+  let docPlan: DocumentPlan;
+  if (existsSync(docPlanPath)) {
+    console.log("[real-engine] Plano documental já pesquisado nesta execução — reaproveitando.");
+    docPlan = JSON.parse(readFileSync(docPlanPath, "utf8"));
+  } else {
+    console.log("[real-engine] Pesquisando extensão/estrutura reais para este tipo de demanda...");
+    docPlan = researchDocumentPlan(plan);
+    writeFileSync(docPlanPath, JSON.stringify(docPlan, null, 2));
+  }
+
+  const markdown = generateDocument(plan, docPlan, competencias);
 
   const resultMdPath = join(ticketDir, "result.md");
   writeFileSync(resultMdPath, markdown);
