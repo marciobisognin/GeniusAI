@@ -313,7 +313,9 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 | Limite atual                                                | Impacto prático                                                                                                                                 |
 | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Timeline reproduzida após o processo**                    | Os handoffs são animados por temporizadores depois que o bridge recebe a saída do processo Bun; não há streaming ou telemetria ao vivo (ver "Próximas evoluções").|
+| **Timeline animada por temporizadores, não telemetria ao vivo** | Os handoffs são animados assim que o bridge devolve a sequência (não é preciso esperar o motor terminar), mas a animação em si ainda usa `delay`s fixos, não eventos reais passo a passo do motor (ver "Próximas evoluções").|
+| **Conteúdo do motor real é sintetizado por IA, não coleta real** | O `real-engine.ts` produz pareceres e o PDI completo com pesquisa na web e fundamentação legal real, mas não substitui a consulta efetiva à comunidade acadêmica de cada campus — isso é uma etapa humana que nenhum sistema automatizado deveria fingir ter feito. |
+| **Custo e tempo do motor real**                              | Cada chamada do `real-engine.ts` consome a mesma sessão/cota da CLI `claude` configurada na máquina; o PDI completo (~25 chamadas, 13 campi) pode levar dezenas de minutos e tem custo de API não desprezível. |
 | **Histórico limitado à sessão**                              | O History lista execuções reais, mas apenas as feitas nesta sessão do navegador — não há persistência entre recarregamentos.                    |
 | **Sucesso parcialmente validado**                           | A interface ainda não diferencia todos os cenários em que o processo termina com erro.                                                          |
 | **Nível de detalhe da cena**                                 | Por padrão a cena mostra Reitoria + Pró-Reitorias + Gabinetes de campus (~20 prédios); diretorias/coordenações só aparecem ao expandir um campus, para não colocar as ~450 unidades na cena de uma vez. |
@@ -326,13 +328,13 @@ Esta versão é uma **simulação visual determinística**, não um monitor oper
 
 ## ⚡ Início rápido
 
-O mapa e os escritórios são montados a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em ambas as opções abaixo. A diferença entre elas é só se você quer orquestrações reais via Nirvana OS ou não.
+O mapa e os escritórios são montados a partir do organograma real servido pelo bridge (`GET /api/org-chart`) — **não há mais agentes fixos no frontend**, então o bridge precisa estar rodando em todas as opções abaixo. A diferença entre elas é só **quem gera o artefato final**.
 
-### Opção A — explorar organograma e roteamento, sem o Nirvana OS
+### Opção A — motor real embutido (padrão), via CLI `claude`
 
-Use esta opção para conhecer o ambiente visual e o motor de roteamento sem precisar de nenhuma instalação externa: `org-chart.yaml`, `routing.yaml` e `competencias.yaml` já vêm prontos no repositório, e o bridge usa `tools/stub-engine.ts` como stand-in do Nirvana OS.
+Esta é a opção padrão: sem nenhuma variável de ambiente configurada, o bridge usa `tools/real-engine.ts`, que invoca a CLI [`claude`](https://claude.com/claude-code) local em modo não-interativo (`claude -p`) para **gerar de verdade** o parecer ou documento pedido — inclusive com pesquisa na web quando o tema pede — em vez de um exemplo estático.
 
-**Requisitos:** [Bun](https://bun.sh/) e Git.
+**Requisitos:** [Bun](https://bun.sh/), Git, e a CLI `claude` instalada e **autenticada** nesta máquina (`claude auth`/login já feito — o motor reaproveita essa mesma sessão, não usa uma API key própria).
 
 ```bash
 git clone https://github.com/marciobisognin/GeniusAI.git
@@ -369,7 +371,10 @@ Abra `http://localhost:5173`.
 </tr>
 </table>
 
-Envie um briefing pela interface: o `stub-engine.ts` grava um artefato de exemplo, o suficiente para ver o Inbox e a leitura de artefato funcionando de ponta a ponta. Nenhum parecer real é gerado nesse modo.
+Envie um briefing pela interface: o `real-engine.ts` roda em background (o bridge responde na hora; a UI acompanha via polling) e grava um artefato real — Markdown e, quando o Chromium do Playwright está disponível, também PDF. Pareceres comuns (um só campus, cadeia curta) levam segundos a poucos minutos; o playbook **"Novo PDI Institucional"** aciona o modo de documento longo (ver [Demonstração](#-demonstração-elaborando-o-novo-pdi)) e pode levar dezenas de minutos, por envolver os 13 campi.
+
+> [!TIP]
+> Quer uma simulação instantânea, sem custo de API e sem depender da CLI `claude`? Defina `NIRVANA_ENGINE_PATH=tools/stub-engine.ts` no `.env` — ele grava um artefato de exemplo (o comportamento desta seção antes do motor real existir).
 
 ### Opção B — orquestrações reais via Nirvana OS
 
@@ -382,7 +387,7 @@ Envie um briefing pela interface: o `stub-engine.ts` grava um artefato de exempl
 cp .env.example .env
 ```
 
-Edite `.env` e defina `NIRVANA_ENGINE_PATH` para o `brief-business.ts` real (opcionalmente também `IFFAR_TICKETS_DIR`/`IFFAR_OUTPUTS_DIR`, se quiser usar diretórios fora de `.data/`). Repita os dois terminais da Opção A — o bridge detecta a configuração e passa a executar o Nirvana OS de verdade.
+Edite `.env` e defina `NIRVANA_ENGINE_PATH` para o `brief-business.ts` real (opcionalmente também `IFFAR_TICKETS_DIR`/`IFFAR_OUTPUTS_DIR`, se quiser usar diretórios fora de `.data/`). Repita os dois terminais da Opção A — o bridge detecta a configuração e passa a executar o Nirvana OS de verdade em vez do motor embutido.
 
 ### Verificação mínima
 
@@ -443,15 +448,15 @@ Atender recomendação da CGU sobre diárias.
 ### 3. Acompanhe a reprodução visual
 
 1. A Reitoria recebe o briefing.
-2. O motor de roteamento (`routing.yaml`) pontua o texto por palavras-chave e escolhe a Uorg responsável — sem campus citado, a cadeia permanece sistêmica (não há mais fallback para um campus arbitrário).
-3. O processo configurado em `NIRVANA_ENGINE_PATH` é executado com um `ticketId` próprio da execução.
-4. Ao término, o bridge devolve a cadeia de handoff derivada da hierarquia real do organograma, com o fundamento legal (Anexo I) de cada passo.
-5. A câmera reproduz os handoffs; um passo cuja unidade não está entre os agentes exibidos no momento é pulado (com aviso no console), nunca anima o prédio errado.
-6. O bridge confirma que o artefato responde 200 antes de colocá-lo no **Inbox** e o abre automaticamente.
+2. O motor de roteamento (`routing.yaml`) pontua o texto por palavras-chave e escolhe a Uorg responsável — sem campus citado, a cadeia permanece sistêmica; alguns temas de alcance institucional (como o PDI) são marcados com `broadcast_all_campi` e envolvem os 13 campi de uma vez, cada um contribuindo com sua própria realidade local.
+3. O bridge devolve a cadeia de handoff (derivada da hierarquia real do organograma, com o fundamento legal do Anexo I) **na hora**, e dispara o processo configurado em `NIRVANA_ENGINE_PATH` em background com um `ticketId` próprio — a UI não espera o motor terminar para começar a animar.
+4. A câmera reproduz os handoffs; um passo cuja unidade não está entre os agentes exibidos no momento é pulado (com aviso no console), nunca anima o prédio errado.
+5. Terminada a animação, a UI passa a consultar `GET /api/ticket-status?id=...` a cada poucos segundos, mostrando quanto tempo o motor real já está rodando — pareceres curtos ficam prontos em segundos a poucos minutos; o PDI completo (13 campi) pode levar dezenas de minutos.
+6. Quando o artefato existe de fato no servidor, ele entra no **Inbox** e abre automaticamente — nunca antes disso.
 
 ### 4. Abra o resultado
 
-Clique no item do Inbox. A rota `/api/view-artifact` solicita o arquivo ao bridge, que exige extensão `.md`, resolve symlinks (`realpathSync`) e aplica uma verificação de caminho em relação a `IFFAR_TICKETS_DIR` e `IFFAR_OUTPUTS_DIR` antes de servir o conteúdo como Markdown.
+Clique no item do Inbox. A rota `/api/view-artifact` solicita o arquivo ao bridge, que exige extensão `.md` ou `.pdf`, resolve symlinks (`realpathSync`) e aplica uma verificação de caminho em relação a `IFFAR_TICKETS_DIR` e `IFFAR_OUTPUTS_DIR` antes de servir o conteúdo. O motor real (`tools/real-engine.ts`) sempre grava o Markdown e, quando o Chromium do Playwright está disponível no ambiente, também um PDF formatado — o leitor embutido abre um em vez do outro automaticamente, conforme o que existir.
 
 Essa verificação reduz exposições acidentais, mas **não substitui autenticação, isolamento do processo ou uma política de acesso de produção**.
 
@@ -466,17 +471,21 @@ O GIF abaixo é uma gravação real da interface (não uma montagem) processando
 
 <img src="./src/assets/demo-pdi.gif" alt="Gravação da interface do IFFar 3D Town processando o briefing 'Elaborar o novo PDI institucional, alinhado a IA, ensino híbrido, inclusão digital e sustentabilidade' — a câmera entra no mapa do RS, faz o zoom de drone até a Reitoria e revela o escritório por dentro, seguindo a cadeia real Reitoria → Pró-Reitoria de Desenvolvimento Institucional → Diretoria de Planejamento e Desenvolvimento Institucional → Coordenação de Avaliação Institucional, até abrir o artefato final." width="100%" />
 
-O motor de roteamento reconhece "PDI" como tema institucional (Art. 21 do Anexo I — não confundir com o PPC de um curso específico, que é atribuição da Pró-Reitoria de Ensino) e monta a cadeia real:
+O motor de roteamento reconhece "PDI" como tema institucional (Art. 21 do Anexo I — não confundir com o PPC de um curso específico, que é atribuição da Pró-Reitoria de Ensino). Diferente dos demais temas, `pdi-institucional` é marcado com `broadcast_all_campi: true` em `routing.yaml`: um PDI é, por natureza, um documento de toda a instituição, então a cadeia visita **os 13 campi**, não só um:
 
 ```
 Reitoria
   → Pró-Reitoria de Desenvolvimento Institucional (PRDI)
     → Diretoria de Planejamento e Desenvolvimento Institucional
       → Coordenação de Avaliação Institucional
-        ⇄ parecer devolvido pela mesma cadeia até o artefato final
+        → [Gabinete → Diretoria → Coordenação] de CADA um dos 13 campi
+          ⇄ contribuição de cada campus devolvida e consolidada pela Reitoria
 ```
 
-Sem `NIRVANA_ENGINE_PATH` configurado, quem gera o artefato é o `tools/stub-engine.ts` (ver [Início rápido](#-início-rápido)) — por isso o parecer no GIF se identifica como simulação. Apontando `NIRVANA_ENGINE_PATH` para uma instalação real do Nirvana OS, o mesmo fluxo dispara a elaboração de verdade.
+O GIF acima captura a versão anterior do motor (uma cadeia curta, um único parecer simulado). Com o motor real padrão (`tools/real-engine.ts`, ver [Início rápido](#-início-rápido)), este mesmo playbook aciona o **modo de documento longo**: uma chamada real à CLI `claude` por eixo temático (ensino, pesquisa e inovação, extensão, gestão, infraestrutura, assistência estudantil, internacionalização) e uma por campus, cada uma gerando uma contribuição de verdade — com pesquisa na web quando faz sentido — consolidadas em um único PDF formatado no final. Por envolver ~25 chamadas reais, essa execução leva dezenas de minutos; pareceres de temas comuns (um só campus) continuam levando segundos a poucos minutos.
+
+> [!NOTE]
+> O conteúdo gerado é sintetizado por IA a partir de diretrizes públicas (MEC/ForPDI) e da estrutura institucional real — não substitui a consulta à comunidade acadêmica de cada campus, etapa que um PDI real exige e que nenhum sistema automatizado pode substituir. Ver [Limites atuais do protótipo](#️-limites-atuais-do-protótipo).
 
 ### 🎥 Vídeo: mudança de cenário entre Reitoria e campus
 
@@ -512,7 +521,8 @@ Copie `.env.example` para `.env` e altere apenas os valores locais. O arquivo `.
 | `NIRVANA_BRIDGE_HOST`     |                            `127.0.0.1` | Interface de rede do servidor. Mantenha o padrão local nesta versão.                                      |
 | `NIRVANA_BRIDGE_PORT`     |                                 `4000` | Porta HTTP do bridge.                                                                                     |
 | `PUBLIC_BRIDGE_URL`       |                       vazio (opcional) | URL pública para montar links de artefato; vazio usa o header `Host` da própria requisição.               |
-| `NIRVANA_ENGINE_PATH`     |            `tools/stub-engine.ts` | Caminho de `brief-business.ts` no Nirvana OS. Sem instalação real, cai no stub que só grava um artefato de exemplo. |
+| `NIRVANA_ENGINE_PATH`     |            `tools/real-engine.ts` | Caminho do motor executado por ticket. Padrão: motor real via CLI `claude`. Alternativas: `tools/stub-engine.ts` (simulação instantânea, sem custo de API) ou o `brief-business.ts` de uma instalação real do Nirvana OS. |
+| `PLAYWRIGHT_CHROMIUM_PATH` |     `/opt/pw-browsers/chromium` (se existir) | Executável do Chromium usado pelo `real-engine.ts` para converter o Markdown final em PDF. Sem ele (e sem um Chromium instalável pelo Playwright), o motor real segue funcionando e entrega só o `.md`. |
 | `IFFAR_ORG_CHART_PATH`    |  `businesses/iffar/org-chart.yaml` | Organograma real extraído da Portaria 876/2026 (Art. 1º), já versionado no repositório.                    |
 | `IFFAR_ROUTING_PATH`      |     `businesses/iffar/routing.yaml` | Regras declarativas de roteamento por competência (Anexo I), já versionadas no repositório.                |
 | `IFFAR_COMPETENCIAS_PATH` | `businesses/iffar/competencias.yaml` | Atribuições por artigo do Anexo I, usadas para enriquecer os tooltips da UI (opcional).                    |
@@ -555,7 +565,7 @@ python3 extrair_competencias.py caminho/para/nova-portaria.pdf > ../businesses/i
 Os scripts usam `pdfplumber` para ler a tabela vetorial real do PDF (não apenas texto alinhado por espaços), o que resolve com exatidão nomes de unidade quebrados em várias linhas. Depois de gerar um novo `org-chart.yaml`, confira manualmente ao menos as seções 1.1 (Reitoria), 1.9 (Frederico Westphalen) e 1.13 (São Luiz Gonzaga, estrutura reduzida) contra o PDF antes de commitar.
 
 > [!NOTE]
-> `routing.yaml` é curadoria manual (mapeia temas de negócio às Uorgs competentes) e pode ser editado diretamente — é o único dos três que não vem de extração automática.
+> `routing.yaml` é curadoria manual (mapeia temas de negócio às Uorgs competentes) e pode ser editado diretamente — é o único dos três que não vem de extração automática. Um tema pode marcar `broadcast_all_campi: true` (hoje, só `pdi-institucional`) para indicar que a demanda é de alcance institucional e deve envolver todos os 13 campi, em vez de só o campus citado no briefing.
 
 ---
 
@@ -563,15 +573,19 @@ Os scripts usam `pdfplumber` para ler a tabela vetorial real do PDF (não apenas
 
 ```mermaid
 flowchart TD
-    UI[React 19 + Vite 8] -->|POST /api/brief| BRIDGE[Nirvana Bridge · Bun]
+    UI[React 19 + Vite 8] -->|POST /api/brief - responde na hora| BRIDGE[Nirvana Bridge · Bun]
+    UI -->|GET /api/ticket-status - polling| BRIDGE
     UI -->|GET /api/org-chart| BRIDGE
     UI -->|GET /api/routing| BRIDGE
     UI -->|GET /api/competencias| BRIDGE
     UI -->|GET /api/view-artifact| BRIDGE
 
     BRIDGE -->|carrega no boot| DATA[(org-chart.yaml<br/>routing.yaml<br/>competencias.yaml)]
-    BRIDGE -->|spawn bun + ticketId| ENGINE[Nirvana OS CLI]
-    ENGINE --> TICKETS[(tickets/ticketId/result.md)]
+    BRIDGE -->|lib/routing.ts: classify + buildContributionPlan| DATA
+    BRIDGE -->|spawn bun + ticketId, em background| ENGINE[real-engine.ts<br/>via CLI claude -p]
+    ENGINE -->|claude -p por unidade/eixo/campus| CLAUDE[(CLI claude<br/>sessão local autenticada)]
+    ENGINE -->|playwright-core + chromium| PDF[(result.pdf)]
+    ENGINE --> TICKETS[(tickets/ticketId/result.md + result.pdf)]
     TICKETS --> BRIDGE
     BRIDGE -->|sequência + base legal + links| UI
 ```
@@ -620,11 +634,12 @@ flowchart TD
 
 | Método | Endpoint                      | Uso                                                                                          |
 | ------ | ------------------------------ | ----------------------------------------------------------------------------------------------- |
-| `POST` | `/api/brief`                  | Recebe `{ "problem": "..." }`, executa o fluxo e devolve sequência, `ticketId` e artefatos.      |
+| `POST` | `/api/brief`                  | Recebe `{ "problem": "..." }`, dispara o motor **em background** e devolve na hora a sequência e o `ticketId` (não espera o motor terminar).      |
+| `GET`  | `/api/ticket-status?id=...`   | Status do ticket (`running`/`done`/`error`), artefatos disponíveis e tempo decorrido — usado pela UI em polling até o artefato real ficar pronto. |
 | `GET`  | `/api/org-chart`              | Serve o `org-chart.yaml` carregado no boot.                                                     |
 | `GET`  | `/api/routing`                | Serve as regras de `routing.yaml` — transparência de "por que esta demanda foi para esta unidade". |
 | `GET`  | `/api/competencias`           | Serve `competencias.yaml` (enriquecimento dos tooltips institucionais).                          |
-| `GET`  | `/api/view-artifact?file=...` | Serve o conteúdo com tipo Markdown; exige extensão `.md` e resolve symlinks antes da checagem.   |
+| `GET`  | `/api/view-artifact?file=...` | Serve o conteúdo (Markdown ou PDF); exige extensão `.md`/`.pdf` e resolve symlinks antes da checagem. |
 | `GET`  | `/api/health`                 | Retorna `{ ok, engine, orgChart, unidades, rules, competencias }` — status real de configuração. |
 
 ### Estrutura do projeto
@@ -642,12 +657,15 @@ iffar-3d-town/
 │   ├── org-chart.yaml      # estrutura real (Portaria 876/2026, Art. 1º)
 │   ├── competencias.yaml   # atribuições reais (Anexo I)
 │   └── routing.yaml        # regras de roteamento por competência
-├── tools/                  # scripts de (re-)extração a partir do PDF da portaria
+├── tools/                  # scripts de (re-)extração + motores de geração
 │   ├── extrair_organograma.py
 │   ├── extrair_competencias.py
-│   └── stub-engine.ts      # stand-in do Nirvana OS para a Opção A
+│   ├── real-engine.ts      # motor real padrão (CLI claude + PDF)
+│   └── stub-engine.ts      # stand-in de simulação instantânea (opcional)
+├── lib/
+│   └── routing.ts          # classificação + cadeia de handoff, compartilhado entre bridge e motor real
 ├── .env.example            # contrato de configuração local
-├── nirvana-bridge.ts       # API local, motor de roteamento e conexão com Nirvana OS
+├── nirvana-bridge.ts       # API local, motor de roteamento e conexão com o motor configurado
 ├── package.json            # scripts e dependências
 ├── vite.config.ts          # Vite + React + Tailwind
 └── README.md               # guia visual e operacional

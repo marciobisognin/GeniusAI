@@ -135,9 +135,10 @@ const ArtifactViewerModal = ({
   );
   const [loading, setLoading] = useState<boolean>(true);
   const [copied, setCopied] = useState<boolean>(false);
+  const isPdf = item?.link.toLowerCase().endsWith(".pdf") ?? false;
 
   useEffect(() => {
-    if (!item) return;
+    if (!item || isPdf) return;
     setLoading(true);
 
     fetch(item.link)
@@ -150,7 +151,7 @@ const ArtifactViewerModal = ({
         setContent(`Erro ao carregar o artefato: ${err.message}`);
         setLoading(false);
       });
-  }, [item]);
+  }, [item, isPdf]);
 
   if (!item) return null;
 
@@ -166,7 +167,7 @@ const ArtifactViewerModal = ({
         {/* Modal Header */}
         <div className="p-4 border-b border-[#2d262a] flex items-center justify-between bg-[#120f11]">
           <div className="flex items-center gap-3">
-            <span className="text-xl">📄</span>
+            <span className="text-xl">{isPdf ? "📕" : "📄"}</span>
             <div>
               <h2 className="text-sm font-bold text-amber-500 font-mono">
                 {item.title}
@@ -178,12 +179,14 @@ const ArtifactViewerModal = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopy}
-              className="px-3 py-1 bg-[#282125] hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-mono transition-colors"
-            >
-              {copied ? "✓ COPIADO!" : "📋 COPIAR TEXTO"}
-            </button>
+            {!isPdf && (
+              <button
+                onClick={handleCopy}
+                className="px-3 py-1 bg-[#282125] hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-mono transition-colors"
+              >
+                {copied ? "✓ COPIADO!" : "📋 COPIAR TEXTO"}
+              </button>
+            )}
             <a
               href={item.link}
               target="_blank"
@@ -201,17 +204,26 @@ const ArtifactViewerModal = ({
           </div>
         </div>
 
-        {/* Modal Body / Markdown Text Reader */}
-        <div className="flex-1 overflow-y-auto p-6 font-mono text-xs text-stone-300 leading-relaxed bg-[#0d0b0c] whitespace-pre-wrap selection:bg-amber-500/30">
-          {loading ? (
-            <div className="flex items-center justify-center py-12 gap-3 text-amber-400 font-bold">
-              <span className="animate-spin text-lg">⚙️</span>
-              <span>Lendo artefato no servidor...</span>
-            </div>
-          ) : (
-            content
-          )}
-        </div>
+        {/* Modal Body: leitor de PDF real (para o motor de verdade) ou texto
+            markdown (pareceres/stub) */}
+        {isPdf ? (
+          <iframe
+            src={item.link}
+            title={item.title}
+            className="flex-1 bg-stone-900"
+          />
+        ) : (
+          <div className="flex-1 overflow-y-auto p-6 font-mono text-xs text-stone-300 leading-relaxed bg-[#0d0b0c] whitespace-pre-wrap selection:bg-amber-500/30">
+            {loading ? (
+              <div className="flex items-center justify-center py-12 gap-3 text-amber-400 font-bold">
+                <span className="animate-spin text-lg">⚙️</span>
+                <span>Lendo artefato no servidor...</span>
+              </div>
+            ) : (
+              content
+            )}
+          </div>
+        )}
 
         {/* Modal Footer */}
         <div className="p-3 border-t border-[#2d262a] bg-[#120f11] flex items-center justify-between text-[11px] font-mono text-stone-500">
@@ -517,6 +529,78 @@ export default function App() {
     setActiveAgentId((prev) => (prev === agentId ? null : agentId));
   };
 
+  // O motor real (tools/real-engine.ts) roda em background no bridge e pode
+  // levar de segundos (pareceres curtos) a dezenas de minutos (o PDI
+  // institucional, com contribuição dos 13 campi) — bem mais que a
+  // animação decorativa da cadeia. Por isso, depois que a cena termina de
+  // "andar" pela cadeia, a UI continua consultando /api/ticket-status até
+  // o artefato de verdade ficar pronto, mostrando quanto tempo já passou.
+  const pollTicketStatus = (ticketId: string, promptText: string) => {
+    const startedAt = Date.now();
+    const POLL_INTERVAL_MS = 4000;
+    const MAX_WAIT_MS = 60 * 60 * 1000; // 1h — teto generoso para o PDI completo
+
+    const tick = async () => {
+      const elapsed = Date.now() - startedAt;
+      if (elapsed > MAX_WAIT_MS) {
+        setActiveStatusMsg(
+          "Geração ainda em andamento no servidor — o artefato aparecerá no Inbox quando terminar.",
+        );
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `${bridgeUrl}/api/ticket-status?id=${encodeURIComponent(ticketId)}`,
+        );
+        const data = await res.json();
+
+        if (data.status === "running") {
+          const secs = Math.round(elapsed / 1000);
+          setActiveStatusMsg(
+            `Gerando o artefato real (motor em execução há ${secs}s)... isso pode levar vários minutos.`,
+          );
+          setTimeout(tick, POLL_INTERVAL_MS);
+          return;
+        }
+
+        setHistoryItems((prev) => [
+          {
+            id: ticketId,
+            time: new Date().toLocaleTimeString("pt-BR"),
+            prompt: promptText,
+            success: Boolean(data.success),
+          },
+          ...prev,
+        ]);
+
+        const link = data.artifacts?.[0];
+        if (data.status === "done" && link) {
+          const newInbox: InboxItem = {
+            id: ticketId,
+            date: "AGORA",
+            title: `Resultado: ${promptText.substring(0, 30)}...`,
+            link,
+            summary: "Artefato gerado e despachado pelo organograma do IFFar.",
+          };
+          setInboxItems((prev) => [newInbox, ...prev]);
+          setActiveTab("INBOX");
+          setSelectedArtifact(newInbox);
+          setActiveStatusMsg("Artefato real pronto — disponível no Inbox.");
+        } else {
+          setActiveStatusMsg(
+            "O motor terminou mas não gerou um artefato válido. Veja o console do bridge para detalhes.",
+          );
+        }
+      } catch {
+        setActiveStatusMsg("Erro ao consultar o status do ticket — tentando de novo...");
+        setTimeout(tick, POLL_INTERVAL_MS);
+      }
+    };
+
+    tick();
+  };
+
   // Execute Briefing Prompt with Strict Organogram Route & Camera Lerp Tracking
   const handleExecutePrompt = async (promptText: string) => {
     if (!promptText || loading) return;
@@ -565,46 +649,15 @@ export default function App() {
             setActiveStatusMsg(`[${agent.name}] ${step.action}`);
 
             if (idx === resolvableSteps.length - 1) {
-              setTimeout(async () => {
+              setTimeout(() => {
                 setLoading(false);
                 setActiveAgentId(null);
-                setActiveStatusMsg("Orquestração Concluída com Sucesso!");
-
-                setHistoryItems((prev) => [
-                  {
-                    id: data.ticketId ?? `ticket-${Date.now()}`,
-                    time: new Date().toLocaleTimeString("pt-BR"),
-                    prompt: promptText,
-                    success: Boolean(data.success),
-                  },
-                  ...prev,
-                ]);
-
-                // Só entra no Inbox depois que /api/view-artifact confirmar
-                // 200 — um link devolvido pelo bridge não garante que o
-                // arquivo já esteja pronto para leitura.
-                const link = data.artifacts?.[0];
-                if (link) {
-                  try {
-                    const check = await fetch(link);
-                    if (check.ok) {
-                      const newInbox: InboxItem = {
-                        id: data.ticketId ?? `ticket-${Date.now().toString().slice(-4)}`,
-                        date: "AGORA",
-                        title: `Resultado: ${promptText.substring(0, 30)}...`,
-                        link,
-                        summary:
-                          "Artefato gerado e despachado pelo organograma do IFFar.",
-                      };
-                      setInboxItems((prev) => [newInbox, ...prev]);
-                      setActiveTab("INBOX");
-                      // Automatically open the new artifact in the reader modal!
-                      setSelectedArtifact(newInbox);
-                    }
-                  } catch {
-                    // artefato indisponível — a execução continua registrada no History
-                  }
-                }
+                // A cadeia visual terminou de "andar", mas o motor real por
+                // trás dela pode continuar rodando (o PDI institucional leva
+                // bem mais tempo que a animação) — o polling assume o status
+                // a partir daqui e só entra no Inbox quando o artefato
+                // realmente existir no servidor.
+                pollTicketStatus(data.ticketId, promptText);
               }, 3500);
             }
           }, step.delay);
@@ -613,6 +666,7 @@ export default function App() {
         if (resolvableSteps.length === 0) {
           setLoading(false);
           setActiveStatusMsg("Nenhum passo pôde ser reproduzido na cena atual.");
+          if (data.ticketId) pollTicketStatus(data.ticketId, promptText);
         }
       } else {
         setLoading(false);
