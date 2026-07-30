@@ -1,7 +1,13 @@
 import { serve } from "bun";
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, realpathSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  realpathSync,
+} from "node:fs";
 import { isAbsolute, join, relative, resolve } from "node:path";
 import {
   buildSequence,
@@ -311,6 +317,15 @@ serve({
           output: "",
         });
 
+        // O motor real pode falhar por dentro (pesquisa sem resultado,
+        // orçamento estourado, instabilidade de rede) e cair num fallback
+        // silencioso sem erro de processo — sem isto, essas falhas eram
+        // visíveis só na saída em memória do processo (perdida ao reiniciar
+        // o bridge) e não dava pra diagnosticar depois do fato.
+        const ticketDir = join(TICKETS_DIR, ticketId);
+        mkdirSync(ticketDir, { recursive: true });
+        const runLogPath = join(ticketDir, "run.log");
+
         const child = spawn("bun", [ENGINE_PATH, "iffar", problem], {
           stdio: "pipe",
           env: {
@@ -327,10 +342,12 @@ serve({
         child.stdout.on("data", (data) => {
           const state = tickets.get(ticketId);
           if (state) state.output += data.toString();
+          appendFileSync(runLogPath, data);
         });
         child.stderr.on("data", (data) => {
           const state = tickets.get(ticketId);
           if (state) state.output += data.toString();
+          appendFileSync(runLogPath, data);
         });
         child.on("close", (code) => {
           console.log(`[Bridge] Ticket ${ticketId} finalizado com código ${code}`);
