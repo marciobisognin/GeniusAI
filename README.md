@@ -17,6 +17,13 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 > existente a reaproveitar e um prompt pronto para uma IA construir agora.
 > O [PRD de Execução](docs/PRD-genius-allspark-execucao.md) mantém a visão em
 > fases mais amplas como contexto complementar.
+>
+> **No sentido inverso da integração:** a
+> [Análise de plug-ins do Hermes](docs/ANALISE-PLUGINS-HERMES.md) mapeia o que
+> daqui pode ser **entregue ao Hermes Agent** como extensão — quais projetos
+> viram plug-in nativo, servidor MCP, *memory provider* ou Skill, com esforço
+> estimado, esboços de `plugin.yaml` e, também, o que **não** deve virar
+> plug-in.
 
 ## Genius Allspark Canvas
 
@@ -171,6 +178,22 @@ pelo critério do próprio guia, o Genius Allspark Canvas existe de fato.
 - **[`geniusai-civilizations/`](geniusai-civilizations/)** — *Watchable AI*: simulação onde civilizações (Roma, Egito, Grécia, Mali) são governadas por agentes autônomos acionados por um CLI de agente (Claude Code / Codex / opencode) ou Ollama, observável em tempo real via uma UI local. Veja o [README do projeto](geniusai-civilizations/README.md) e o [PRD](geniusai-civilizations/docs/PRD-watchable-ai-civilizations.md).
 - **[`geniusai-foresight/`](geniusai-foresight/)** — *Strategic Foresight*: squad científico para simulação prospectiva de países, instituições e mercados, com células adaptativas de agentes, evidências point-in-time, Teoria dos Jogos, cenários estocásticos e replay auditável. Veja o [README](geniusai-foresight/README.md) e o [PRD](geniusai-foresight/PRD.md).
 - **[`so-ia/`](so-ia/)** — *SO-IA*: front-end premium do Sistema Operacional de IA para empresas privadas e o setor público brasileiro (Modo Empresa / Modo Governo) — Centro de Comando, catálogo de Agentes & Skills, workflows com segregação de funções e caixa de aprovações human-in-the-loop. Veja o [README do projeto](so-ia/README.md) e o [PRD](so-ia/docs/PRD-so-ia-v2.md).
+- **[`iffar-pixel-art/`](iffar-pixel-art/)** — centro operacional em pixel art do IFFar: 453 agentes técnicos gerados a partir da Portaria nº 876/2026-GRE (um por posição normativa, com manifesto, skills e runbook), console visual, bridge de execução por CLI e contrato de entrega verificável por SHA-256. Veja o [README do projeto](iffar-pixel-art/README.md).
+
+### Cada projeto como extensão do Hermes Agent
+
+Resumo da [análise completa](docs/ANALISE-PLUGINS-HERMES.md) — o que cada
+ativo daqui vira do lado do [Hermes](https://hermes-agent.nousresearch.com/):
+
+| Ativo | Vira | Aderência |
+|---|---|---|
+| `geniusai-foresight` | Plug-in nativo (Python) — já é Python sem dependências | 🟢 Altíssima |
+| `so-ia/src/lib/org/*` | Servidor MCP do organograma (a **Lei 1** como política de execução) | 🟢 Alta |
+| `packages/learning` | *Memory provider* com procedência de aprovação humana | 🟢 Alta |
+| `iffar-pixel-art` | Pacote de Skills (`SKILL.md`) a partir dos 453 manifestos | 🟢 Alta |
+| `packages/constructor` | Servidor MCP — de propósito **assimétrico** (sem aprovar o próprio trabalho) | 🟡 Média-alta |
+| `geniusai-civilizations` | Ferramenta de ensaio sobre o World Engine determinístico | 🟡 Média |
+| `packages/providers`, UIs | **Não** viram plug-in — o Hermes já resolve o primeiro; as UIs rodam ao lado | 🔴 Fora de escopo |
 
 ## Licença
 
