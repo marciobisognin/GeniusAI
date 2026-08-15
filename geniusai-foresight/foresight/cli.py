@@ -6,6 +6,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import sys
+import sysconfig
 from typing import Any
 
 from .actors import ActorClusterFactory, CountryProfiler
@@ -127,12 +128,24 @@ def game_analysis(name: str) -> dict[str, Any]:
     return result
 
 
-def demo_input_path() -> Path:
-    candidates = (
+def demo_candidates() -> tuple[Path, ...]:
+    """Onde a fixture demonstrativa pode estar: fonte, depois instalação.
+
+    `sys.prefix` sozinho não basta: em distribuições com o esquema
+    `posix_local` (Debian/Ubuntu), o pip grava os data-files em
+    `sysconfig.get_path("data")` (/usr/local) enquanto `sys.prefix` continua
+    /usr — e a fixture instalada ficava inalcançável para `demo`.
+    """
+    relative = "share/doc/geniusai-foresight/soy-trade-shock.json"
+    return (
         Path(__file__).resolve().parents[1] / "examples/soy-trade-shock.json",
-        Path(sys.prefix) / "share/doc/geniusai-foresight/soy-trade-shock.json",
+        Path(sysconfig.get_path("data")) / relative,
+        Path(sys.prefix) / relative,
     )
-    for candidate in candidates:
+
+
+def demo_input_path() -> Path:
+    for candidate in demo_candidates():
         if candidate.is_file():
             return candidate
     raise ValueError("fixture demonstrativa não encontrada na fonte nem na instalação")

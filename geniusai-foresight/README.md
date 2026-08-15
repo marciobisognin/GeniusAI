@@ -213,6 +213,34 @@ O diretório de saída contém:
 | `report.md` | relatório auditável, sanitizado e com limitações explícitas |
 | `report.html` | dashboard autocontido, responsivo e com payload escapado |
 
+## Usar como plug-in do Hermes Agent
+
+O kernel também é distribuído como **plug-in nativo do
+[Hermes Agent](https://hermes-agent.nousresearch.com/)** — um agente autônomo
+passa a poder validar, perfilar, simular e auditar estudos prospectivos como
+ferramentas suas. Detalhes em
+[`hermes_plugin/README.md`](hermes_plugin/README.md).
+
+```bash
+pip install ./geniusai-foresight     # o plug-in vai junto, como entry point
+hermes plugins enable genius-foresight
+```
+
+| Ferramenta | Custo | Equivalente na CLI |
+|---|---|---|
+| `foresight_validate` | barato | `validate` |
+| `foresight_profile` | barato | `profile` |
+| `foresight_run` | caro | `simulate` / `report` |
+| `foresight_demo` | caro | `demo` |
+| `foresight_game` | barato | `game` |
+| `foresight_replay` | caro | `replay` |
+
+O gate científico atravessa a integração intacto: quando o red team reprova,
+nada é escrito e a resposta vem como `{"status": "blocked_by_gate", "gate": …}`
+— estruturado, para o agente distinguir "estudo malformado" de "a ciência
+disse não". Junto vai a skill **`foresight-cycle`**, com o procedimento das
+oito etapas e os dois gates humanos.
+
 ## Estrutura do repositório
 
 ```text
@@ -230,6 +258,12 @@ geniusai-foresight/
 │   ├── safety.py
 │   ├── reporting.py
 │   └── cli.py
+├── hermes_plugin/          # plug-in nativo do Hermes Agent
+│   ├── plugin.yaml         # manifesto (6 ferramentas, nenhum hook)
+│   ├── __init__.py         # register(ctx) — ponto de entrada
+│   ├── schemas.py          # descrições lidas pelo modelo
+│   ├── tools.py            # handlers (sempre JSON, nunca levantam)
+│   └── skills/             # SKILL.md do ciclo de prospecção
 ├── examples/               # briefing executável
 ├── scripts/                # demo e validador
 ├── tests/                  # jogos canônicos, leakage, replay e integração

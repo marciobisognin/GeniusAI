@@ -14,9 +14,13 @@
 
 ## 1. Resumo executivo
 
+> **Estado:** o item 1 desta tabela está **implementado** — ver
+> [`geniusai-foresight/hermes_plugin/`](../geniusai-foresight/hermes_plugin/).
+> O restante continua sendo análise.
+
 | # | Ativo deste repositório | Vira o quê no Hermes | Aderência | Esforço |
 |---|---|---|---|---|
-| 1 | [`geniusai-foresight`](../geniusai-foresight/) — kernel de simulação | **Plug-in nativo** (Python, `plugin.yaml` + `register`) com 4–6 ferramentas | 🟢 Altíssima | P |
+| 1 | [`geniusai-foresight`](../geniusai-foresight/) — kernel de simulação | **Plug-in nativo** (Python, `plugin.yaml` + `register`) com 6 ferramentas — ✅ **feito** | 🟢 Altíssima | P |
 | 2 | [`so-ia/src/lib/org/*`](../so-ia/src/lib/org/) — compilador de organograma | **Plug-in híbrido** (Python fino → Node) ou **servidor MCP** | 🟢 Alta | M |
 | 3 | [`packages/learning`](../packages/learning/) — memória indexada + LearningFlow | **Memory provider** (`ctx.register_memory_provider`) | 🟢 Alta | M |
 | 4 | [`iffar-pixel-art/agent-manifests`](../iffar-pixel-art/) — 453 manifestos + runbooks | **Pacote de Skills** (`SKILL.md`) + 1 ferramenta de rota | 🟢 Alta | P |
@@ -130,16 +134,23 @@ e comportamento **determinístico** (o `replay` compara a reconstrução com o
 | `foresight/calibration.py`, `safety.py` | Gate `calibrate-and-red-team` → `go`/`no-go` |
 | `agents/*.yaml` (8), `tasks/*.yaml` (8), `workflows/foresight-cycle.yaml` | O procedimento — vira **Skill**, não código |
 
-**Ferramentas propostas** (`toolset: foresight`):
+**Ferramentas implementadas** (`toolset: foresight`):
 
 | Ferramenta | Entrada | Devolve |
 |---|---|---|
-| `foresight_validate` | `study` (JSON do estudo) | Contratos válidos? gate de entrada passou? |
-| `foresight_simulate` | `study`, `output_dir` | Resultado da simulação + caminho dos artefatos |
-| `foresight_report` | `study`, `output_dir` | Relatório auditável (só publica se o gate der `go`) |
-| `foresight_game` | `fixture` ou matriz de payoffs | Equilíbrios (Nash puro/misto, QRE, Pareto) |
-| `foresight_profile` | `study` | Células adaptativas: atores, coordenador, especialistas |
-| `foresight_replay` | `study`, `expected` | Verificação determinística de uma run anterior |
+| `foresight_validate` | `study` ou `study_path` | Contratos válidos + hash do snapshot de evidências, sem simular |
+| `foresight_profile` | `study` ou `study_path` | Células adaptativas: atores, coordenador, especialistas |
+| `foresight_run` | estudo + `output_dir` | Executa as 8 etapas e publica — se o gate autorizar |
+| `foresight_demo` | `output_dir` | Cenário demonstrativo embutido (5 atores, 600 runs) |
+| `foresight_game` | `fixture` | Equilíbrios (Nash puro/misto, QRE, Pareto, dominância) |
+| `foresight_replay` | estudo + `expected_path` | Verificação determinística de uma run anterior |
+
+> **Correção sobre a proposta original**, descoberta na implementação: os
+> comandos `simulate` e `report` da CLI **executam exatamente o mesmo caminho**
+> (`run_study`), então expor os dois como ferramentas distintas só confundiria
+> o modelo. Viraram um único `foresight_run`, e a sexta vaga foi para
+> `foresight_demo` — que é o jeito de o agente demonstrar a ferramenta, e
+> conferir a saúde da instalação, sem ter um estudo pronto.
 
 ```yaml
 # plugin.yaml
@@ -193,12 +204,37 @@ rodapé canônico de licença.
   constantes JSON não-finitas, ≤ 10 000 registros de evidência.
 - As ferramentas escrevem em disco (`--output`). O diretório precisa vir do
   workspace do Hermes, não de um caminho fixo.
-- O gate é o produto: `foresight_report` **não pode** publicar quando
-  `calibrate-and-red-team` devolve `no-go`. Isso é regra de negócio, não
+- O gate é o produto: `foresight_run` **não pode** publicar quando
+  `calibrate-and-red-team` devolve `no_go`. Isso é regra de negócio, não
   detalhe de implementação.
 
 **Esforço:** P — dias, não semanas. O código já existe, é puro e testado
 (6 arquivos de teste); o trabalho é escrever manifesto, schemas e handlers.
+
+### 3.1.1 O que a implementação ensinou
+
+O plug-in está em
+[`geniusai-foresight/hermes_plugin/`](../geniusai-foresight/hermes_plugin/),
+com 23 testes próprios. Quatro decisões só apareceram ao construir:
+
+1. **Estudo inline vai para arquivo temporário, de propósito.** O modelo
+   entrega o estudo como objeto JSON, mas `load_study` só aceita caminho.
+   Gravar num temporário e chamar a mesma função mantém **todas** as guardas
+   do kernel (≤ 5 MiB, arquivo regular, constantes não-finitas, ≤ 10 000
+   evidências) — em vez de reimplementar validação frouxa em memória.
+2. **O gate bloqueado virou resultado, não exceção.** `run_study` levanta
+   `ValueError` com o gate embutido na mensagem; o handler chama
+   `execute_study` + `write_reports` diretamente para devolver
+   `{"status": "blocked_by_gate", "gate": {...}}`. A diferença entre "estudo
+   malformado" e "a ciência disse não" precisa ser legível por máquina.
+3. **Nenhum hook registrado** (`provides_hooks: []`) — o que neutraliza o
+   risco levantado no §6: o plug-in não depende de nenhum hook cuja invocação
+   precise ser confirmada versão a versão.
+4. **Um defeito real do kernel apareceu no caminho.** `demo_input_path()`
+   procurava a fixture instalada só em `sys.prefix`; no esquema `posix_local`
+   (Debian/Ubuntu) o pip grava em `sysconfig.get_path("data")`, e `demo`
+   falhava em pacote instalado — inclusive pela CLI. Corrigido com teste de
+   regressão.
 
 ---
 
@@ -452,7 +488,7 @@ Dizer não é parte da análise. Três casos, por três motivos diferentes:
 
 ```mermaid
 flowchart LR
-    F["1 · genius-foresight<br/>plug-in nativo<br/>esforço P"]
+    F["1 · genius-foresight<br/>plug-in nativo<br/>✅ implementado"]
     S["2 · skills IFFar<br/>453 manifestos → SKILL.md<br/>esforço P"]
     C["3 · canon → JSON Schema<br/>contrato compartilhado<br/>esforço P"]
     O["4 · MCP organograma<br/>org/* + extratores PDF<br/>esforço M"]
