@@ -187,7 +187,7 @@ ativo daqui vira do lado do [Hermes](https://hermes-agent.nousresearch.com/):
 
 | Ativo | Vira | Aderência |
 |---|---|---|
-| `geniusai-foresight` | Plug-in nativo (Python) — já é Python sem dependências | 🟢 Altíssima |
+| `geniusai-foresight` | ✅ **Plug-in nativo implementado** — [`hermes_plugin/`](geniusai-foresight/hermes_plugin/), 6 ferramentas + skill | 🟢 Altíssima |
 | `so-ia/src/lib/org/*` | Servidor MCP do organograma (a **Lei 1** como política de execução) | 🟢 Alta |
 | `packages/learning` | *Memory provider* com procedência de aprovação humana | 🟢 Alta |
 | `iffar-pixel-art` | Pacote de Skills (`SKILL.md`) a partir dos 453 manifestos | 🟢 Alta |

@@ -28,9 +28,18 @@ Issues = "https://github.com/marciobisognin/GeniusAI/issues"
 [project.scripts]
 geniusai-foresight = "foresight.cli:main"
 
+# Plug-in do Hermes Agent distribuído junto do pacote: com o Hermes instalado,
+# `pip install geniusai-foresight` já torna o plug-in descobrível, bastando
+# `hermes plugins enable genius-foresight`. Sem o Hermes, esta entrada é inerte.
+[project.entry-points."hermes_agent.plugins"]
+genius-foresight = "hermes_plugin:register"
+
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["foresight*"]
+include = ["foresight*", "hermes_plugin*"]
+
+[tool.setuptools.package-data]
+hermes_plugin = ["plugin.yaml", "skills/*/SKILL.md"]
 
 [tool.setuptools.data-files]
 "share/doc/geniusai-foresight" = ["NOTICE.md", "AUTHORS.md", "examples/soy-trade-shock.json"]

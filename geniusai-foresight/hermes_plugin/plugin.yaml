@@ -1,0 +1,30 @@
+name: genius-foresight
+version: 0.1.0
+description: >-
+  Simulação prospectiva multiagente com Teoria dos Jogos, evidência
+  point-in-time e replay determinístico. Expõe o kernel do GeniusAI Foresight
+  como ferramentas do Hermes, preservando o gate científico: o relatório só é
+  publicado quando o red team devolve `go_research_only`.
+author: Marcio Bisognin
+license: MIT
+homepage: https://github.com/marciobisognin/GeniusAI/tree/main/geniusai-foresight
+manifest_version: 2
+api_version: 1
+
+provides_tools:
+  - foresight_validate
+  - foresight_profile
+  - foresight_run
+  - foresight_demo
+  - foresight_game
+  - foresight_replay
+
+# Nenhum hook é registrado de propósito: as ferramentas bastam, e assim o
+# plug-in não depende de nenhum hook de ciclo de vida cuja invocação precise
+# ser confirmada versão a versão.
+provides_hooks: []
+
+python_dependencies:
+  - "geniusai-foresight>=0.1.0"
+
+tags: [simulation, game-theory, forecasting, audit, research]

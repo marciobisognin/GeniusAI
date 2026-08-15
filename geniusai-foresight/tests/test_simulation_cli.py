@@ -6,7 +6,9 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from foresight.cli import game_analysis, load_study, main, replay_study, run_study
+import sysconfig
+
+from foresight.cli import demo_candidates, demo_input_path, game_analysis, load_study, main, replay_study, run_study
 from foresight.simulation import ForesightSimulator, quantile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -136,6 +138,18 @@ class SimulationCliTests(unittest.TestCase):
     def test_game_fixture(self):
         result = game_analysis("matching-pennies")
         self.assertAlmostEqual(result["mixed_nash"]["row_strategy"][0], 0.5)
+
+    def test_demo_candidates_cover_the_installed_data_path(self):
+        """Regressão: no esquema `posix_local`, o pip grava os data-files em
+        `sysconfig.get_path("data")`, que pode diferir de `sys.prefix` — sem
+        esse candidato, `demo` falha em pacote instalado."""
+        candidates = demo_candidates()
+        installed = Path(sysconfig.get_path("data")) / "share/doc/geniusai-foresight/soy-trade-shock.json"
+        self.assertIn(installed, candidates)
+        self.assertEqual(candidates[0], EXAMPLE, "a fonte continua tendo precedência")
+
+    def test_demo_input_path_resolves(self):
+        self.assertTrue(demo_input_path().is_file())
 
 
 if __name__ == "__main__":
