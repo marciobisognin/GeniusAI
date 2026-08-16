@@ -9,14 +9,16 @@
     "health": "tsx src/health-cli.ts",
     "turn:demo": "tsx src/agent/turn-demo.ts",
     "loop:demo": "tsx src/orchestrator/loop-demo.ts",
-    "test": "node --import tsx --test src/logger.test.ts src/engine/rng.test.ts src/engine/world.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/advisors.test.ts src/agent/CliAgentRunner.test.ts src/agent/memory.test.ts src/agent/CivilizationAgentFactory.test.ts src/orchestrator/trace.test.ts src/orchestrator/replay.test.ts src/orchestrator/narrator.test.ts src/orchestrator/AgentOrchestrator.test.ts src/orchestrator/GameLoop.test.ts src/server.test.ts",
-    "test:coverage": "node --import tsx --test --experimental-test-coverage src/logger.test.ts src/engine/rng.test.ts src/engine/world.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/advisors.test.ts src/agent/CliAgentRunner.test.ts src/agent/memory.test.ts src/agent/CivilizationAgentFactory.test.ts src/orchestrator/trace.test.ts src/orchestrator/replay.test.ts src/orchestrator/narrator.test.ts src/orchestrator/AgentOrchestrator.test.ts src/orchestrator/GameLoop.test.ts src/server.test.ts",
-    "typecheck": "tsc --noEmit"
+    "test": "node --import tsx --test src/logger.test.ts src/engine/rng.test.ts src/engine/world.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/advisors.test.ts src/agent/CliAgentRunner.test.ts src/agent/memory.test.ts src/agent/CivilizationAgentFactory.test.ts src/orchestrator/trace.test.ts src/orchestrator/replay.test.ts src/orchestrator/narrator.test.ts src/orchestrator/AgentOrchestrator.test.ts src/orchestrator/GameLoop.test.ts src/server.test.ts src/mcp/rehearsal.test.ts",
+    "test:coverage": "node --import tsx --test --experimental-test-coverage src/logger.test.ts src/engine/rng.test.ts src/engine/world.test.ts src/engine/engine.test.ts src/agent/actions.test.ts src/agent/prompt.test.ts src/agent/runTurn.test.ts src/agent/advisors.test.ts src/agent/CliAgentRunner.test.ts src/agent/memory.test.ts src/agent/CivilizationAgentFactory.test.ts src/orchestrator/trace.test.ts src/orchestrator/replay.test.ts src/orchestrator/narrator.test.ts src/orchestrator/AgentOrchestrator.test.ts src/orchestrator/GameLoop.test.ts src/server.test.ts src/mcp/rehearsal.test.ts",
+    "typecheck": "tsc --noEmit",
+    "mcp:ensaio": "tsx src/mcp/index.ts"
   },
   "dependencies": {
+    "@geniusai/shared": "*",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "ws": "^8.18.0",
-    "zod": "^3.23.8",
-    "@geniusai/shared": "*"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^22.9.0",

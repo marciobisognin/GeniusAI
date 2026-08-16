@@ -11,7 +11,8 @@
     "test": "node --test server/test/*.test.mjs",
     "generate:agents": "node scripts/generate-agent-catalog.mjs",
     "runbook": "node scripts/execute-agent-runbook.mjs",
-    "check": "npm run test && npm run build"
+    "check": "npm run test && npm run build",
+    "generate:skills": "node scripts/generate-hermes-skills.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",

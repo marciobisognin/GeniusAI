@@ -1,0 +1,2657 @@
+{
+  "slugify": [
+    {
+      "input": "Ação & Reação",
+      "output": "acao-reacao"
+    },
+    {
+      "input": "Pró-Reitoria de Ensino",
+      "output": "pro-reitoria-de-ensino"
+    },
+    {
+      "input": "  espaços  ",
+      "output": "espacos"
+    },
+    {
+      "input": "ÁÉÍÓÚ",
+      "output": "aeiou"
+    },
+    {
+      "input": "",
+      "output": ""
+    }
+  ],
+  "buildTree": [
+    {
+      "id": "n1",
+      "titulo": "Coordenação de Contratos",
+      "area": "Licitações e Contratos",
+      "responsabilidades": [
+        "fiscalizar contratos",
+        "instruir processos"
+      ],
+      "parentId": null,
+      "children": [
+        {
+          "id": "n2",
+          "titulo": "Diretoria Financeira",
+          "area": "Financeiro",
+          "responsabilidades": [
+            "pagar fornecedores"
+          ],
+          "parentId": "n1",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "n3",
+      "titulo": "Assessoria de Comunicação",
+      "area": "Comunicação",
+      "responsabilidades": [
+        "redigir notas à imprensa"
+      ],
+      "parentId": null,
+      "children": []
+    },
+    {
+      "id": "n4",
+      "titulo": "Setor Sem Correspondência",
+      "area": "Zoologia Aplicada",
+      "responsabilidades": [
+        "observar aves"
+      ],
+      "parentId": null,
+      "children": []
+    }
+  ],
+  "parseOrgText": [
+    {
+      "input": "Reitoria; Gabinete; conduzir a política institucional\nPró-Reitoria de Ensino; Ensino; coordenar os cursos",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Reitoria; Gabinete; conduzir a política institucional",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Pró-Reitoria de Ensino; Ensino; coordenar os cursos",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "Diretoria Financeira,Financeiro,pagar fornecedores;emitir notas",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Diretoria Financeira,Financeiro,pagar fornecedores;emitir notas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "- Comercial\n  - Vendas\n  - Pré-vendas",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Comercial",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Vendas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": "<node-id>"
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Pré-vendas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": "<node-id>"
+          }
+        ],
+        "warnings": [],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "",
+      "output": {
+        "nodes": [],
+        "warnings": [
+          "Nenhuma linha reconhecível foi encontrada no texto."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "Coordenação de Licitações e Contratos | Licitações e Contratos | fiscalizar contratos",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Coordenação de Licitações e Contratos | Licitações e Contratos | fiscalizar contratos",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    }
+  ],
+  "parseOrgPasted": [
+    {
+      "input": "Reitoria; Gabinete; conduzir a política institucional\nPró-Reitoria de Ensino; Ensino; coordenar os cursos",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Reitoria; Gabinete; conduzir a política institucional",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Pró-Reitoria de Ensino; Ensino; coordenar os cursos",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "Diretoria Financeira,Financeiro,pagar fornecedores;emitir notas",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Diretoria Financeira,Financeiro,pagar fornecedores;emitir notas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "- Comercial\n  - Vendas\n  - Pré-vendas",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Comercial",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Vendas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": "<node-id>"
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Pré-vendas",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": "<node-id>"
+          }
+        ],
+        "warnings": [],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "",
+      "output": {
+        "nodes": [],
+        "warnings": [
+          "Nenhuma linha reconhecível foi encontrada no texto."
+        ],
+        "format": "texto"
+      }
+    },
+    {
+      "input": "Coordenação de Licitações e Contratos | Licitações e Contratos | fiscalizar contratos",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Coordenação de Licitações e Contratos | Licitações e Contratos | fiscalizar contratos",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    }
+  ],
+  "parseOrgFile": [
+    {
+      "filename": "org.csv",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Reitoria",
+            "area": "Gabinete",
+            "responsabilidades": [
+              "conduzir"
+            ],
+            "parentId": null
+          }
+        ],
+        "warnings": [],
+        "format": "csv"
+      }
+    },
+    {
+      "filename": "org.txt",
+      "output": {
+        "nodes": [
+          {
+            "id": "<node-id>",
+            "titulo": "Reitoria; Gabinete; conduzir a política institucional",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          },
+          {
+            "id": "<node-id>",
+            "titulo": "Pró-Reitoria de Ensino; Ensino; coordenar os cursos",
+            "area": "",
+            "responsabilidades": [],
+            "parentId": null
+          }
+        ],
+        "warnings": [
+          "Não detectei indentação/hierarquia no texto — todos os cargos foram colocados no topo; ajuste manualmente o campo \"Reporta-se a\" de cada um."
+        ],
+        "format": "texto"
+      }
+    }
+  ],
+  "organizationCovers": [
+    {
+      "topic": {
+        "area": "Licitações e Contratos",
+        "texto": "redigir parecer sobre contrato administrativo"
+      },
+      "nodes": "NODE_CASES",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Licitações e Contratos",
+        "texto": "redigir parecer sobre contrato administrativo"
+      },
+      "nodes": "vazio",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Licitações e Contratos",
+        "texto": "redigir parecer sobre contrato administrativo"
+      },
+      "nodes": "templateGoverno",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Licitações e Contratos",
+        "texto": "redigir parecer sobre contrato administrativo"
+      },
+      "nodes": "templateEmpresa",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Financeiro",
+        "texto": "emitir nota fiscal"
+      },
+      "nodes": "NODE_CASES",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Financeiro",
+        "texto": "emitir nota fiscal"
+      },
+      "nodes": "vazio",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Financeiro",
+        "texto": "emitir nota fiscal"
+      },
+      "nodes": "templateGoverno",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Financeiro",
+        "texto": "emitir nota fiscal"
+      },
+      "nodes": "templateEmpresa",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Ensino",
+        "texto": "atualizar o projeto pedagógico do curso"
+      },
+      "nodes": "NODE_CASES",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Ensino",
+        "texto": "atualizar o projeto pedagógico do curso"
+      },
+      "nodes": "vazio",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Ensino",
+        "texto": "atualizar o projeto pedagógico do curso"
+      },
+      "nodes": "templateGoverno",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Ensino",
+        "texto": "atualizar o projeto pedagógico do curso"
+      },
+      "nodes": "templateEmpresa",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Marketing",
+        "texto": "campanha de mídia paga"
+      },
+      "nodes": "NODE_CASES",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Marketing",
+        "texto": "campanha de mídia paga"
+      },
+      "nodes": "vazio",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Marketing",
+        "texto": "campanha de mídia paga"
+      },
+      "nodes": "templateGoverno",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Marketing",
+        "texto": "campanha de mídia paga"
+      },
+      "nodes": "templateEmpresa",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Gabinete",
+        "texto": ""
+      },
+      "nodes": "NODE_CASES",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Gabinete",
+        "texto": ""
+      },
+      "nodes": "vazio",
+      "output": false
+    },
+    {
+      "topic": {
+        "area": "Gabinete",
+        "texto": ""
+      },
+      "nodes": "templateGoverno",
+      "output": true
+    },
+    {
+      "topic": {
+        "area": "Gabinete",
+        "texto": ""
+      },
+      "nodes": "templateEmpresa",
+      "output": false
+    }
+  ],
+  "matchNode": [
+    {
+      "node": "n1",
+      "output": {
+        "nodeId": "n1",
+        "node": {
+          "id": "n1",
+          "titulo": "Coordenação de Contratos",
+          "area": "Licitações e Contratos",
+          "responsabilidades": [
+            "fiscalizar contratos",
+            "instruir processos"
+          ],
+          "parentId": null
+        },
+        "agent": {
+          "id": "gerado-n1",
+          "nome": "Agente de Coordenação de Contratos",
+          "area": "Licitações e Contratos",
+          "mode": "empresa",
+          "autonomia": "A2",
+          "descricao": "Criado sob medida para apoiar \"Coordenação de Contratos\" em: fiscalizar contratos; instruir processos.",
+          "skills": [
+            "fiscalizar-contratos",
+            "instruir-processos"
+          ],
+          "connectors": [],
+          "modelPolicy": {
+            "default": "claude-sonnet"
+          },
+          "execucoesMes": 0,
+          "taxaAprovacao": 1,
+          "status": "ativo"
+        },
+        "origem": "gerado",
+        "score": 0.3333333333333333
+      }
+    },
+    {
+      "node": "n2",
+      "output": {
+        "nodeId": "n2",
+        "node": {
+          "id": "n2",
+          "titulo": "Diretoria Financeira",
+          "area": "Financeiro",
+          "responsabilidades": [
+            "pagar fornecedores"
+          ],
+          "parentId": "n1"
+        },
+        "agent": {
+          "id": "gerado-n2",
+          "nome": "Agente de Diretoria Financeira",
+          "area": "Financeiro",
+          "mode": "empresa",
+          "autonomia": "A2",
+          "descricao": "Criado sob medida para apoiar \"Diretoria Financeira\" em: pagar fornecedores.",
+          "skills": [
+            "pagar-fornecedores"
+          ],
+          "connectors": [],
+          "modelPolicy": {
+            "default": "claude-sonnet"
+          },
+          "execucoesMes": 0,
+          "taxaAprovacao": 1,
+          "status": "ativo"
+        },
+        "origem": "gerado",
+        "score": 0.2
+      }
+    },
+    {
+      "node": "n3",
+      "output": {
+        "nodeId": "n3",
+        "node": {
+          "id": "n3",
+          "titulo": "Assessoria de Comunicação",
+          "area": "Comunicação",
+          "responsabilidades": [
+            "redigir notas à imprensa"
+          ],
+          "parentId": null
+        },
+        "agent": {
+          "id": "agente-atendimento-lai",
+          "nome": "Agente de Atendimento LAI",
+          "area": "Comunicação",
+          "mode": "governo",
+          "autonomia": "A2",
+          "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+          "skills": [
+            "triar-pedido-lai",
+            "redigir-resposta",
+            "checar-sigilo-lgpd"
+          ],
+          "connectors": [
+            "mcp-sipac",
+            "mcp-govbr"
+          ],
+          "modelPolicy": {
+            "default": "claude-sonnet"
+          },
+          "execucoesMes": 22,
+          "taxaAprovacao": 0.93,
+          "status": "ativo"
+        },
+        "origem": "catalogo",
+        "score": 0.4
+      }
+    },
+    {
+      "node": "n4",
+      "output": {
+        "nodeId": "n4",
+        "node": {
+          "id": "n4",
+          "titulo": "Setor Sem Correspondência",
+          "area": "Zoologia Aplicada",
+          "responsabilidades": [
+            "observar aves"
+          ],
+          "parentId": null
+        },
+        "agent": {
+          "id": "gerado-n4",
+          "nome": "Agente de Setor Sem Correspondência",
+          "area": "Zoologia Aplicada",
+          "mode": "empresa",
+          "autonomia": "A2",
+          "descricao": "Criado sob medida para apoiar \"Setor Sem Correspondência\" em: observar aves.",
+          "skills": [
+            "observar-aves"
+          ],
+          "connectors": [],
+          "modelPolicy": {
+            "default": "claude-sonnet"
+          },
+          "execucoesMes": 0,
+          "taxaAprovacao": 1,
+          "status": "ativo"
+        },
+        "origem": "gerado",
+        "score": 0.14285714285714285
+      }
+    }
+  ],
+  "assembleOrganization": [
+    {
+      "nodeId": "n1",
+      "node": {
+        "id": "n1",
+        "titulo": "Coordenação de Contratos",
+        "area": "Licitações e Contratos",
+        "responsabilidades": [
+          "fiscalizar contratos",
+          "instruir processos"
+        ],
+        "parentId": null
+      },
+      "agent": {
+        "id": "gerado-n1",
+        "nome": "Agente de Coordenação de Contratos",
+        "area": "Licitações e Contratos",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Coordenação de Contratos\" em: fiscalizar contratos; instruir processos.",
+        "skills": [
+          "fiscalizar-contratos",
+          "instruir-processos"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.3333333333333333
+    },
+    {
+      "nodeId": "n2",
+      "node": {
+        "id": "n2",
+        "titulo": "Diretoria Financeira",
+        "area": "Financeiro",
+        "responsabilidades": [
+          "pagar fornecedores"
+        ],
+        "parentId": "n1"
+      },
+      "agent": {
+        "id": "gerado-n2",
+        "nome": "Agente de Diretoria Financeira",
+        "area": "Financeiro",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Diretoria Financeira\" em: pagar fornecedores.",
+        "skills": [
+          "pagar-fornecedores"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.2
+    },
+    {
+      "nodeId": "n3",
+      "node": {
+        "id": "n3",
+        "titulo": "Assessoria de Comunicação",
+        "area": "Comunicação",
+        "responsabilidades": [
+          "redigir notas à imprensa"
+        ],
+        "parentId": null
+      },
+      "agent": {
+        "id": "agente-atendimento-lai",
+        "nome": "Agente de Atendimento LAI",
+        "area": "Comunicação",
+        "mode": "governo",
+        "autonomia": "A2",
+        "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+        "skills": [
+          "triar-pedido-lai",
+          "redigir-resposta",
+          "checar-sigilo-lgpd"
+        ],
+        "connectors": [
+          "mcp-sipac",
+          "mcp-govbr"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 22,
+        "taxaAprovacao": 0.93,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.4
+    },
+    {
+      "nodeId": "n4",
+      "node": {
+        "id": "n4",
+        "titulo": "Setor Sem Correspondência",
+        "area": "Zoologia Aplicada",
+        "responsabilidades": [
+          "observar aves"
+        ],
+        "parentId": null
+      },
+      "agent": {
+        "id": "gerado-n4",
+        "nome": "Agente de Setor Sem Correspondência",
+        "area": "Zoologia Aplicada",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Setor Sem Correspondência\" em: observar aves.",
+        "skills": [
+          "observar-aves"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.14285714285714285
+    }
+  ],
+  "assembleGoverno": [
+    {
+      "nodeId": "t-g-diretor",
+      "node": {
+        "id": "t-g-diretor",
+        "titulo": "Diretor(a) de Administração",
+        "area": "Gabinete/Governança",
+        "responsabilidades": [
+          "controle interno",
+          "despachos e indicadores"
+        ],
+        "parentId": null
+      },
+      "agent": {
+        "id": "gerado-t-g-diretor",
+        "nome": "Agente de Diretor(a) de Administração",
+        "area": "Gabinete/Governança",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Diretor(a) de Administração\" em: controle interno; despachos e indicadores.",
+        "skills": [
+          "controle-interno",
+          "despachos-e-indicadores"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.25
+    },
+    {
+      "nodeId": "t-g-pregoeiro",
+      "node": {
+        "id": "t-g-pregoeiro",
+        "titulo": "Pregoeiro / Agente de Contratação",
+        "area": "Licitações e Contratos",
+        "responsabilidades": [
+          "instruir processo de contratacao",
+          "checar conformidade com a lei 14133"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      "agent": {
+        "id": "agente-instrucao-contratacao",
+        "nome": "Agente de Instrução de Contratação",
+        "area": "Licitações e Contratos",
+        "mode": "governo",
+        "autonomia": "A2",
+        "descricao": "Monta ETP/TR e verifica conformidade com a Lei 14.133/2021, incluindo checagem de segregação de funções.",
+        "skills": [
+          "montar-etp",
+          "montar-tr",
+          "checklist-14133",
+          "verificar-segregacao-funcoes"
+        ],
+        "connectors": [
+          "mcp-sipac",
+          "mcp-comprasgov"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet",
+          "sensitive": "llama-3-70b-onprem"
+        },
+        "execucoesMes": 64,
+        "taxaAprovacao": 0.86,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.6363636363636364
+    },
+    {
+      "nodeId": "t-g-fiscal",
+      "node": {
+        "id": "t-g-fiscal",
+        "titulo": "Fiscal de Contrato",
+        "area": "Orçamento e Finanças",
+        "responsabilidades": [
+          "conferir nota fiscal contra empenho",
+          "alertar vigencias contratuais"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      "agent": {
+        "id": "agente-atesto-nf",
+        "nome": "Agente de Atesto de Nota Fiscal",
+        "area": "Orçamento e Finanças",
+        "mode": "governo",
+        "autonomia": "A2",
+        "descricao": "Lê a NF-e, confere contra o empenho no SIPAC e checa regularidade fiscal antes de preparar a minuta de atesto.",
+        "skills": [
+          "ler-nota-fiscal",
+          "conferir-nf-contra-empenho",
+          "checar-regularidade-fiscal",
+          "preparar-atesto"
+        ],
+        "connectors": [
+          "mcp-sipac",
+          "mcp-sicaf"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet",
+          "sensitive": "llama-3-70b-onprem"
+        },
+        "execucoesMes": 213,
+        "taxaAprovacao": 0.95,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.6363636363636364
+    },
+    {
+      "nodeId": "t-g-gestor-contratos",
+      "node": {
+        "id": "t-g-gestor-contratos",
+        "titulo": "Gestor(a) de Contratos",
+        "area": "Licitações e Contratos",
+        "responsabilidades": [
+          "controlar aditivos e prazos",
+          "monitorar saldo de empenho"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      "agent": {
+        "id": "agente-vigencia-contratual",
+        "nome": "Agente de Vigência Contratual",
+        "area": "Licitações e Contratos",
+        "mode": "governo",
+        "autonomia": "A3",
+        "descricao": "Monitora vigências e saldo de empenho, alerta prazos (D-180/D-90/D-30) e prepara minuta de aditivo quando cabível.",
+        "skills": [
+          "monitorar-vigencias",
+          "alertar-prazos",
+          "preparar-aditivo",
+          "checar-saldo-empenho"
+        ],
+        "connectors": [
+          "mcp-sipac",
+          "mcp-comprasnet-contratos"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 38,
+        "taxaAprovacao": 0.89,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.6666666666666666
+    },
+    {
+      "nodeId": "t-g-auditor",
+      "node": {
+        "id": "t-g-auditor",
+        "titulo": "Auditor(a) Interno",
+        "area": "Gabinete/Governança",
+        "responsabilidades": [
+          "verificar instrucao processual",
+          "checar segregacao de funcoes"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      "agent": {
+        "id": "agente-conformidade-documental",
+        "nome": "Agente de Conformidade Documental",
+        "area": "Gabinete/Governança",
+        "mode": "governo",
+        "autonomia": "A1",
+        "descricao": "Verifica instrução processual, mapeia pendências e cita acórdãos do TCU relevantes — apenas recomenda.",
+        "skills": [
+          "verificar-instrucao-processual",
+          "mapear-pendencias",
+          "citar-acordao-tcu"
+        ],
+        "connectors": [
+          "mcp-sipac"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 97,
+        "taxaAprovacao": 0.99,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.5
+    },
+    {
+      "nodeId": "t-g-comunicacao",
+      "node": {
+        "id": "t-g-comunicacao",
+        "titulo": "Analista de Comunicação",
+        "area": "Comunicação",
+        "responsabilidades": [
+          "responder pedidos de acesso a informacao",
+          "checar sigilo e lgpd"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      "agent": {
+        "id": "agente-atendimento-lai",
+        "nome": "Agente de Atendimento LAI",
+        "area": "Comunicação",
+        "mode": "governo",
+        "autonomia": "A2",
+        "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+        "skills": [
+          "triar-pedido-lai",
+          "redigir-resposta",
+          "checar-sigilo-lgpd"
+        ],
+        "connectors": [
+          "mcp-sipac",
+          "mcp-govbr"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 22,
+        "taxaAprovacao": 0.93,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.5555555555555556
+    }
+  ],
+  "assembleEmpresa": [
+    {
+      "nodeId": "t-e-ceo",
+      "node": {
+        "id": "t-e-ceo",
+        "titulo": "Diretor(a) de Operações",
+        "area": "Direção",
+        "responsabilidades": [
+          "visibilidade de processos",
+          "automação sem novas contratações"
+        ],
+        "parentId": null
+      },
+      "agent": {
+        "id": "gerado-t-e-ceo",
+        "nome": "Agente de Diretor(a) de Operações",
+        "area": "Direção",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Diretor(a) de Operações\" em: visibilidade de processos; automação sem novas contratações.",
+        "skills": [
+          "visibilidade-de-processos",
+          "automacao-sem-novas-contratacoes"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.1111111111111111
+    },
+    {
+      "nodeId": "t-e-vendas",
+      "node": {
+        "id": "t-e-vendas",
+        "titulo": "Head de Vendas",
+        "area": "Vendas",
+        "responsabilidades": [
+          "qualificar leads",
+          "preparar propostas comerciais"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      "agent": {
+        "id": "gerado-t-e-vendas",
+        "nome": "Agente de Head de Vendas",
+        "area": "Vendas",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Head de Vendas\" em: qualificar leads; preparar propostas comerciais.",
+        "skills": [
+          "qualificar-leads",
+          "preparar-propostas-comerciais"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.2857142857142857
+    },
+    {
+      "nodeId": "t-e-marketing",
+      "node": {
+        "id": "t-e-marketing",
+        "titulo": "Analista de Marketing",
+        "area": "Marketing",
+        "responsabilidades": [
+          "gerar conteudo de marca",
+          "revisar tom de voz"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      "agent": {
+        "id": "agente-conteudo-marca",
+        "nome": "Agente de Conteúdo de Marca",
+        "area": "Marketing",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Gera e revisa conteúdo ancorado nas diretrizes de marca e no núcleo de conhecimento.",
+        "skills": [
+          "gerar-conteudo",
+          "checar-tom-de-voz",
+          "citar-fonte-marca"
+        ],
+        "connectors": [
+          "mcp-meta-ads",
+          "mcp-ga4"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 967,
+        "taxaAprovacao": 0.91,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.75
+    },
+    {
+      "nodeId": "t-e-ti",
+      "node": {
+        "id": "t-e-ti",
+        "titulo": "Gestor(a) de TI e Dados",
+        "area": "Operações",
+        "responsabilidades": [
+          "governanca e seguranca",
+          "integracao sem lock-in"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      "agent": {
+        "id": "gerado-t-e-ti",
+        "nome": "Agente de Gestor(a) de TI e Dados",
+        "area": "Operações",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Criado sob medida para apoiar \"Gestor(a) de TI e Dados\" em: governanca e seguranca; integracao sem lock-in.",
+        "skills": [
+          "governanca-e-seguranca",
+          "integracao-sem-lock-in"
+        ],
+        "connectors": [],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 0,
+        "taxaAprovacao": 1,
+        "status": "ativo"
+      },
+      "origem": "gerado",
+      "score": 0.125
+    },
+    {
+      "nodeId": "t-e-atendimento",
+      "node": {
+        "id": "t-e-atendimento",
+        "titulo": "Coordenador(a) de Atendimento",
+        "area": "Clientes",
+        "responsabilidades": [
+          "triagem de tickets",
+          "resposta com base de conhecimento"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      "agent": {
+        "id": "agente-triagem-tickets",
+        "nome": "Agente de Triagem de Tickets",
+        "area": "Clientes",
+        "mode": "empresa",
+        "autonomia": "A3",
+        "descricao": "Classifica, prioriza e responde tickets simples com citação da base de conhecimento.",
+        "skills": [
+          "classificar-ticket",
+          "responder-com-citacao",
+          "escalar-humano"
+        ],
+        "connectors": [
+          "mcp-slack",
+          "mcp-whatsapp"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 2110,
+        "taxaAprovacao": 0.97,
+        "status": "ativo"
+      },
+      "origem": "catalogo",
+      "score": 0.625
+    },
+    {
+      "nodeId": "t-e-financeiro",
+      "node": {
+        "id": "t-e-financeiro",
+        "titulo": "Analista Financeiro",
+        "area": "Back Office",
+        "responsabilidades": [
+          "conciliar lancamentos",
+          "sinalizar divergencias"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      "agent": {
+        "id": "agente-conciliacao-financeira",
+        "nome": "Agente de Back Office Financeiro",
+        "area": "Back Office",
+        "mode": "empresa",
+        "autonomia": "A2",
+        "descricao": "Concilia lançamentos, prepara resumos financeiros e sinaliza divergências para revisão humana.",
+        "skills": [
+          "conciliar-lancamentos",
+          "gerar-resumo-financeiro",
+          "sinalizar-divergencia"
+        ],
+        "connectors": [
+          "mcp-drive",
+          "mcp-crm"
+        ],
+        "modelPolicy": {
+          "default": "claude-sonnet"
+        },
+        "execucoesMes": 501,
+        "taxaAprovacao": 0.9,
+        "status": "revisao"
+      },
+      "origem": "catalogo",
+      "score": 0.875
+    }
+  ],
+  "institutionalCatalog": [
+    {
+      "id": "agente-qualificacao-leads",
+      "nome": "Agente de Qualificação de Leads",
+      "area": "Vendas",
+      "mode": "empresa",
+      "autonomia": "A3",
+      "descricao": "Enriquece, pontua e prioriza leads recebidos do CRM, preparando resumo e próxima ação sugerida.",
+      "skills": [
+        "enriquecer-lead",
+        "pontuar-fit",
+        "sugerir-proxima-acao"
+      ],
+      "connectors": [
+        "mcp-hubspot",
+        "mcp-gmail"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 1284,
+      "taxaAprovacao": 0.94,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-propostas",
+      "nome": "Agente de Preparação de Propostas",
+      "area": "Negócios",
+      "mode": "empresa",
+      "autonomia": "A2",
+      "descricao": "Monta minutas de proposta comercial a partir do briefing e do histórico de negociação.",
+      "skills": [
+        "montar-proposta",
+        "calcular-precificacao",
+        "revisar-clausulas"
+      ],
+      "connectors": [
+        "mcp-hubspot",
+        "mcp-drive"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 342,
+      "taxaAprovacao": 0.88,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-conteudo-marca",
+      "nome": "Agente de Conteúdo de Marca",
+      "area": "Marketing",
+      "mode": "empresa",
+      "autonomia": "A2",
+      "descricao": "Gera e revisa conteúdo ancorado nas diretrizes de marca e no núcleo de conhecimento.",
+      "skills": [
+        "gerar-conteudo",
+        "checar-tom-de-voz",
+        "citar-fonte-marca"
+      ],
+      "connectors": [
+        "mcp-meta-ads",
+        "mcp-ga4"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 967,
+      "taxaAprovacao": 0.91,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-triagem-tickets",
+      "nome": "Agente de Triagem de Tickets",
+      "area": "Clientes",
+      "mode": "empresa",
+      "autonomia": "A3",
+      "descricao": "Classifica, prioriza e responde tickets simples com citação da base de conhecimento.",
+      "skills": [
+        "classificar-ticket",
+        "responder-com-citacao",
+        "escalar-humano"
+      ],
+      "connectors": [
+        "mcp-slack",
+        "mcp-whatsapp"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 2110,
+      "taxaAprovacao": 0.97,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-conciliacao-financeira",
+      "nome": "Agente de Back Office Financeiro",
+      "area": "Back Office",
+      "mode": "empresa",
+      "autonomia": "A2",
+      "descricao": "Concilia lançamentos, prepara resumos financeiros e sinaliza divergências para revisão humana.",
+      "skills": [
+        "conciliar-lancamentos",
+        "gerar-resumo-financeiro",
+        "sinalizar-divergencia"
+      ],
+      "connectors": [
+        "mcp-drive",
+        "mcp-crm"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 501,
+      "taxaAprovacao": 0.9,
+      "status": "revisao"
+    },
+    {
+      "id": "agente-inteligencia-mercado",
+      "nome": "Agente de Inteligência de Mercado",
+      "area": "Inteligência",
+      "mode": "empresa",
+      "autonomia": "A1",
+      "descricao": "Monitora concorrência e tendências, recomendando ações sem executar diretamente.",
+      "skills": [
+        "monitorar-concorrencia",
+        "resumir-tendencias",
+        "recomendar-acao"
+      ],
+      "connectors": [
+        "mcp-ga4",
+        "mcp-drive"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 188,
+      "taxaAprovacao": 0.99,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-instrucao-contratacao",
+      "nome": "Agente de Instrução de Contratação",
+      "area": "Licitações e Contratos",
+      "mode": "governo",
+      "autonomia": "A2",
+      "descricao": "Monta ETP/TR e verifica conformidade com a Lei 14.133/2021, incluindo checagem de segregação de funções.",
+      "skills": [
+        "montar-etp",
+        "montar-tr",
+        "checklist-14133",
+        "verificar-segregacao-funcoes"
+      ],
+      "connectors": [
+        "mcp-sipac",
+        "mcp-comprasgov"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet",
+        "sensitive": "llama-3-70b-onprem"
+      },
+      "execucoesMes": 64,
+      "taxaAprovacao": 0.86,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-pesquisa-precos",
+      "nome": "Agente de Pesquisa de Preços",
+      "area": "Licitações e Contratos",
+      "mode": "governo",
+      "autonomia": "A2",
+      "descricao": "Consulta Painel de Preços e PNCP, cota fornecedores e calcula preço estimado com memória de cálculo (Lei 14.133, art. 23).",
+      "skills": [
+        "consultar-pncp-precos",
+        "consultar-painel-precos",
+        "cotar-fornecedores",
+        "calcular-preco-estimado"
+      ],
+      "connectors": [
+        "mcp-pncp",
+        "mcp-comprasgov"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet",
+        "sensitive": "llama-3-70b-onprem"
+      },
+      "execucoesMes": 51,
+      "taxaAprovacao": 0.92,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-atesto-nf",
+      "nome": "Agente de Atesto de Nota Fiscal",
+      "area": "Orçamento e Finanças",
+      "mode": "governo",
+      "autonomia": "A2",
+      "descricao": "Lê a NF-e, confere contra o empenho no SIPAC e checa regularidade fiscal antes de preparar a minuta de atesto.",
+      "skills": [
+        "ler-nota-fiscal",
+        "conferir-nf-contra-empenho",
+        "checar-regularidade-fiscal",
+        "preparar-atesto"
+      ],
+      "connectors": [
+        "mcp-sipac",
+        "mcp-sicaf"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet",
+        "sensitive": "llama-3-70b-onprem"
+      },
+      "execucoesMes": 213,
+      "taxaAprovacao": 0.95,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-vigencia-contratual",
+      "nome": "Agente de Vigência Contratual",
+      "area": "Licitações e Contratos",
+      "mode": "governo",
+      "autonomia": "A3",
+      "descricao": "Monitora vigências e saldo de empenho, alerta prazos (D-180/D-90/D-30) e prepara minuta de aditivo quando cabível.",
+      "skills": [
+        "monitorar-vigencias",
+        "alertar-prazos",
+        "preparar-aditivo",
+        "checar-saldo-empenho"
+      ],
+      "connectors": [
+        "mcp-sipac",
+        "mcp-comprasnet-contratos"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 38,
+      "taxaAprovacao": 0.89,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-conformidade-documental",
+      "nome": "Agente de Conformidade Documental",
+      "area": "Gabinete/Governança",
+      "mode": "governo",
+      "autonomia": "A1",
+      "descricao": "Verifica instrução processual, mapeia pendências e cita acórdãos do TCU relevantes — apenas recomenda.",
+      "skills": [
+        "verificar-instrucao-processual",
+        "mapear-pendencias",
+        "citar-acordao-tcu"
+      ],
+      "connectors": [
+        "mcp-sipac"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 97,
+      "taxaAprovacao": 0.99,
+      "status": "ativo"
+    },
+    {
+      "id": "agente-atendimento-lai",
+      "nome": "Agente de Atendimento LAI",
+      "area": "Comunicação",
+      "mode": "governo",
+      "autonomia": "A2",
+      "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+      "skills": [
+        "triar-pedido-lai",
+        "redigir-resposta",
+        "checar-sigilo-lgpd"
+      ],
+      "connectors": [
+        "mcp-sipac",
+        "mcp-govbr"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 22,
+      "taxaAprovacao": 0.93,
+      "status": "ativo"
+    }
+  ],
+  "buildSquads": [
+    {
+      "id": "squad-licitacoes-e-contratos",
+      "nome": "Squad de Licitações e Contratos",
+      "area": "Licitações e Contratos",
+      "liderTitulo": "Coordenação de Contratos",
+      "membros": [
+        {
+          "nodeId": "n1",
+          "node": {
+            "id": "n1",
+            "titulo": "Coordenação de Contratos",
+            "area": "Licitações e Contratos",
+            "responsabilidades": [
+              "fiscalizar contratos",
+              "instruir processos"
+            ],
+            "parentId": null
+          },
+          "agent": {
+            "id": "gerado-n1",
+            "nome": "Agente de Coordenação de Contratos",
+            "area": "Licitações e Contratos",
+            "mode": "empresa",
+            "autonomia": "A2",
+            "descricao": "Criado sob medida para apoiar \"Coordenação de Contratos\" em: fiscalizar contratos; instruir processos.",
+            "skills": [
+              "fiscalizar-contratos",
+              "instruir-processos"
+            ],
+            "connectors": [],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 0,
+            "taxaAprovacao": 1,
+            "status": "ativo"
+          },
+          "origem": "gerado",
+          "score": 0.3333333333333333
+        }
+      ],
+      "skills": [
+        "fiscalizar-contratos",
+        "instruir-processos"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-licitacoes",
+      "descricao": "Instrução de contratações, pesquisa de preços, vigências e aditivos sob a Lei 14.133/2021.",
+      "desempenho": 0.94
+    },
+    {
+      "id": "squad-financeiro",
+      "nome": "Squad de Orçamento e Finanças",
+      "area": "Financeiro",
+      "liderTitulo": "Diretoria Financeira",
+      "membros": [
+        {
+          "nodeId": "n2",
+          "node": {
+            "id": "n2",
+            "titulo": "Diretoria Financeira",
+            "area": "Financeiro",
+            "responsabilidades": [
+              "pagar fornecedores"
+            ],
+            "parentId": "n1"
+          },
+          "agent": {
+            "id": "gerado-n2",
+            "nome": "Agente de Diretoria Financeira",
+            "area": "Financeiro",
+            "mode": "empresa",
+            "autonomia": "A2",
+            "descricao": "Criado sob medida para apoiar \"Diretoria Financeira\" em: pagar fornecedores.",
+            "skills": [
+              "pagar-fornecedores"
+            ],
+            "connectors": [],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 0,
+            "taxaAprovacao": 1,
+            "status": "ativo"
+          },
+          "origem": "gerado",
+          "score": 0.2
+        }
+      ],
+      "skills": [
+        "pagar-fornecedores"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-financas",
+      "descricao": "Atesto de notas fiscais, conciliação e execução orçamentária/financeira.",
+      "desempenho": 0.93
+    },
+    {
+      "id": "squad-comunicacao",
+      "nome": "Squad de Comunicação",
+      "area": "Comunicação",
+      "liderTitulo": "Assessoria de Comunicação",
+      "membros": [
+        {
+          "nodeId": "n3",
+          "node": {
+            "id": "n3",
+            "titulo": "Assessoria de Comunicação",
+            "area": "Comunicação",
+            "responsabilidades": [
+              "redigir notas à imprensa"
+            ],
+            "parentId": null
+          },
+          "agent": {
+            "id": "agente-atendimento-lai",
+            "nome": "Agente de Atendimento LAI",
+            "area": "Comunicação",
+            "mode": "governo",
+            "autonomia": "A2",
+            "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+            "skills": [
+              "triar-pedido-lai",
+              "redigir-resposta",
+              "checar-sigilo-lgpd"
+            ],
+            "connectors": [
+              "mcp-sipac",
+              "mcp-govbr"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 22,
+            "taxaAprovacao": 0.93,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.4
+        }
+      ],
+      "skills": [
+        "triar-pedido-lai",
+        "redigir-resposta",
+        "checar-sigilo-lgpd"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-comunicacao",
+      "descricao": "Atendimento LAI, notas públicas e conteúdo institucional/de marca.",
+      "desempenho": 0.9
+    },
+    {
+      "id": "squad-zoologia-aplicada",
+      "nome": "Squad de Zoologia Aplicada",
+      "area": "Zoologia Aplicada",
+      "liderTitulo": "Setor Sem Correspondência",
+      "membros": [
+        {
+          "nodeId": "n4",
+          "node": {
+            "id": "n4",
+            "titulo": "Setor Sem Correspondência",
+            "area": "Zoologia Aplicada",
+            "responsabilidades": [
+              "observar aves"
+            ],
+            "parentId": null
+          },
+          "agent": {
+            "id": "gerado-n4",
+            "nome": "Agente de Setor Sem Correspondência",
+            "area": "Zoologia Aplicada",
+            "mode": "empresa",
+            "autonomia": "A2",
+            "descricao": "Criado sob medida para apoiar \"Setor Sem Correspondência\" em: observar aves.",
+            "skills": [
+              "observar-aves"
+            ],
+            "connectors": [],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 0,
+            "taxaAprovacao": 1,
+            "status": "ativo"
+          },
+          "origem": "gerado",
+          "score": 0.14285714285714285
+        }
+      ],
+      "skills": [
+        "observar-aves"
+      ],
+      "origem": "criado",
+      "templateId": "tpl-criado-zoologia-aplicada",
+      "descricao": "Criado pela Ferramenta de Criação de Squads para cobrir: observar aves.",
+      "desempenho": 0.75,
+      "criadoPor": "Squad de Fundação"
+    }
+  ],
+  "buildSquadsGoverno": [
+    {
+      "id": "squad-gabinete-governanca",
+      "nome": "Squad de Governança",
+      "area": "Gabinete/Governança",
+      "liderTitulo": "Diretor(a) de Administração",
+      "membros": [
+        {
+          "nodeId": "t-g-diretor",
+          "node": {
+            "id": "t-g-diretor",
+            "titulo": "Diretor(a) de Administração",
+            "area": "Gabinete/Governança",
+            "responsabilidades": [
+              "controle interno",
+              "despachos e indicadores"
+            ],
+            "parentId": null
+          },
+          "agent": {
+            "id": "gerado-t-g-diretor",
+            "nome": "Agente de Diretor(a) de Administração",
+            "area": "Gabinete/Governança",
+            "mode": "empresa",
+            "autonomia": "A2",
+            "descricao": "Criado sob medida para apoiar \"Diretor(a) de Administração\" em: controle interno; despachos e indicadores.",
+            "skills": [
+              "controle-interno",
+              "despachos-e-indicadores"
+            ],
+            "connectors": [],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 0,
+            "taxaAprovacao": 1,
+            "status": "ativo"
+          },
+          "origem": "gerado",
+          "score": 0.25
+        },
+        {
+          "nodeId": "t-g-auditor",
+          "node": {
+            "id": "t-g-auditor",
+            "titulo": "Auditor(a) Interno",
+            "area": "Gabinete/Governança",
+            "responsabilidades": [
+              "verificar instrucao processual",
+              "checar segregacao de funcoes"
+            ],
+            "parentId": "t-g-diretor"
+          },
+          "agent": {
+            "id": "agente-conformidade-documental",
+            "nome": "Agente de Conformidade Documental",
+            "area": "Gabinete/Governança",
+            "mode": "governo",
+            "autonomia": "A1",
+            "descricao": "Verifica instrução processual, mapeia pendências e cita acórdãos do TCU relevantes — apenas recomenda.",
+            "skills": [
+              "verificar-instrucao-processual",
+              "mapear-pendencias",
+              "citar-acordao-tcu"
+            ],
+            "connectors": [
+              "mcp-sipac"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 97,
+            "taxaAprovacao": 0.99,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.5
+        }
+      ],
+      "skills": [
+        "controle-interno",
+        "despachos-e-indicadores",
+        "verificar-instrucao-processual",
+        "mapear-pendencias",
+        "citar-acordao-tcu"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-governanca",
+      "descricao": "Conformidade documental, controle interno, despachos e indicadores.",
+      "desempenho": 0.91
+    },
+    {
+      "id": "squad-licitacoes-e-contratos",
+      "nome": "Squad de Licitações e Contratos",
+      "area": "Licitações e Contratos",
+      "liderTitulo": "Pregoeiro / Agente de Contratação",
+      "membros": [
+        {
+          "nodeId": "t-g-pregoeiro",
+          "node": {
+            "id": "t-g-pregoeiro",
+            "titulo": "Pregoeiro / Agente de Contratação",
+            "area": "Licitações e Contratos",
+            "responsabilidades": [
+              "instruir processo de contratacao",
+              "checar conformidade com a lei 14133"
+            ],
+            "parentId": "t-g-diretor"
+          },
+          "agent": {
+            "id": "agente-instrucao-contratacao",
+            "nome": "Agente de Instrução de Contratação",
+            "area": "Licitações e Contratos",
+            "mode": "governo",
+            "autonomia": "A2",
+            "descricao": "Monta ETP/TR e verifica conformidade com a Lei 14.133/2021, incluindo checagem de segregação de funções.",
+            "skills": [
+              "montar-etp",
+              "montar-tr",
+              "checklist-14133",
+              "verificar-segregacao-funcoes"
+            ],
+            "connectors": [
+              "mcp-sipac",
+              "mcp-comprasgov"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet",
+              "sensitive": "llama-3-70b-onprem"
+            },
+            "execucoesMes": 64,
+            "taxaAprovacao": 0.86,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.6363636363636364
+        },
+        {
+          "nodeId": "t-g-gestor-contratos",
+          "node": {
+            "id": "t-g-gestor-contratos",
+            "titulo": "Gestor(a) de Contratos",
+            "area": "Licitações e Contratos",
+            "responsabilidades": [
+              "controlar aditivos e prazos",
+              "monitorar saldo de empenho"
+            ],
+            "parentId": "t-g-diretor"
+          },
+          "agent": {
+            "id": "agente-vigencia-contratual",
+            "nome": "Agente de Vigência Contratual",
+            "area": "Licitações e Contratos",
+            "mode": "governo",
+            "autonomia": "A3",
+            "descricao": "Monitora vigências e saldo de empenho, alerta prazos (D-180/D-90/D-30) e prepara minuta de aditivo quando cabível.",
+            "skills": [
+              "monitorar-vigencias",
+              "alertar-prazos",
+              "preparar-aditivo",
+              "checar-saldo-empenho"
+            ],
+            "connectors": [
+              "mcp-sipac",
+              "mcp-comprasnet-contratos"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 38,
+            "taxaAprovacao": 0.89,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.6666666666666666
+        }
+      ],
+      "skills": [
+        "montar-etp",
+        "montar-tr",
+        "checklist-14133",
+        "verificar-segregacao-funcoes",
+        "monitorar-vigencias",
+        "alertar-prazos",
+        "preparar-aditivo",
+        "checar-saldo-empenho"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-licitacoes",
+      "descricao": "Instrução de contratações, pesquisa de preços, vigências e aditivos sob a Lei 14.133/2021.",
+      "desempenho": 0.94
+    },
+    {
+      "id": "squad-orcamento-e-financas",
+      "nome": "Squad de Orçamento e Finanças",
+      "area": "Orçamento e Finanças",
+      "liderTitulo": "Fiscal de Contrato",
+      "membros": [
+        {
+          "nodeId": "t-g-fiscal",
+          "node": {
+            "id": "t-g-fiscal",
+            "titulo": "Fiscal de Contrato",
+            "area": "Orçamento e Finanças",
+            "responsabilidades": [
+              "conferir nota fiscal contra empenho",
+              "alertar vigencias contratuais"
+            ],
+            "parentId": "t-g-diretor"
+          },
+          "agent": {
+            "id": "agente-atesto-nf",
+            "nome": "Agente de Atesto de Nota Fiscal",
+            "area": "Orçamento e Finanças",
+            "mode": "governo",
+            "autonomia": "A2",
+            "descricao": "Lê a NF-e, confere contra o empenho no SIPAC e checa regularidade fiscal antes de preparar a minuta de atesto.",
+            "skills": [
+              "ler-nota-fiscal",
+              "conferir-nf-contra-empenho",
+              "checar-regularidade-fiscal",
+              "preparar-atesto"
+            ],
+            "connectors": [
+              "mcp-sipac",
+              "mcp-sicaf"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet",
+              "sensitive": "llama-3-70b-onprem"
+            },
+            "execucoesMes": 213,
+            "taxaAprovacao": 0.95,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.6363636363636364
+        }
+      ],
+      "skills": [
+        "ler-nota-fiscal",
+        "conferir-nf-contra-empenho",
+        "checar-regularidade-fiscal",
+        "preparar-atesto"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-financas",
+      "descricao": "Atesto de notas fiscais, conciliação e execução orçamentária/financeira.",
+      "desempenho": 0.93
+    },
+    {
+      "id": "squad-comunicacao",
+      "nome": "Squad de Comunicação",
+      "area": "Comunicação",
+      "liderTitulo": "Analista de Comunicação",
+      "membros": [
+        {
+          "nodeId": "t-g-comunicacao",
+          "node": {
+            "id": "t-g-comunicacao",
+            "titulo": "Analista de Comunicação",
+            "area": "Comunicação",
+            "responsabilidades": [
+              "responder pedidos de acesso a informacao",
+              "checar sigilo e lgpd"
+            ],
+            "parentId": "t-g-diretor"
+          },
+          "agent": {
+            "id": "agente-atendimento-lai",
+            "nome": "Agente de Atendimento LAI",
+            "area": "Comunicação",
+            "mode": "governo",
+            "autonomia": "A2",
+            "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+            "skills": [
+              "triar-pedido-lai",
+              "redigir-resposta",
+              "checar-sigilo-lgpd"
+            ],
+            "connectors": [
+              "mcp-sipac",
+              "mcp-govbr"
+            ],
+            "modelPolicy": {
+              "default": "claude-sonnet"
+            },
+            "execucoesMes": 22,
+            "taxaAprovacao": 0.93,
+            "status": "ativo"
+          },
+          "origem": "catalogo",
+          "score": 0.5555555555555556
+        }
+      ],
+      "skills": [
+        "triar-pedido-lai",
+        "redigir-resposta",
+        "checar-sigilo-lgpd"
+      ],
+      "origem": "repositorio",
+      "templateId": "tpl-comunicacao",
+      "descricao": "Atendimento LAI, notas públicas e conteúdo institucional/de marca.",
+      "desempenho": 0.9
+    }
+  ],
+  "institutionalSquads": [
+    {
+      "id": "tpl-fundacao",
+      "nome": "Squad de Fundação",
+      "area": "Meta",
+      "areaKeywords": [
+        "fundacao",
+        "criacao",
+        "bootstrap"
+      ],
+      "descricao": "Squad meta: especializado em desenhar e criar novos squads a partir das funções e responsabilidades de uma área. É acionado pela Ferramenta de Criação de Squads.",
+      "desempenho": 0.98,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-licitacoes",
+      "nome": "Squad de Licitações e Contratos",
+      "area": "Licitações e Contratos",
+      "areaKeywords": [
+        "licitacao",
+        "licitacoes",
+        "contratos",
+        "compras",
+        "pregao",
+        "contratacao"
+      ],
+      "descricao": "Instrução de contratações, pesquisa de preços, vigências e aditivos sob a Lei 14.133/2021.",
+      "desempenho": 0.94,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-financas",
+      "nome": "Squad de Orçamento e Finanças",
+      "area": "Orçamento e Finanças",
+      "areaKeywords": [
+        "orcamento",
+        "financas",
+        "financeiro",
+        "empenho",
+        "liquidacao",
+        "atesto",
+        "pagamento"
+      ],
+      "descricao": "Atesto de notas fiscais, conciliação e execução orçamentária/financeira.",
+      "desempenho": 0.93,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-governanca",
+      "nome": "Squad de Governança",
+      "area": "Gabinete/Governança",
+      "areaKeywords": [
+        "gabinete",
+        "governanca",
+        "auditoria",
+        "controle",
+        "conformidade",
+        "direcao"
+      ],
+      "descricao": "Conformidade documental, controle interno, despachos e indicadores.",
+      "desempenho": 0.91,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-comunicacao",
+      "nome": "Squad de Comunicação",
+      "area": "Comunicação",
+      "areaKeywords": [
+        "comunicacao",
+        "lai",
+        "transparencia",
+        "imprensa",
+        "marketing"
+      ],
+      "descricao": "Atendimento LAI, notas públicas e conteúdo institucional/de marca.",
+      "desempenho": 0.9,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-comercial",
+      "nome": "Squad Comercial",
+      "area": "Vendas",
+      "areaKeywords": [
+        "vendas",
+        "comercial",
+        "negocios",
+        "leads",
+        "propostas",
+        "crm"
+      ],
+      "descricao": "Qualificação de leads, preparação de propostas e apoio à negociação.",
+      "desempenho": 0.92,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-clientes",
+      "nome": "Squad de Clientes",
+      "area": "Clientes",
+      "areaKeywords": [
+        "clientes",
+        "atendimento",
+        "suporte",
+        "tickets",
+        "sucesso"
+      ],
+      "descricao": "Triagem e resposta de tickets com citação da base de conhecimento.",
+      "desempenho": 0.9,
+      "origem": "institucional"
+    }
+  ],
+  "loadRepository": [
+    {
+      "id": "tpl-fundacao",
+      "nome": "Squad de Fundação",
+      "area": "Meta",
+      "areaKeywords": [
+        "fundacao",
+        "criacao",
+        "bootstrap"
+      ],
+      "descricao": "Squad meta: especializado em desenhar e criar novos squads a partir das funções e responsabilidades de uma área. É acionado pela Ferramenta de Criação de Squads.",
+      "desempenho": 0.98,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-licitacoes",
+      "nome": "Squad de Licitações e Contratos",
+      "area": "Licitações e Contratos",
+      "areaKeywords": [
+        "licitacao",
+        "licitacoes",
+        "contratos",
+        "compras",
+        "pregao",
+        "contratacao"
+      ],
+      "descricao": "Instrução de contratações, pesquisa de preços, vigências e aditivos sob a Lei 14.133/2021.",
+      "desempenho": 0.94,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-financas",
+      "nome": "Squad de Orçamento e Finanças",
+      "area": "Orçamento e Finanças",
+      "areaKeywords": [
+        "orcamento",
+        "financas",
+        "financeiro",
+        "empenho",
+        "liquidacao",
+        "atesto",
+        "pagamento"
+      ],
+      "descricao": "Atesto de notas fiscais, conciliação e execução orçamentária/financeira.",
+      "desempenho": 0.93,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-governanca",
+      "nome": "Squad de Governança",
+      "area": "Gabinete/Governança",
+      "areaKeywords": [
+        "gabinete",
+        "governanca",
+        "auditoria",
+        "controle",
+        "conformidade",
+        "direcao"
+      ],
+      "descricao": "Conformidade documental, controle interno, despachos e indicadores.",
+      "desempenho": 0.91,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-comunicacao",
+      "nome": "Squad de Comunicação",
+      "area": "Comunicação",
+      "areaKeywords": [
+        "comunicacao",
+        "lai",
+        "transparencia",
+        "imprensa",
+        "marketing"
+      ],
+      "descricao": "Atendimento LAI, notas públicas e conteúdo institucional/de marca.",
+      "desempenho": 0.9,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-comercial",
+      "nome": "Squad Comercial",
+      "area": "Vendas",
+      "areaKeywords": [
+        "vendas",
+        "comercial",
+        "negocios",
+        "leads",
+        "propostas",
+        "crm"
+      ],
+      "descricao": "Qualificação de leads, preparação de propostas e apoio à negociação.",
+      "desempenho": 0.92,
+      "origem": "institucional"
+    },
+    {
+      "id": "tpl-clientes",
+      "nome": "Squad de Clientes",
+      "area": "Clientes",
+      "areaKeywords": [
+        "clientes",
+        "atendimento",
+        "suporte",
+        "tickets",
+        "sucesso"
+      ],
+      "descricao": "Triagem e resposta de tickets com citação da base de conhecimento.",
+      "desempenho": 0.9,
+      "origem": "institucional"
+    }
+  ],
+  "bestBuilderSquad": {
+    "id": "tpl-fundacao",
+    "nome": "Squad de Fundação",
+    "area": "Meta",
+    "areaKeywords": [
+      "fundacao",
+      "criacao",
+      "bootstrap"
+    ],
+    "descricao": "Squad meta: especializado em desenhar e criar novos squads a partir das funções e responsabilidades de uma área. É acionado pela Ferramenta de Criação de Squads.",
+    "desempenho": 0.98,
+    "origem": "institucional"
+  },
+  "findSquadTemplate": [
+    {
+      "area": "Licitações e Contratos",
+      "output": {
+        "id": "tpl-licitacoes",
+        "nome": "Squad de Licitações e Contratos",
+        "area": "Licitações e Contratos",
+        "areaKeywords": [
+          "licitacao",
+          "licitacoes",
+          "contratos",
+          "compras",
+          "pregao",
+          "contratacao"
+        ],
+        "descricao": "Instrução de contratações, pesquisa de preços, vigências e aditivos sob a Lei 14.133/2021.",
+        "desempenho": 0.94,
+        "origem": "institucional"
+      }
+    },
+    {
+      "area": "Financeiro",
+      "output": {
+        "id": "tpl-financas",
+        "nome": "Squad de Orçamento e Finanças",
+        "area": "Orçamento e Finanças",
+        "areaKeywords": [
+          "orcamento",
+          "financas",
+          "financeiro",
+          "empenho",
+          "liquidacao",
+          "atesto",
+          "pagamento"
+        ],
+        "descricao": "Atesto de notas fiscais, conciliação e execução orçamentária/financeira.",
+        "desempenho": 0.93,
+        "origem": "institucional"
+      }
+    },
+    {
+      "area": "Clientes",
+      "output": {
+        "id": "tpl-clientes",
+        "nome": "Squad de Clientes",
+        "area": "Clientes",
+        "areaKeywords": [
+          "clientes",
+          "atendimento",
+          "suporte",
+          "tickets",
+          "sucesso"
+        ],
+        "descricao": "Triagem e resposta de tickets com citação da base de conhecimento.",
+        "desempenho": 0.9,
+        "origem": "institucional"
+      }
+    },
+    {
+      "area": "Zoologia Aplicada",
+      "output": null
+    },
+    {
+      "area": "",
+      "output": null
+    }
+  ],
+  "createSquadTemplate": [
+    {
+      "area": "Patrimônio",
+      "output": {
+        "id": "tpl-criado-patrimonio",
+        "nome": "Squad de Patrimônio",
+        "area": "Patrimônio",
+        "areaKeywords": [
+          "patrimonio",
+          "inventariar-bens"
+        ],
+        "descricao": "Criado pela Ferramenta de Criação de Squads para cobrir: inventariar bens.",
+        "desempenho": 0.75,
+        "origem": "criado",
+        "criadoPor": "Squad de Fundação",
+        "criadoEm": "<timestamp>"
+      }
+    },
+    {
+      "area": "Zoologia Aplicada",
+      "output": {
+        "id": "tpl-criado-zoologia-aplicada",
+        "nome": "Squad de Zoologia Aplicada",
+        "area": "Zoologia Aplicada",
+        "areaKeywords": [
+          "zoologia-aplicada"
+        ],
+        "descricao": "Criado pela Ferramenta de Criação de Squads para a área Zoologia Aplicada.",
+        "desempenho": 0.75,
+        "origem": "criado",
+        "criadoPor": "Squad de Fundação",
+        "criadoEm": "<timestamp>"
+      }
+    }
+  ],
+  "templates": {
+    "empresa": [
+      {
+        "id": "t-e-ceo",
+        "titulo": "Diretor(a) de Operações",
+        "area": "Direção",
+        "responsabilidades": [
+          "visibilidade de processos",
+          "automação sem novas contratações"
+        ],
+        "parentId": null
+      },
+      {
+        "id": "t-e-vendas",
+        "titulo": "Head de Vendas",
+        "area": "Vendas",
+        "responsabilidades": [
+          "qualificar leads",
+          "preparar propostas comerciais"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      {
+        "id": "t-e-marketing",
+        "titulo": "Analista de Marketing",
+        "area": "Marketing",
+        "responsabilidades": [
+          "gerar conteudo de marca",
+          "revisar tom de voz"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      {
+        "id": "t-e-ti",
+        "titulo": "Gestor(a) de TI e Dados",
+        "area": "Operações",
+        "responsabilidades": [
+          "governanca e seguranca",
+          "integracao sem lock-in"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      {
+        "id": "t-e-atendimento",
+        "titulo": "Coordenador(a) de Atendimento",
+        "area": "Clientes",
+        "responsabilidades": [
+          "triagem de tickets",
+          "resposta com base de conhecimento"
+        ],
+        "parentId": "t-e-ceo"
+      },
+      {
+        "id": "t-e-financeiro",
+        "titulo": "Analista Financeiro",
+        "area": "Back Office",
+        "responsabilidades": [
+          "conciliar lancamentos",
+          "sinalizar divergencias"
+        ],
+        "parentId": "t-e-ceo"
+      }
+    ],
+    "governo": [
+      {
+        "id": "t-g-diretor",
+        "titulo": "Diretor(a) de Administração",
+        "area": "Gabinete/Governança",
+        "responsabilidades": [
+          "controle interno",
+          "despachos e indicadores"
+        ],
+        "parentId": null
+      },
+      {
+        "id": "t-g-pregoeiro",
+        "titulo": "Pregoeiro / Agente de Contratação",
+        "area": "Licitações e Contratos",
+        "responsabilidades": [
+          "instruir processo de contratacao",
+          "checar conformidade com a lei 14133"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      {
+        "id": "t-g-fiscal",
+        "titulo": "Fiscal de Contrato",
+        "area": "Orçamento e Finanças",
+        "responsabilidades": [
+          "conferir nota fiscal contra empenho",
+          "alertar vigencias contratuais"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      {
+        "id": "t-g-gestor-contratos",
+        "titulo": "Gestor(a) de Contratos",
+        "area": "Licitações e Contratos",
+        "responsabilidades": [
+          "controlar aditivos e prazos",
+          "monitorar saldo de empenho"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      {
+        "id": "t-g-auditor",
+        "titulo": "Auditor(a) Interno",
+        "area": "Gabinete/Governança",
+        "responsabilidades": [
+          "verificar instrucao processual",
+          "checar segregacao de funcoes"
+        ],
+        "parentId": "t-g-diretor"
+      },
+      {
+        "id": "t-g-comunicacao",
+        "titulo": "Analista de Comunicação",
+        "area": "Comunicação",
+        "responsabilidades": [
+          "responder pedidos de acesso a informacao",
+          "checar sigilo e lgpd"
+        ],
+        "parentId": "t-g-diretor"
+      }
+    ]
+  },
+  "buildOrgWorkflow": [
+    {
+      "id": "wf-coordenacao-de-contratos",
+      "titulo": "wf-coordenacao-de-contratos",
+      "descricao": "Workflow gerado do seu organograma: a função \"Coordenação de Contratos\" executada pelas skills de Agente de Coordenação de Contratos, com aprovação humana ao final.",
+      "steps": [
+        {
+          "id": "trigger",
+          "tipo": "trigger",
+          "label": "Demanda para Coordenação de Contratos",
+          "descricao": "Uma solicitação chega para a função \"Coordenação de Contratos\" (Licitações e Contratos)."
+        },
+        {
+          "id": "s1",
+          "tipo": "agent",
+          "label": "fiscalizar-contratos",
+          "agente": "Agente de Coordenação de Contratos",
+          "autonomia": "A2",
+          "descricao": "fiscalizar contratos (gerada a partir da função \"Coordenação de Contratos\")."
+        },
+        {
+          "id": "s2",
+          "tipo": "agent",
+          "label": "instruir-processos",
+          "agente": "Agente de Coordenação de Contratos",
+          "autonomia": "A2",
+          "descricao": "instruir processos (gerada a partir da função \"Coordenação de Contratos\")."
+        },
+        {
+          "id": "gate",
+          "tipo": "human_approval",
+          "label": "Revisão humana",
+          "regra": "aprovador = responsável pela função",
+          "descricao": "O resultado só segue após revisão do responsável no organograma — a decisão é registrada na trilha de auditoria append-only."
+        }
+      ]
+    },
+    {
+      "id": "wf-diretoria-financeira",
+      "titulo": "wf-diretoria-financeira",
+      "descricao": "Workflow gerado do seu organograma: a função \"Diretoria Financeira\" executada pelas skills de Agente de Diretoria Financeira, com aprovação humana ao final.",
+      "steps": [
+        {
+          "id": "trigger",
+          "tipo": "trigger",
+          "label": "Demanda para Diretoria Financeira",
+          "descricao": "Uma solicitação chega para a função \"Diretoria Financeira\" (Financeiro)."
+        },
+        {
+          "id": "s1",
+          "tipo": "agent",
+          "label": "pagar-fornecedores",
+          "agente": "Agente de Diretoria Financeira",
+          "autonomia": "A2",
+          "descricao": "pagar fornecedores (gerada a partir da função \"Diretoria Financeira\")."
+        },
+        {
+          "id": "gate",
+          "tipo": "human_approval",
+          "label": "Revisão humana",
+          "regra": "aprovador = responsável pela função",
+          "descricao": "O resultado só segue após revisão do responsável no organograma — a decisão é registrada na trilha de auditoria append-only."
+        }
+      ]
+    },
+    {
+      "id": "wf-assessoria-de-comunicacao",
+      "titulo": "wf-assessoria-de-comunicacao",
+      "descricao": "Workflow gerado do seu organograma: a função \"Assessoria de Comunicação\" executada pelas skills de Agente de Atendimento LAI, com aprovação humana ao final.",
+      "steps": [
+        {
+          "id": "trigger",
+          "tipo": "trigger",
+          "label": "Demanda para Assessoria de Comunicação",
+          "descricao": "Uma solicitação chega para a função \"Assessoria de Comunicação\" (Comunicação)."
+        },
+        {
+          "id": "s1",
+          "tipo": "agent",
+          "label": "triar-pedido-lai",
+          "agente": "Agente de Atendimento LAI",
+          "autonomia": "A2",
+          "descricao": "Triagem inicial do pedido de acesso à informação (LAI)."
+        },
+        {
+          "id": "s2",
+          "tipo": "agent",
+          "label": "redigir-resposta",
+          "agente": "Agente de Atendimento LAI",
+          "autonomia": "A2",
+          "descricao": "Redige a resposta ao cidadão com base em dados públicos."
+        },
+        {
+          "id": "s3",
+          "tipo": "agent",
+          "label": "checar-sigilo-lgpd",
+          "agente": "Agente de Atendimento LAI",
+          "autonomia": "A2",
+          "descricao": "Verifica se a resposta expõe dado pessoal ou sigiloso (LGPD)."
+        },
+        {
+          "id": "gate",
+          "tipo": "human_approval",
+          "label": "Revisão humana",
+          "regra": "aprovador = responsável pela função",
+          "descricao": "O resultado só segue após revisão do responsável no organograma — a decisão é registrada na trilha de auditoria append-only."
+        }
+      ]
+    },
+    {
+      "id": "wf-setor-sem-correspondencia",
+      "titulo": "wf-setor-sem-correspondencia",
+      "descricao": "Workflow gerado do seu organograma: a função \"Setor Sem Correspondência\" executada pelas skills de Agente de Setor Sem Correspondência, com aprovação humana ao final.",
+      "steps": [
+        {
+          "id": "trigger",
+          "tipo": "trigger",
+          "label": "Demanda para Setor Sem Correspondência",
+          "descricao": "Uma solicitação chega para a função \"Setor Sem Correspondência\" (Zoologia Aplicada)."
+        },
+        {
+          "id": "s1",
+          "tipo": "agent",
+          "label": "observar-aves",
+          "agente": "Agente de Setor Sem Correspondência",
+          "autonomia": "A2",
+          "descricao": "observar aves (gerada a partir da função \"Setor Sem Correspondência\")."
+        },
+        {
+          "id": "gate",
+          "tipo": "human_approval",
+          "label": "Revisão humana",
+          "regra": "aprovador = responsável pela função",
+          "descricao": "O resultado só segue após revisão do responsável no organograma — a decisão é registrada na trilha de auditoria append-only."
+        }
+      ]
+    }
+  ],
+  "pickWorkflowAssignment": {
+    "nodeId": "n3",
+    "node": {
+      "id": "n3",
+      "titulo": "Assessoria de Comunicação",
+      "area": "Comunicação",
+      "responsabilidades": [
+        "redigir notas à imprensa"
+      ],
+      "parentId": null
+    },
+    "agent": {
+      "id": "agente-atendimento-lai",
+      "nome": "Agente de Atendimento LAI",
+      "area": "Comunicação",
+      "mode": "governo",
+      "autonomia": "A2",
+      "descricao": "Triagem de pedidos LAI, redige resposta e checa sigilo/LGPD antes do envio ao cidadão.",
+      "skills": [
+        "triar-pedido-lai",
+        "redigir-resposta",
+        "checar-sigilo-lgpd"
+      ],
+      "connectors": [
+        "mcp-sipac",
+        "mcp-govbr"
+      ],
+      "modelPolicy": {
+        "default": "claude-sonnet"
+      },
+      "execucoesMes": 22,
+      "taxaAprovacao": 0.93,
+      "status": "ativo"
+    },
+    "origem": "catalogo",
+    "score": 0.4
+  },
+  "skillsRegistry": {
+    "ensure": {
+      "id": "fiscalizar-contratos",
+      "descricao": "fiscalizar contratos (gerada a partir da função \"Coordenação de Contratos\").",
+      "origem": "gerada",
+      "criadaEm": "<timestamp>"
+    },
+    "get": {
+      "id": "fiscalizar-contratos",
+      "descricao": "fiscalizar contratos (gerada a partir da função \"Coordenação de Contratos\").",
+      "origem": "gerada",
+      "criadaEm": "<timestamp>"
+    },
+    "listSize": 52
+  }
+}

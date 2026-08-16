@@ -1,0 +1,1329 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/marciobisognin/GeniusAI/schemas/canon.schema.json",
+  "title": "Genius Allspark — canon",
+  "description": "Entidades canônicas, enums e payloads de evento do Genius Allspark. Gerado a partir de packages/canon/src/schemas.ts — não editar à mão.",
+  "definitions": {
+    "Agent": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area": {
+          "type": "string"
+        },
+        "descricao": {
+          "type": "string",
+          "default": ""
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "connectors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "modelPolicy": {
+          "type": "object",
+          "properties": {
+            "default": {
+              "type": "string",
+              "minLength": 1
+            },
+            "fallback": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "default"
+          ],
+          "additionalProperties": false
+        },
+        "autonomia": {
+          "type": "string",
+          "enum": [
+            "A0",
+            "A1",
+            "A2",
+            "A3",
+            "A4",
+            "A5"
+          ],
+          "default": "A0"
+        },
+        "origem": {
+          "type": "string",
+          "enum": [
+            "catalogo",
+            "gerado",
+            "importado",
+            "mind-clone",
+            "institucional",
+            "criado"
+          ],
+          "default": "criado"
+        },
+        "origemDetalhe": {
+          "type": "string"
+        },
+        "mindCloneId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "Squad": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "area": {
+          "type": "string"
+        },
+        "descricao": {
+          "type": "string",
+          "default": ""
+        },
+        "agentIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "liderAgentId": {
+          "type": "string"
+        },
+        "desempenho": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "origem": {
+          "type": "string",
+          "enum": [
+            "catalogo",
+            "gerado",
+            "importado",
+            "mind-clone",
+            "institucional",
+            "criado"
+          ],
+          "default": "criado"
+        },
+        "origemDetalhe": {
+          "type": "string"
+        },
+        "companyId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "Company": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descricao": {
+          "type": "string"
+        },
+        "squadIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "MindClone": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "identidade": {
+          "type": "string",
+          "default": ""
+        },
+        "conhecimento": {
+          "type": "string",
+          "default": ""
+        },
+        "raciocinioOperacional": {
+          "type": "string",
+          "default": ""
+        },
+        "comunicacao": {
+          "type": "string",
+          "default": ""
+        },
+        "restricoes": {
+          "type": "string",
+          "default": ""
+        },
+        "evolucao": {
+          "type": "string",
+          "default": ""
+        },
+        "documentosReferencia": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "Skill": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descricao": {
+          "type": "string",
+          "default": ""
+        },
+        "origem": {
+          "type": "string",
+          "enum": [
+            "catalogo",
+            "gerada"
+          ],
+          "default": "gerada"
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "Pack": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "versao": {
+          "type": "string",
+          "default": "1.0.0"
+        },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nome": {
+                "type": "string",
+                "minLength": 1
+              },
+              "area": {
+                "type": "string"
+              },
+              "descricao": {
+                "type": "string",
+                "default": ""
+              },
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "connectors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "modelPolicy": {
+                "type": "object",
+                "properties": {
+                  "default": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "fallback": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "default"
+                ],
+                "additionalProperties": false
+              },
+              "autonomia": {
+                "type": "string",
+                "enum": [
+                  "A0",
+                  "A1",
+                  "A2",
+                  "A3",
+                  "A4",
+                  "A5"
+                ],
+                "default": "A0"
+              },
+              "origem": {
+                "type": "string",
+                "enum": [
+                  "catalogo",
+                  "gerado",
+                  "importado",
+                  "mind-clone",
+                  "institucional",
+                  "criado"
+                ],
+                "default": "criado"
+              },
+              "origemDetalhe": {
+                "type": "string"
+              },
+              "mindCloneId": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Preenchido pelo runtime com o instante da criação."
+              },
+              "updatedAt": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "squads": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nome": {
+                "type": "string",
+                "minLength": 1
+              },
+              "area": {
+                "type": "string"
+              },
+              "descricao": {
+                "type": "string",
+                "default": ""
+              },
+              "agentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "default": []
+              },
+              "liderAgentId": {
+                "type": "string"
+              },
+              "desempenho": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "origem": {
+                "type": "string",
+                "enum": [
+                  "catalogo",
+                  "gerado",
+                  "importado",
+                  "mind-clone",
+                  "institucional",
+                  "criado"
+                ],
+                "default": "criado"
+              },
+              "origemDetalhe": {
+                "type": "string"
+              },
+              "companyId": {
+                "type": "string"
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "description": "Preenchido pelo runtime com o instante da criação."
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "nome": {
+                "type": "string",
+                "minLength": 1
+              },
+              "descricao": {
+                "type": "string",
+                "default": ""
+              },
+              "origem": {
+                "type": "string",
+                "enum": [
+                  "catalogo",
+                  "gerada"
+                ],
+                "default": "gerada"
+              }
+            },
+            "required": [
+              "id",
+              "nome"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "workflows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": {}
+          },
+          "default": []
+        }
+      },
+      "required": [
+        "id",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "ProviderConfig": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tipo": {
+          "type": "string",
+          "enum": [
+            "anthropic",
+            "openai-chat",
+            "openai-codex",
+            "ollama",
+            "openai-compatible"
+          ]
+        },
+        "nome": {
+          "type": "string",
+          "minLength": 1
+        },
+        "baseUrl": {
+          "type": "string"
+        },
+        "apiKeyRef": {
+          "type": "string"
+        },
+        "model": {
+          "type": "string"
+        },
+        "cmd": {
+          "type": "string"
+        },
+        "healthy": {
+          "type": "boolean"
+        },
+        "lastCheckedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "tipo",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "descricao": {
+          "type": "string",
+          "minLength": 1
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "rascunho",
+            "planejado",
+            "em_execucao",
+            "bloqueado",
+            "requer_aprovacao",
+            "concluido",
+            "concluido_com_ressalvas",
+            "cancelado",
+            "falhou"
+          ],
+          "default": "rascunho"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "descricao"
+      ],
+      "additionalProperties": false
+    },
+    "Run": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "taskId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentId": {
+          "type": "string"
+        },
+        "squadId": {
+          "type": "string"
+        },
+        "providerId": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "rascunho",
+            "planejado",
+            "em_execucao",
+            "bloqueado",
+            "requer_aprovacao",
+            "concluido",
+            "concluido_com_ressalvas",
+            "cancelado",
+            "falhou"
+          ],
+          "default": "planejado"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ts": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "type": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "approvalId": {
+                "type": "string"
+              },
+              "autonomia": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "ts",
+              "type",
+              "message"
+            ],
+            "additionalProperties": false
+          },
+          "default": []
+        },
+        "startedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "taskId"
+      ],
+      "additionalProperties": false
+    },
+    "Approval": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "runId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "pendente",
+            "aprovado",
+            "rejeitado"
+          ],
+          "default": "pendente"
+        },
+        "comentario": {
+          "type": "string"
+        },
+        "decididoPor": {
+          "type": "string"
+        },
+        "decididoEm": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "runId"
+      ],
+      "additionalProperties": false
+    },
+    "LearningFlow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "taskPattern": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stepsGeneralized": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agentOrSkillOrigin": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "sourceRunId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "taskPattern",
+        "stepsGeneralized",
+        "agentOrSkillOrigin",
+        "sourceRunId"
+      ],
+      "additionalProperties": false
+    },
+    "MemoryChunk": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": [
+            "learning-flow",
+            "mind-clone-doc",
+            "approved-result"
+          ]
+        },
+        "sourceId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {},
+          "default": {}
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "sourceType",
+        "sourceId"
+      ],
+      "additionalProperties": false
+    },
+    "CanvasNode": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "agent",
+            "squad",
+            "note",
+            "execution"
+          ]
+        },
+        "refId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "default": ""
+        },
+        "content": {
+          "type": "string",
+          "default": ""
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "aguardando",
+            "executando",
+            "aguardando_aprovacao",
+            "concluido",
+            "erro"
+          ]
+        },
+        "log": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "number"
+            },
+            "y": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "x",
+            "y"
+          ],
+          "additionalProperties": false
+        },
+        "providerId": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "position"
+      ],
+      "additionalProperties": false
+    },
+    "CanvasEdge": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Preenchido pelo runtime com o instante da criação."
+        }
+      },
+      "required": [
+        "id",
+        "source",
+        "target"
+      ],
+      "additionalProperties": false
+    },
+    "AutonomyLevel": {
+      "type": "string",
+      "enum": [
+        "A0",
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5"
+      ]
+    },
+    "EntityOrigin": {
+      "type": "string",
+      "enum": [
+        "catalogo",
+        "gerado",
+        "importado",
+        "mind-clone",
+        "institucional",
+        "criado"
+      ]
+    },
+    "ProviderType": {
+      "type": "string",
+      "enum": [
+        "anthropic",
+        "openai-chat",
+        "openai-codex",
+        "ollama",
+        "openai-compatible"
+      ]
+    },
+    "TaskStatus": {
+      "type": "string",
+      "enum": [
+        "rascunho",
+        "planejado",
+        "em_execucao",
+        "bloqueado",
+        "requer_aprovacao",
+        "concluido",
+        "concluido_com_ressalvas",
+        "cancelado",
+        "falhou"
+      ]
+    },
+    "ApprovalStatus": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aprovado",
+        "rejeitado"
+      ]
+    },
+    "MemoryChunkSourceType": {
+      "type": "string",
+      "enum": [
+        "learning-flow",
+        "mind-clone-doc",
+        "approved-result"
+      ]
+    },
+    "CanvasNodeKind": {
+      "type": "string",
+      "enum": [
+        "agent",
+        "squad",
+        "note",
+        "execution"
+      ]
+    },
+    "ExecutionNodeStatus": {
+      "type": "string",
+      "enum": [
+        "aguardando",
+        "executando",
+        "aguardando_aprovacao",
+        "concluido",
+        "erro"
+      ]
+    },
+    "event:agent.loaded": {
+      "type": "object",
+      "properties": {
+        "agentId": {
+          "type": "string"
+        },
+        "origem": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "agentId",
+        "origem"
+      ],
+      "additionalProperties": false
+    },
+    "event:squad.loaded": {
+      "type": "object",
+      "properties": {
+        "squadId": {
+          "type": "string"
+        },
+        "origem": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "squadId",
+        "origem"
+      ],
+      "additionalProperties": false
+    },
+    "event:company.created": {
+      "type": "object",
+      "properties": {
+        "companyId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "companyId"
+      ],
+      "additionalProperties": false
+    },
+    "event:mindclone.created": {
+      "type": "object",
+      "properties": {
+        "mindCloneId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "mindCloneId",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "event:pack.imported": {
+      "type": "object",
+      "properties": {
+        "packId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "packId",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "event:pack.exported": {
+      "type": "object",
+      "properties": {
+        "packId": {
+          "type": "string"
+        },
+        "nome": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "packId",
+        "nome"
+      ],
+      "additionalProperties": false
+    },
+    "event:provider.registered": {
+      "type": "object",
+      "properties": {
+        "providerId": {
+          "type": "string"
+        },
+        "tipo": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "providerId",
+        "tipo"
+      ],
+      "additionalProperties": false
+    },
+    "event:provider.health_checked": {
+      "type": "object",
+      "properties": {
+        "providerId": {
+          "type": "string"
+        },
+        "healthy": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "providerId",
+        "healthy"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.created": {
+      "type": "object",
+      "properties": {
+        "taskId": {
+          "type": "string"
+        },
+        "descricao": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "taskId",
+        "descricao"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.step": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.tool_call": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "tool"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.awaiting_approval": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "approvalId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "approvalId"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.completed": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "taskId"
+      ],
+      "additionalProperties": false
+    },
+    "event:task.failed": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "reason": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "reason"
+      ],
+      "additionalProperties": false
+    },
+    "event:run.started": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        },
+        "taskId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId",
+        "taskId"
+      ],
+      "additionalProperties": false
+    },
+    "event:run.completed": {
+      "type": "object",
+      "properties": {
+        "runId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "runId"
+      ],
+      "additionalProperties": false
+    },
+    "event:approval.granted": {
+      "type": "object",
+      "properties": {
+        "approvalId": {
+          "type": "string"
+        },
+        "runId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approvalId",
+        "runId"
+      ],
+      "additionalProperties": false
+    },
+    "event:approval.rejected": {
+      "type": "object",
+      "properties": {
+        "approvalId": {
+          "type": "string"
+        },
+        "runId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "approvalId",
+        "runId"
+      ],
+      "additionalProperties": false
+    },
+    "event:learning.recorded": {
+      "type": "object",
+      "properties": {
+        "learningFlowId": {
+          "type": "string"
+        },
+        "sourceRunId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "learningFlowId",
+        "sourceRunId"
+      ],
+      "additionalProperties": false
+    },
+    "event:learning.skill_promoted": {
+      "type": "object",
+      "properties": {
+        "skillId": {
+          "type": "string"
+        },
+        "agentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "skillId",
+        "agentId"
+      ],
+      "additionalProperties": false
+    },
+    "event:memory.indexed": {
+      "type": "object",
+      "properties": {
+        "chunkId": {
+          "type": "string"
+        },
+        "sourceType": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "chunkId",
+        "sourceType"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

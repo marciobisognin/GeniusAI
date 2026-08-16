@@ -1,0 +1,27 @@
+name: genius-organograma-pdf
+version: 0.1.0
+description: >-
+  Extrai o organograma e as competências institucionais de uma portaria em PDF
+  (tabela vetorial, com recuperação de linhas cortadas por quebra de página) e
+  entrega a estrutura pronta para o compilador de organograma.
+author: Marcio Bisognin
+license: MIT
+homepage: https://github.com/marciobisognin/GeniusAI/tree/main/iffar-3d-town
+manifest_version: 2
+api_version: 1
+
+provides_tools:
+  - org_extract_pdf
+  - org_extract_competencias
+
+# Sem hooks, pelo mesmo motivo do plug-in do Foresight: as ferramentas bastam.
+provides_hooks: []
+
+requires_env: []
+
+python_dependencies:
+  - "pdfplumber>=0.11"
+  - "pypdf>=5.0"
+  - "PyYAML>=6.0"
+
+tags: [pdf, organograma, normativo, extraction, government]

@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "parity": "UPDATE_PARITY=1 vitest run embeddingParity"
   },
   "dependencies": {
     "@genius/canon": "^0.1.0",
