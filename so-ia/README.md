@@ -1,5 +1,13 @@
 # SO-IA — Sistema Operacional de IA
 
+<p>
+  <img src="https://img.shields.io/badge/Next.js-16-000000?style=flat-square&logo=next.js&logoColor=white" alt="Next.js 16" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=111827" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white" alt="TypeScript 5" />
+  <img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS v4" />
+  <img src="https://img.shields.io/badge/status-camada_de_apresentação-F59E0B?style=flat-square" alt="Status: camada de apresentação" />
+</p>
+
 > Um sistema de agentes de IA que se monta sozinho a partir do organograma
 > da sua empresa ou órgão público — em vez de vir pronto com um catálogo
 > genérico que ninguém pediu.
@@ -10,6 +18,21 @@ brasileiro** (âncora: Instituto Federal Farroupilha / Coordenação de
 Licitação e Contratos).
 
 ![Landing — nada pré-carregado até você configurar sua organização](docs/screenshots/01-landing.png)
+
+---
+
+## Índice
+
+1. [Em uma frase](#em-uma-frase)
+2. [Por que não vem tudo pronto?](#por-que-não-vem-tudo-pronto)
+3. [Visão geral da arquitetura](#visão-geral-da-arquitetura)
+4. [Como funciona, passo a passo](#como-funciona-passo-a-passo)
+5. [Conceitos-chave](#conceitos-chave)
+6. [Rodando localmente](#rodando-localmente)
+7. [Mapa de telas](#mapa-de-telas)
+8. [Stack técnica](#stack-técnica)
+9. [O que ainda é simulado (por enquanto)](#o-que-ainda-é-simulado-por-enquanto)
+10. [Próximos passos](#próximos-passos)
 
 ---
 
@@ -27,6 +50,46 @@ próprios cargos, suas próprias responsabilidades e sua própria hierarquia.
 Em vez de forçar isso num molde fixo (o antigo "Modo Empresa" / "Modo
 Governo" pré-carregado), o SO-IA começa **em branco** e só monta o sistema
 depois de entender a sua organização.
+
+---
+
+## Visão geral da arquitetura
+
+O quadro inteiro antes dos detalhes: **tudo deriva do organograma**, e nada
+existe sem ele.
+
+```mermaid
+flowchart TB
+    ORG["📋 Organograma<br/>cargos · áreas · responsabilidades"]
+
+    subgraph motores["Motores (src/lib/org/*)"]
+        IMPORT["import.ts<br/>lê .json/.csv/.txt/.md/.pdf"]
+        MATCH["matching.ts<br/>reaproveita do catálogo<br/>ou cria sob medida"]
+        SQUADS["squads.ts + squad-registry.ts<br/>um squad por área"]
+        WF["workflow-builder.ts<br/>gera workflow de uma função real"]
+        REL["relevance.ts<br/>⚖️ regra de cobertura"]
+    end
+
+    AGENTES["🤖 Agentes & Skills<br/>um por função"]
+    CONTEUDO["📊 KPIs · pendências · fontes<br/>workflows · atividade"]
+
+    ORG --> IMPORT --> MATCH --> AGENTES
+    MATCH --> SQUADS --> AGENTES
+    MATCH --> WF --> CONTEUDO
+    ORG --> REL
+    REL -->|"área existe?"| CONTEUDO
+    REL -.->|"área ausente → nada aparece"| VAZIO["🚫 Sem ferramenta<br/>daquela área"]
+
+    style ORG fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    style REL fill:#fef3c7,stroke:#d97706,color:#78350f
+    style AGENTES fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style CONTEUDO fill:#dcfce7,stroke:#16a34a,color:#14532d
+    style VAZIO fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+```
+
+A peça central é `relevance.ts`: se o organograma não tem uma área, **nenhuma
+ferramenta, KPI ou pendência daquela área existe no sistema**. É a regra que
+depois virou a "Lei 1" do [Genius Allspark](../docs/PRD-genius-allspark.md).
 
 ---
 
@@ -202,6 +265,8 @@ Na prática:
 
 ## Rodando localmente
 
+**Pré-requisito:** Node.js **20.9+** (exigência do Next.js 16).
+
 ```bash
 cd so-ia
 npm install
@@ -211,6 +276,17 @@ npm run dev
 Abra `http://localhost:3000`. Sem uma organização configurada, qualquer
 tela do app (`/app/*`) redireciona automaticamente para o onboarding — não
 tem como "pular" a etapa de configuração.
+
+| Script | O que faz |
+|---|---|
+| `npm run dev` | Servidor de desenvolvimento (Turbopack) em `:3000` |
+| `npm run build` | Build de produção |
+| `npm start` | Sobe o build de produção |
+| `npm run lint` | ESLint |
+
+> **Quer começar sem digitar um organograma inteiro?** O passo 2 do
+> onboarding aceita arquivo ou texto colado — há exemplos prontos em
+> [`public/templates/`](public/templates/).
 
 ## Mapa de telas
 
@@ -232,12 +308,33 @@ tem como "pular" a etapa de configuração.
 
 ## Stack técnica
 
-- **Next.js 16** (App Router, Turbopack) + **TypeScript**
-- **Tailwind CSS v4**
-- **shadcn/ui** (sobre `@base-ui/react`) para os componentes de base
-- **Framer Motion** para as animações (onboarding, gráfico radial, console de montagem, contadores)
-- **Recharts** para os gráficos do Centro de Comando
-- **next-themes** para dark/light mode
+| Tecnologia | Uso neste projeto |
+|---|---|
+| **Next.js 16** (App Router, Turbopack) | Framework e roteamento das telas |
+| **TypeScript 5** | Tipagem de ponta a ponta, inclusive dos motores |
+| **Tailwind CSS v4** | Estilos |
+| **shadcn/ui** sobre `@base-ui/react` | Componentes de base (usa `render`, não `asChild`) |
+| **Framer Motion** | Animações do onboarding, gráfico radial, console de montagem e contadores |
+| **Recharts** | Gráficos do Centro de Comando |
+| **next-themes** | Dark/light mode |
+| **pdfjs-dist** | Leitura de organograma em PDF, no navegador |
+
+### Estrutura de pastas
+
+```text
+so-ia/
+├── src/
+│   ├── app/                  # rotas (App Router)
+│   │   ├── onboarding/       # tipo → organograma → montagem
+│   │   └── app/              # telas internas (organograma, agentes, squads…)
+│   ├── components/           # UI por domínio (landing, dashboard, graph, …)
+│   │   └── providers/        # OrganizationProvider — o estado do organograma
+│   └── lib/
+│       ├── org/              # ⚙️ os motores (ver tabela abaixo)
+│       └── data/             # catálogos, tipos e cenários de referência
+├── public/templates/         # organogramas de exemplo (.json/.csv)
+└── docs/                     # PRD e screenshots
+```
 
 Todo o estado do organograma e da montagem vive em `OrganizationProvider`
 (`src/components/providers/organization-provider.tsx`) e fica salvo no
@@ -274,10 +371,24 @@ MCP para os sistemas governamentais e de CRM.
 
 O passo seguinte do ecossistema está especificado no
 [PRD — Genius Allspark](../docs/PRD-genius-allspark.md) — e o
-[PRD de Execução](../docs/PRD-genius-allspark-execucao.md) detalha as tarefas:
-os motores deste projeto (`src/lib/org/*`) são extraídos na Fase 0 para os
-pacotes `@genius/canon` e `@genius/org-compiler`, com golden tests garantindo
-comportamento idêntico. O SO-IA é a semente
+[PRD de Execução](../docs/PRD-genius-allspark-execucao.md) detalha as tarefas.
+
+**A extração já aconteceu:** os motores deste projeto (`src/lib/org/*`) agora
+também vivem em [`@genius/org-compiler`](../packages/org-compiler/), com
+**golden tests** provando que o pacote reproduz o comportamento original byte
+a byte — a baseline foi gerada executando o código deste diretório. E o
+compilador virou ferramenta de agente: o servidor
+[`@genius/mcp-organograma`](../packages/mcp-organograma/) expõe a regra de
+cobertura (`org_covers`) para o Hermes, o Claude Code e qualquer cliente MCP,
+transformando a Lei 1 em política de execução — um agente se recusa a usar
+ferramenta de uma área que o organograma não tem.
+
+> Este diretório continua com sua própria cópia dos motores; o pacote é a
+> fonte de verdade daqui para a frente, e o golden test garante que os dois
+> não divergiram. Migrar o app para consumir o pacote exige mexer na resolução
+> de módulos do Next e ainda não foi feito.
+
+O SO-IA é a semente
 (a "Lei 1: nada existe sem o organograma" nasceu aqui, em
 `src/lib/org/relevance.ts`) de um produto unificado que soma ensaio simulado
 de missões (via `geniusai-foresight`), operação assistível com time-travel
