@@ -20,7 +20,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 import hermes_plugin  # noqa: E402
-from hermes_plugin import tools  # noqa: E402
+from hermes_plugin import sync_extractors, tools  # noqa: E402
 
 
 class FakeContext:
@@ -126,6 +126,47 @@ class ContractTest(unittest.TestCase):
     def test_extractors_are_where_the_plugin_expects(self):
         for module in ("extrair_organograma", "extrair_competencias"):
             self.assertTrue((tools.TOOLS_DIR / f"{module}.py").is_file(), module)
+
+
+class VendoredExtractorsTest(unittest.TestCase):
+    """O plug-in precisa funcionar instalado, longe do repositório."""
+
+    def test_extractors_travel_inside_the_plugin(self):
+        # O Hermes copia SÓ o diretório do plug-in para ~/.hermes/plugins/.
+        # Sem esta cópia, toda extração falharia numa instalação real.
+        vendored = Path(hermes_plugin.__file__).parent / "extractors"
+        for module in sync_extractors.MODULES:
+            self.assertTrue((vendored / module).is_file(), module)
+
+    def test_the_vendored_copy_has_precedence(self):
+        self.assertEqual(tools.EXTRACTOR_DIRS[0].name, "extractors")
+
+    def test_vendored_extractors_are_in_sync(self):
+        # Se falhar: rode `python3 hermes_plugin/sync_extractors.py`.
+        self.assertEqual(sync_extractors.check(), [])
+
+    def test_resolves_without_the_repo_tools_directory(self):
+        original = tools.EXTRACTOR_DIRS
+        try:
+            # Simula a instalação: só a cópia embarcada existe.
+            tools.EXTRACTOR_DIRS = (original[0],)
+            for module in ("extrair_organograma", "extrair_competencias"):
+                with self.subTest(module=module):
+                    resolved = tools._extractor_path(module)
+                    self.assertEqual(resolved.parent.name, "extractors")
+                    self.assertTrue(resolved.is_file())
+        finally:
+            tools.EXTRACTOR_DIRS = original
+
+    def test_missing_extractor_explains_how_to_fix(self):
+        original = tools.EXTRACTOR_DIRS
+        try:
+            tools.EXTRACTOR_DIRS = (Path("/lugar/nenhum"),)
+            with self.assertRaises(FileNotFoundError) as erro:
+                tools._extractor_path("extrair_organograma")
+            self.assertIn("sync_extractors", str(erro.exception))
+        finally:
+            tools.EXTRACTOR_DIRS = original
 
 
 if __name__ == "__main__":

@@ -22,9 +22,18 @@ from .embeddings import cosine, embed_text
 
 SCHEMA_VERSION = 1
 
-#: Procedência de um trecho de memória. `MemoryChunkSourceType` no canon
-#: (`schemas/canon.schema.json`) é a fonte desta lista.
-SOURCE_TYPES = ("run", "approval", "learning_flow", "skill", "conversation")
+#: Procedências definidas pelo canon (`MemoryChunkSourceType` em
+#: `schemas/canon.schema.json`). Usar exatamente estes valores é o que permite
+#: um chunk escrito aqui ser lido pelo motor TypeScript e vice-versa —
+#: `tests/test_provider.py` compara esta tupla com o JSON Schema versionado.
+CANONICAL_SOURCE_TYPES = ("learning-flow", "mind-clone-doc", "approved-result")
+
+#: Procedência que só existe deste lado: o Hermes sincroniza turnos de
+#: conversa, e o canon não tem equivalente (ele descreve execuções do Allspark,
+#: não diálogo). Fica separada de propósito, para não passar por canônica.
+PLUGIN_SOURCE_TYPES = ("conversation",)
+
+SOURCE_TYPES = CANONICAL_SOURCE_TYPES + PLUGIN_SOURCE_TYPES
 
 
 @dataclass(frozen=True)

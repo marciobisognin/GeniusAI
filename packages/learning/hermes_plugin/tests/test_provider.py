@@ -13,7 +13,7 @@ if str(ROOT) not in sys.path:
 
 import hermes_plugin  # noqa: E402
 from hermes_plugin.provider import GeniusMemoryProvider  # noqa: E402
-from hermes_plugin.store import SOURCE_TYPES, MemoryStore  # noqa: E402
+from hermes_plugin.store import CANONICAL_SOURCE_TYPES, SOURCE_TYPES, MemoryStore  # noqa: E402
 
 
 class FakeContext:
@@ -79,6 +79,26 @@ class RegistrationTest(unittest.TestCase):
             self.assertEqual(sorted(declared), sorted(s["name"] for s in provider.get_tool_schemas()))
             provider.close()
 
+    def test_source_types_match_the_canon(self):
+        """Guarda contra divergência: as procedências canônicas vêm do canon.
+
+        Um chunk com `sourceType` fora do enum do canon não valida como
+        `MemoryChunk` do outro lado da fronteira — o contrato entre linguagens
+        quebraria em silêncio.
+        """
+        schema = json.loads(
+            (Path(hermes_plugin.__file__).parents[3] / "schemas/canon.schema.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        canonical = schema["definitions"]["MemoryChunkSourceType"]["enum"]
+        self.assertEqual(sorted(CANONICAL_SOURCE_TYPES), sorted(canonical))
+
+    def test_plugin_only_source_type_is_declared_apart(self):
+        """`conversation` não é canônica e não pode se passar por canônica."""
+        self.assertNotIn("conversation", CANONICAL_SOURCE_TYPES)
+        self.assertIn("conversation", SOURCE_TYPES)
+
     def test_declares_no_external_dependency(self):
         """O índice é SQLite e o embedding é local — nada para instalar."""
         manifest = (Path(hermes_plugin.__file__).parent / "plugin.yaml").read_text(encoding="utf-8")
@@ -104,12 +124,12 @@ class ContractTest(TempProviderTest):
             with self.subTest(args=args):
                 self.assertEqual(self.call(self.provider.handle_search, **args)["status"], "error")
 
-        for args in ({}, {"text": ""}, {"text": "x", "source_type": "approval"}):
+        for args in ({}, {"text": ""}, {"text": "x", "source_type": "approved-result"}):
             with self.subTest(args=args):
                 self.assertEqual(self.call(self.provider.handle_index, **args)["status"], "error")
 
     def test_memory_without_provenance_is_refused(self):
-        payload = self.call(self.provider.handle_index, text="algo", source_type="approval", source_id="")
+        payload = self.call(self.provider.handle_index, text="algo", source_type="approved-result", source_id="")
         self.assertEqual(payload["status"], "error")
         self.assertIn("procedência", payload["error"])
 
@@ -127,41 +147,43 @@ class RetrievalTest(TempProviderTest):
         )
 
     def test_indexes_and_finds_by_meaning(self):
-        self.index("Parecer de fiscalização do contrato 12/2026", "approval", "apr-7")
+        self.index("Parecer de fiscalização do contrato 12/2026", "approved-result", "apr-7")
         self.index("Receita de bolo de cenoura", "conversation", "sess-9")
         payload = self.call(self.provider.handle_search, query="fiscalizar contrato")
         self.assertEqual(payload["status"], "ok")
         self.assertEqual(payload["results"][0]["sourceId"], "apr-7")
 
     def test_every_result_carries_provenance(self):
-        self.index("Instrução do processo de compra", "run", "run-3")
+        self.index("Instrução do processo de compra", "learning-flow", "flow-3")
         for result in self.call(self.provider.handle_search, query="processo de compra")["results"]:
             self.assertIn(result["sourceType"], SOURCE_TYPES)
             self.assertTrue(result["sourceId"])
             self.assertTrue(result["createdAt"])
 
     def test_source_type_filter(self):
-        self.index("contrato administrativo", "approval", "apr-1")
+        self.index("contrato administrativo", "approved-result", "apr-1")
         self.index("contrato administrativo", "conversation", "sess-1")
-        payload = self.call(self.provider.handle_search, query="contrato", source_types=["approval"])
-        self.assertEqual({item["sourceType"] for item in payload["results"]}, {"approval"})
+        payload = self.call(
+            self.provider.handle_search, query="contrato", source_types=["approved-result"]
+        )
+        self.assertEqual({item["sourceType"] for item in payload["results"]}, {"approved-result"})
 
     def test_reindexing_the_same_id_updates_instead_of_duplicating(self):
         self.call(
             self.provider.handle_index,
             text="versão 1",
-            source_type="run",
-            source_id="run-1",
+            source_type="learning-flow",
+            source_id="flow-1",
             chunk_id="fixo",
         )
         self.call(
             self.provider.handle_index,
             text="versão 2",
-            source_type="run",
-            source_id="run-1",
+            source_type="learning-flow",
+            source_id="flow-1",
             chunk_id="fixo",
         )
-        self.assertEqual(self.provider.store.count("run"), 1)
+        self.assertEqual(self.provider.store.count("learning-flow"), 1)
 
     def test_sync_turn_stores_conversation_with_weaker_provenance(self):
         self.provider.sync_turn("como fiscalizo um contrato?", "siga o art. 117", session_id="s-1")
@@ -174,7 +196,7 @@ class RetrievalTest(TempProviderTest):
 
     def test_prefetch_prefers_approved_over_conversation(self):
         self.provider.sync_turn("contrato administrativo", "resposta qualquer", session_id="s-1")
-        self.index("contrato administrativo fiscalizado e aprovado", "approval", "apr-9")
+        self.index("contrato administrativo fiscalizado e aprovado", "approved-result", "apr-9")
         context = self.provider.prefetch("contrato administrativo")
         linhas = [linha for linha in context.splitlines() if linha.startswith("- [")]
         self.assertTrue(linhas[0].startswith("- [aprovação apr-9]"), linhas)
@@ -183,7 +205,7 @@ class RetrievalTest(TempProviderTest):
         self.assertEqual(self.provider.prefetch("assunto inexistente"), "")
 
     def test_prefetch_explains_the_provenance(self):
-        self.index("execução aprovada", "approval", "apr-2")
+        self.index("execução aprovada", "approved-result", "apr-2")
         self.assertIn("revisão humana", self.provider.prefetch("execução"))
 
 
@@ -193,7 +215,7 @@ class StoreTest(unittest.TestCase):
             store = MemoryStore(Path(directory) / "m.sqlite3")
             for index in range(5):
                 store.index_chunk(
-                    chunk_id=f"c{index}", text="mesmo texto", source_type="run", source_id=f"r{index}"
+                    chunk_id=f"c{index}", text="mesmo texto", source_type="learning-flow", source_id=f"r{index}"
                 )
             first = [hit.id for hit in store.search("mesmo texto", k=5)]
             second = [hit.id for hit in store.search("mesmo texto", k=5)]
@@ -205,18 +227,18 @@ class StoreTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "m.sqlite3"
             store = MemoryStore(path)
-            store.index_chunk(chunk_id="c1", text="persistente", source_type="run", source_id="r1")
+            store.index_chunk(chunk_id="c1", text="persistente", source_type="learning-flow", source_id="r1")
             store.close()
 
             reopened = MemoryStore(path)
             self.assertEqual(reopened.count(), 1)
-            self.assertEqual(reopened.stats(), {"run": 1})
+            self.assertEqual(reopened.stats(), {"learning-flow": 1})
             reopened.close()
 
     def test_empty_query_returns_nothing(self):
         with tempfile.TemporaryDirectory() as directory:
             store = MemoryStore(Path(directory) / "m.sqlite3")
-            store.index_chunk(chunk_id="c1", text="algo", source_type="run", source_id="r1")
+            store.index_chunk(chunk_id="c1", text="algo", source_type="learning-flow", source_id="r1")
             self.assertEqual(store.search(""), [])
             store.close()
 

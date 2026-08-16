@@ -12,9 +12,16 @@ trecho recuperado sabe de onde veio:
 
 | `sourceType` | O que é | Peso |
 |---|---|---|
-| `approval` | Passou por aprovação humana | mais forte |
-| `run` · `learning_flow` · `skill` | Execução registrada | forte |
+| `approved-result` | Resultado que passou por aprovação humana | mais forte |
+| `learning-flow` · `mind-clone-doc` | Conhecimento registrado do Allspark | forte |
 | `conversation` | Conversa anterior, sem revisão | mais fraco |
+
+Os três primeiros são **os valores do canon** (`MemoryChunkSourceType` em
+`schemas/canon.schema.json`) — usar exatamente eles é o que permite um chunk
+escrito aqui ser lido pelo motor TypeScript, e vice-versa. Um teste compara a
+tupla do Python com o JSON Schema versionado. `conversation` é extensão só
+deste lado (o Hermes sincroniza turnos; o canon não tem equivalente) e fica
+declarada à parte, para não passar por canônica.
 
 `prefetch` serve as aprovadas primeiro e **diz no próprio contexto** o que
 passou por revisão humana e o que não passou. Indexar sem `source_id` é

@@ -4,9 +4,16 @@ Mesmo contrato do plug-in do Foresight, e pelas mesmas razões: todo handler
 devolve **string JSON** (inclusive no erro), nunca levanta exceção, e aceita
 `**kwargs`.
 
-Os extratores vivem em `../tools/` como scripts de linha de comando. Aqui eles
-são importados por caminho e chamados como funções — nada de `subprocess`, que
-só acrescentaria uma fronteira de processo e perderia a exceção original.
+Os extratores vivem em `../tools/` como scripts de linha de comando, e uma
+cópia deles viaja **dentro** do plug-in (`extractors/`, mantida por
+`sync_extractors.py`). A cópia não é preciosismo: o Hermes instala um plug-in
+copiando o diretório do plug-in para `~/.hermes/plugins/<nome>/`, e o diretório
+irmão `tools/` não vai junto — sem a cópia, as ferramentas carregariam e
+falhariam em toda extração fora de um checkout do repositório.
+
+Eles são importados como módulos e chamados como funções — nada de
+`subprocess`, que só acrescentaria uma fronteira de processo e perderia a
+exceção original.
 
 As dependências pesadas (`pdfplumber`, `pypdf`, `PyYAML`) são importadas dentro
 dos handlers: o plug-in precisa carregar — e `hermes plugins doctor` precisa
@@ -23,7 +30,16 @@ import re
 import sys
 from typing import Any, Callable
 
-TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
+PLUGIN_DIR = Path(__file__).resolve().parent
+
+#: Onde procurar os extratores, nesta ordem: a cópia que viaja com o plug-in
+#: (é o que existe numa instalação) e, como reserva, a fonte no repositório
+#: (para o caso de alguém rodar o plug-in do checkout sem ter feito o sync).
+#: As duas são idênticas — `sync_extractors.py --check` roda no teste.
+EXTRACTOR_DIRS = (PLUGIN_DIR / "extractors", PLUGIN_DIR.parent / "tools")
+
+#: Mantido para compatibilidade e para os testes: a fonte de verdade.
+TOOLS_DIR = PLUGIN_DIR.parent / "tools"
 
 #: Página em que termina o Art. 1º na Portaria nº 876/2026-GRE (a fonte para a
 #: qual os extratores foram depurados). Outro documento provavelmente precisa
@@ -49,11 +65,32 @@ def _handler(func: Callable[..., Any]) -> Callable[..., str]:
     return wrapper
 
 
+def _extractor_path(module_name: str) -> Path:
+    """Resolve o arquivo do extrator sem importá-lo.
+
+    Separado do import de propósito: importar executa `import pdfplumber` no
+    topo do script, então só a resolução pode ser testada num ambiente sem as
+    dependências pesadas — que é exatamente o ambiente em que o plug-in precisa
+    carregar sem quebrar.
+    """
+    path = next(
+        (candidate / f"{module_name}.py" for candidate in EXTRACTOR_DIRS
+         if (candidate / f"{module_name}.py").is_file()),
+        None,
+    )
+    if path is None:
+        procurados = ", ".join(str(candidate) for candidate in EXTRACTOR_DIRS)
+        raise FileNotFoundError(
+            f"extrator {module_name} não encontrado em: {procurados}. "
+            "Se o plug-in foi instalado sem a pasta extractors/, rode "
+            "`python3 hermes_plugin/sync_extractors.py` no repositório e reinstale."
+        )
+    return path
+
+
 def _load_extractor(module_name: str):
-    """Importa um dos scripts de `tools/` como módulo."""
-    path = TOOLS_DIR / f"{module_name}.py"
-    if not path.is_file():
-        raise FileNotFoundError(f"extrator não encontrado: {path}")
+    """Importa um extrator, da cópia embarcada ou da fonte no repositório."""
+    path = _extractor_path(module_name)
     cached = sys.modules.get(f"_genius_{module_name}")
     if cached is not None:
         return cached

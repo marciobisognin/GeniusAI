@@ -19,7 +19,7 @@ import os
 from pathlib import Path
 from typing import Any, Sequence
 
-from .store import SOURCE_TYPES, MemoryStore
+from .store import CANONICAL_SOURCE_TYPES, SOURCE_TYPES, MemoryStore
 
 try:  # pragma: no cover - depende do ambiente do Hermes
     from hermes_agent.memory import MemoryProvider as _HermesMemoryProvider
@@ -30,7 +30,7 @@ DEFAULT_DB = "~/.hermes/genius-memory/memory.sqlite3"
 
 #: Quando o agente busca contexto, execuções aprovadas valem mais que conversa
 #: solta. A conversa entra só para completar o k pedido.
-PREFETCH_PRIORITY = ("approval", "run", "learning_flow", "skill")
+PREFETCH_PRIORITY = CANONICAL_SOURCE_TYPES
 
 
 class GeniusMemoryProvider(_HermesMemoryProvider):  # type: ignore[misc,valid-type]
@@ -102,12 +102,12 @@ class GeniusMemoryProvider(_HermesMemoryProvider):  # type: ignore[misc,valid-ty
         for hit in hits:
             origem = (
                 f"aprovação {hit.source_id}"
-                if hit.source_type == "approval"
+                if hit.source_type == "approved-result"
                 else f"{hit.source_type} {hit.source_id}"
             )
             lines.append(f"- [{origem}] {hit.text}")
         lines.append(
-            "Procedência acima é literal: trechos de 'aprovação' e 'run' vieram de execuções "
+            "Procedência acima é literal: 'aprovação' e 'learning-flow' vieram de execuções "
             "registradas; 'conversation' é só conversa anterior e não passou por revisão humana."
         )
         return "\n".join(lines)
@@ -119,9 +119,9 @@ class GeniusMemoryProvider(_HermesMemoryProvider):  # type: ignore[misc,valid-ty
                 "name": "memory_search",
                 "description": (
                     "Busca por significado na memória indexada do Genius Allspark. "
-                    "Cada resultado traz a procedência: de qual run, aprovação, fluxo de "
-                    "aprendizado ou conversa ele veio. Prefira resultados com procedência "
-                    "'approval' — passaram por revisão humana."
+                    "Cada resultado traz a procedência: de qual resultado aprovado, fluxo de "
+                    "aprendizado, documento de mind-clone ou conversa ele veio. Prefira "
+                    "'approved-result' — passou por revisão humana."
                 ),
                 "parameters": {
                     "type": "object",
