@@ -1,0 +1,32 @@
+name: genius-memory
+version: 0.1.0
+description: >-
+  Memória indexada com procedência: guarda execuções aprovadas por humano — não
+  só conversa — e cada trecho recuperado diz de qual run e de qual aprovação
+  veio. Embedding local por hashing trick, sem nenhuma API externa.
+author: Marcio Bisognin
+license: MIT
+homepage: https://github.com/marciobisognin/GeniusAI/tree/main/packages/learning
+manifest_version: 2
+api_version: 1
+
+provides_tools:
+  - memory_search
+  - memory_index
+
+provides_hooks: []
+
+config_schema:
+  db_path:
+    type: str
+    default: "~/.hermes/genius-memory/memory.sqlite3"
+    description: "Arquivo SQLite do índice de memória."
+  prefetch_k:
+    type: int
+    default: 5
+    description: "Quantos trechos injetar como contexto por turno."
+
+# Nenhuma: o índice é SQLite (biblioteca padrão) e o embedding é local.
+python_dependencies: []
+
+tags: [memory, provenance, audit, embeddings]
