@@ -14,20 +14,21 @@
 
 ## 1. Resumo executivo
 
-> **Estado:** o item 1 desta tabela está **implementado** — ver
-> [`geniusai-foresight/hermes_plugin/`](../geniusai-foresight/hermes_plugin/).
-> O restante continua sendo análise.
+> **Estado: o roadmap inteiro foi implementado.** Esta análise deixou de ser
+> só um mapa — cada linha da tabela abaixo aponta para código com teste. O
+> §8 registra o que a construção ensinou, incluindo onde a análise estava
+> errada.
 
 | # | Ativo deste repositório | Vira o quê no Hermes | Aderência | Esforço |
 |---|---|---|---|---|
 | 1 | [`geniusai-foresight`](../geniusai-foresight/) — kernel de simulação | **Plug-in nativo** (Python, `plugin.yaml` + `register`) com 6 ferramentas — ✅ **feito** | 🟢 Altíssima | P |
-| 2 | [`so-ia/src/lib/org/*`](../so-ia/src/lib/org/) — compilador de organograma | **Plug-in híbrido** (Python fino → Node) ou **servidor MCP** | 🟢 Alta | M |
-| 3 | [`packages/learning`](../packages/learning/) — memória indexada + LearningFlow | **Memory provider** (`ctx.register_memory_provider`) | 🟢 Alta | M |
-| 4 | [`iffar-pixel-art/agent-manifests`](../iffar-pixel-art/) — 453 manifestos + runbooks | **Pacote de Skills** (`SKILL.md`) + 1 ferramenta de rota | 🟢 Alta | P |
-| 5 | [`packages/constructor`](../packages/constructor/) — API do Super Construtor | **Servidor MCP** sobre a API HTTP que já existe | 🟡 Média-alta | M |
-| 6 | [`iffar-3d-town/tools/*.py`](../iffar-3d-town/tools/) — extratores de PDF normativo | **Ferramentas** dentro do plug-in do item 2 | 🟢 Alta | P |
-| 7 | [`geniusai-civilizations`](../geniusai-civilizations/) — World Engine determinístico | **Ferramenta de ensaio** (sandbox de simulação) | 🟡 Média | G |
-| 8 | [`packages/canon`](../packages/canon/) — 13 schemas Zod | **Não é plug-in**: é o contrato de dados dos outros | ⚪ N/A | — |
+| 2 | [`so-ia/src/lib/org/*`](../so-ia/src/lib/org/) — compilador de organograma | **Servidor MCP** — ✅ [`@genius/mcp-organograma`](../packages/mcp-organograma/) | 🟢 Alta | M |
+| 3 | [`packages/learning`](../packages/learning/) — memória indexada + LearningFlow | **Memory provider** — ✅ [`hermes_plugin/`](../packages/learning/hermes_plugin/) | 🟢 Alta | M |
+| 4 | [`iffar-pixel-art/agent-manifests`](../iffar-pixel-art/) — 453 manifestos + runbooks | **Pacote de Skills** — ✅ [`hermes-skills/`](../iffar-pixel-art/hermes-skills/) (9 skills) | 🟢 Alta | P |
+| 5 | [`packages/constructor`](../packages/constructor/) — API do Super Construtor | **Servidor MCP assimétrico** — ✅ [`@genius/mcp-construtor`](../packages/mcp-construtor/) | 🟡 Média-alta | M |
+| 6 | [`iffar-3d-town/tools/*.py`](../iffar-3d-town/tools/) — extratores de PDF normativo | **Plug-in nativo próprio** — ✅ [`hermes_plugin/`](../iffar-3d-town/hermes_plugin/) | 🟢 Alta | P |
+| 7 | [`geniusai-civilizations`](../geniusai-civilizations/) — World Engine determinístico | **Servidor MCP de ensaio** — ✅ [`src/mcp/`](../geniusai-civilizations/apps/backend/src/mcp/) | 🟡 Média | G |
+| 8 | [`packages/canon`](../packages/canon/) — 13 schemas Zod | **Contrato**, não plug-in — ✅ [`schemas/canon.schema.json`](../schemas/canon.schema.json) | ⚪ N/A | P |
 | 9 | [`packages/providers`](../packages/providers/) — hub de provedores LLM | **Não fazer**: o Hermes já resolve isso internamente | 🔴 Redundante | — |
 | 10 | [`apps/canvas`](../apps/canvas/), UIs em geral | **Não fazer como plug-in**: são *surfaces*, rodam ao lado | 🔴 Fora de escopo | — |
 
@@ -536,6 +537,83 @@ em cima de `pre_llm_call` — mas o desenho do §3.2 (Lei 1 como política de
 execução) depende de `pre_tool_call`, que é justamente o par sempre
 implementado. Vale confirmar na versão do Hermes em uso antes de apostar em
 qualquer um dos outros quatro.
+
+---
+
+## 8. O que a construção ensinou
+
+O roadmap do §5 foi executado inteiro. Esta seção registra o que só apareceu
+ao construir — inclusive **onde esta análise estava errada**.
+
+### 8.1 Onde a análise errou
+
+| A análise dizia | O que a implementação mostrou |
+|---|---|
+| Foresight com `foresight_simulate` **e** `foresight_report` | Os dois comandos da CLI executam o mesmo caminho (`run_study`). Expor ambos confundiria o modelo — viraram um `foresight_run`, e a vaga sobrando foi para `foresight_demo` |
+| Extratores de PDF "dentro do plug-in do §3.2" | O §3.2 virou servidor MCP em **TypeScript**, e os extratores são **Python**. Viraram um plug-in nativo próprio, que entrega estrutura para o MCP decidir sobre ela |
+| 453 manifestos → skills | 453 manifestos descrevem **8 competências distintas**. Uma skill por agente daria 453 arquivos quase idênticos e inúteis no contexto de um agente — agrupamos por competência: **9 skills** |
+| `so-ia/src/lib/org/*` por plug-in híbrido *ou* MCP | MCP, sem hesitação — mas exigiu antes extrair o motor para [`@genius/org-compiler`](../packages/org-compiler/), com golden test provando equivalência byte a byte com o `so-ia` |
+
+### 8.2 Quatro defeitos reais encontrados no caminho
+
+Nenhum deles era o objetivo do trabalho; todos apareceram porque o porte
+exercitou código que ninguém exercitava daquele jeito.
+
+1. **`demo_input_path()` do Foresight** procurava a fixture instalada só em
+   `sys.prefix`. No esquema `posix_local` (Debian/Ubuntu) o pip grava em
+   `sysconfig.get_path("data")` — `demo` falhava em pacote instalado,
+   **inclusive pela CLI**. Corrigido com teste de regressão.
+2. **JSON Schema não-determinístico.** Campos como `createdAt` usam
+   `.default(() => new Date().toISOString())`; o conversor executava a função e
+   gravava o instante da geração como `"default"`. O schema mudava a cada
+   geração e mentia sobre o padrão. Defaults dinâmicos não têm representação
+   estática em JSON Schema — agora viram descrição.
+3. **Portão de autonomia por lista de bloqueio.** A primeira versão de
+   `requiresHumanApproval` tratava `A0/A1/A2` como bloqueados; autonomia vazia
+   ou desconhecida **passava**. Virou lista de permissão (`A3/A4/A5`): valor
+   inesperado cai do lado seguro.
+4. **Assinatura de ensaio cega para o que está em andamento.** `signWorld`
+   ignorava `researching` e propostas pendentes, então um mundo pesquisando e
+   um mundo parado assinavam igual — uma assinatura que não distingue não serve
+   para provar reprodutibilidade.
+
+### 8.3 O que provou equivalência, em vez de presumir
+
+Três portes atravessaram fronteira (linguagem, framework, runtime). Em todos,
+a equivalência é verificada por teste, não por leitura:
+
+| Porte | Como a equivalência é provada |
+|---|---|
+| `so-ia/src/lib/org/*` → `@genius/org-compiler` | Golden test: baseline gerada executando o **código original do so-ia** (com o alias `@/` resolvido) sobre 22 superfícies; o pacote precisa reproduzir byte a byte |
+| `embeddings.ts` → `embeddings.py` | Fixture de 14 casos gerada pelo TypeScript; o teste Python exige o mesmo vetor com 12 casas decimais |
+| `packages/canon` → `canon.schema.json` | Teste falha se o arquivo versionado se descolar dos schemas Zod |
+
+### 8.4 O estado final
+
+| Entrega | Onde | Testes |
+|---|---|---|
+| Plug-in nativo do Foresight | `geniusai-foresight/hermes_plugin/` | 23 |
+| Plug-in de extração normativa | `iffar-3d-town/hermes_plugin/` | 12 |
+| Memory provider com procedência | `packages/learning/hermes_plugin/` | 26 |
+| Skills institucionais | `iffar-pixel-art/hermes-skills/` | 7 |
+| Compilador de organograma extraído | `packages/org-compiler/` | 18 |
+| MCP do organograma (Lei 1) | `packages/mcp-organograma/` | 24 |
+| MCP do Super Construtor (assimétrico) | `packages/mcp-construtor/` | 23 |
+| MCP da Sala de Ensaio (Lei 2) | `geniusai-civilizations/apps/backend/src/mcp/` | 13 |
+| Canon em JSON Schema | `schemas/canon.schema.json` | 9 |
+
+### 8.5 O que continua em aberto
+
+- **Generalizar o motor de ensaio.** O §3.7 avisava, e continua valendo: o
+  domínio simulado é o de civilizações, não decisões institucionais genéricas.
+  O servidor MCP expõe o ensaio real que o motor suporta hoje; generalizá-lo é
+  redesenho de produto.
+- **O `so-ia` não passou a consumir o `@genius/org-compiler`.** O pacote é a
+  fonte de verdade daqui para a frente e o golden test garante que os dois não
+  divergiram, mas o app continua com sua cópia. Migrá-lo exige mexer na
+  resolução de módulos do Next, e o `so-ia` não tem CI que pegue uma regressão.
+- **Confirmar os hooks na versão do Hermes em uso** (§6). Nenhum plug-in
+  entregue aqui depende de hook — foi decisão de projeto, não acaso.
 
 ---
 

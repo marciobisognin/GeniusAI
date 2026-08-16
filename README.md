@@ -20,10 +20,10 @@ Repositório-guarda-chuva com os projetos do GeniusAI. Cada projeto vive na sua 
 >
 > **No sentido inverso da integração:** a
 > [Análise de plug-ins do Hermes](docs/ANALISE-PLUGINS-HERMES.md) mapeia o que
-> daqui pode ser **entregue ao Hermes Agent** como extensão — quais projetos
-> viram plug-in nativo, servidor MCP, *memory provider* ou Skill, com esforço
-> estimado, esboços de `plugin.yaml` e, também, o que **não** deve virar
-> plug-in.
+> daqui é **entregue ao Hermes Agent** como extensão — e o roadmap dela está
+> **implementado**: dois plug-ins nativos, três servidores MCP, um *memory
+> provider* e nove skills institucionais. O §8 registra o que a construção
+> ensinou, incluindo os quatro defeitos reais que ela revelou.
 
 ## Genius Allspark Canvas
 
@@ -185,15 +185,23 @@ pelo critério do próprio guia, o Genius Allspark Canvas existe de fato.
 Resumo da [análise completa](docs/ANALISE-PLUGINS-HERMES.md) — o que cada
 ativo daqui vira do lado do [Hermes](https://hermes-agent.nousresearch.com/):
 
-| Ativo | Vira | Aderência |
+**Todo o roadmap está implementado** — cada linha aponta para código com teste.
+
+| Ativo | Virou | Onde |
 |---|---|---|
-| `geniusai-foresight` | ✅ **Plug-in nativo implementado** — [`hermes_plugin/`](geniusai-foresight/hermes_plugin/), 6 ferramentas + skill | 🟢 Altíssima |
-| `so-ia/src/lib/org/*` | Servidor MCP do organograma (a **Lei 1** como política de execução) | 🟢 Alta |
-| `packages/learning` | *Memory provider* com procedência de aprovação humana | 🟢 Alta |
-| `iffar-pixel-art` | Pacote de Skills (`SKILL.md`) a partir dos 453 manifestos | 🟢 Alta |
-| `packages/constructor` | Servidor MCP — de propósito **assimétrico** (sem aprovar o próprio trabalho) | 🟡 Média-alta |
-| `geniusai-civilizations` | Ferramenta de ensaio sobre o World Engine determinístico | 🟡 Média |
-| `packages/providers`, UIs | **Não** viram plug-in — o Hermes já resolve o primeiro; as UIs rodam ao lado | 🔴 Fora de escopo |
+| `geniusai-foresight` | Plug-in nativo (6 ferramentas + skill) | [`hermes_plugin/`](geniusai-foresight/hermes_plugin/) |
+| `so-ia/src/lib/org/*` | Servidor MCP — a **Lei 1** como política de execução | [`mcp-organograma`](packages/mcp-organograma/) |
+| `packages/learning` | *Memory provider* com procedência de aprovação humana | [`hermes_plugin/`](packages/learning/hermes_plugin/) |
+| `iffar-pixel-art` | 9 skills institucionais, geradas dos 453 manifestos | [`hermes-skills/`](iffar-pixel-art/hermes-skills/) |
+| `iffar-3d-town/tools` | Plug-in de extração de PDF normativo | [`hermes_plugin/`](iffar-3d-town/hermes_plugin/) |
+| `packages/constructor` | Servidor MCP **assimétrico** (não aprova o próprio trabalho) | [`mcp-construtor`](packages/mcp-construtor/) |
+| `geniusai-civilizations` | Sala de Ensaio determinística — a **Lei 2** | [`src/mcp/`](geniusai-civilizations/apps/backend/src/mcp/) |
+| `packages/canon` | Contrato em JSON Schema, para atravessar linguagens | [`canon.schema.json`](schemas/canon.schema.json) |
+| `packages/providers`, UIs | **Não** viraram plug-in — o Hermes já resolve o primeiro; as UIs rodam ao lado | — |
+
+O motor de organograma foi extraído do `so-ia` para
+[`@genius/org-compiler`](packages/org-compiler/), com **golden test** provando
+que reproduz o comportamento original byte a byte.
 
 ## Licença
 

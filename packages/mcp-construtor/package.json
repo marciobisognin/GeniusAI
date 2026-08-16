@@ -1,0 +1,32 @@
+{
+  "name": "@genius/mcp-construtor",
+  "version": "0.1.0",
+  "description": "Servidor MCP do Super Construtor com superfície deliberadamente assimétrica: o executor consulta e executa A3+, mas nunca aprova o próprio trabalho nem toca credenciais.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "genius-mcp-construtor": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@genius/constructor": "0.1.0",
+    "@types/node": "^22.7.4",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}
