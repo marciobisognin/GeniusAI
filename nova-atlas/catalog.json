@@ -1,0 +1,3314 @@
+{
+  "version": 1,
+  "updated": "2026-10-10",
+  "image_model": "gpt-image-2-medium via openai-codex (not 2.5)",
+  "items": [
+    {
+      "title": "AI Engineering Hub",
+      "urls": [
+        "https://github.com/patchy631/ai-engineering-hub"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-001",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "caveman",
+      "urls": [
+        "https://github.com/JuliusBrussee/caveman"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-002",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "Daytona",
+      "urls": [
+        "https://github.com/daytonaio/daytona"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-003",
+      "description": "Listado no post entre ambientes de execução isolados.",
+      "notes": []
+    },
+    {
+      "title": "Fabric",
+      "urls": [
+        "https://github.com/danielmiessler/Fabric"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-004",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "Fast Search no Hermes Agent — explicação de uso e roteamento",
+      "urls": [
+        "https://x.com/witcheer/status/2103355797140918397"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Documentos e conhecimento",
+      "id": "tool-005",
+      "description": "O post explica que, segundo o autor, a busca web pode usar Fast Search pelo Nous Tool Gateway quando a configuração do Hermes aponta para essa rota; menciona resultados ranqueados com trechos e leitura posterior das páginas selecionadas. Também diz que configurações próprias de chave ou SearXNG continuariam valendo. Essas instruções e afirmações se referem à configuração/versão descritas no post e não foram verificadas no ambiente do usuário.",
+      "notes": [
+        "Observação: A publicação menciona Hermes e Portal, mas o texto recuperado não contém URL de documentação. Nenhuma configuração foi modificada."
+      ]
+    },
+    {
+      "title": "fast-jev-compaction",
+      "urls": [
+        "https://github.com/tamaratran/fast-jev-compaction"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-006",
+      "description": "O post diz que seleciona chamadas/resultados de ferramentas no histórico Claude Code para remover ou resumir, preservando o texto da conversa.",
+      "notes": []
+    },
+    {
+      "title": "foreman",
+      "urls": [
+        "https://github.com/thruwire/foreman"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-007",
+      "description": "Experimento de supervisão de trabalho autônomo no Codex, com decisões sobre continuar, verificar ou parar, segundo o post.",
+      "notes": []
+    },
+    {
+      "title": "Graphiti",
+      "urls": [
+        "https://github.com/getzep/graphiti"
+      ],
+      "sources": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-008",
+      "description": "O autor indica como infraestrutura de memória em grafo, que relaciona fatos e contexto.",
+      "notes": []
+    },
+    {
+      "title": "Headroom",
+      "urls": [
+        "https://github.com/headroomlabs-ai/headroom"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-009",
+      "description": "Listado no post na categoria de contexto.",
+      "notes": []
+    },
+    {
+      "title": "jev-review",
+      "urls": [
+        "https://github.com/devagrawal09/jev-review"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-010",
+      "description": "O post descreve revisão gradual de diffs e repositórios, com apresentação local de possíveis riscos e lacunas de teste.",
+      "notes": []
+    },
+    {
+      "title": "jev-router",
+      "urls": [
+        "https://github.com/gargpratyush/jev-router"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-011",
+      "description": "Segundo o post, escolhe modelos para turnos de Claude Code ou Codex com base no tipo de tarefa.",
+      "notes": []
+    },
+    {
+      "title": "jev-shell-history",
+      "urls": [
+        "https://github.com/mrnugget/jev-shell-history"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-012",
+      "description": "O post descreve sugestão de comandos anteriores no zsh, selecionados de acordo com o que está sendo digitado.",
+      "notes": []
+    },
+    {
+      "title": "jev-ultrafast",
+      "urls": [
+        "https://github.com/browser-use/jev-ultrafast"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-013",
+      "description": "O post descreve um agente que usa Jev para controlar o navegador e selecionar elementos, chamando um modelo menor apenas para entrada de texto.",
+      "notes": []
+    },
+    {
+      "title": "Mem0",
+      "urls": [
+        "https://github.com/mem0ai/mem0"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-014",
+      "description": "Listado no post na categoria de memória.",
+      "notes": []
+    },
+    {
+      "title": "neo4jev",
+      "urls": [
+        "https://github.com/jexp/neo4jev"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-015",
+      "description": "Demonstração que usa Jev para escolher relações a percorrer em um grafo Neo4j.",
+      "notes": []
+    },
+    {
+      "title": "OpenSpec",
+      "urls": [
+        "https://github.com/Fission-AI/OpenSpec"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-016",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "PageIndex",
+      "urls": [
+        "https://github.com/VectifyAI/PageIndex"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-017",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "pg-jev",
+      "urls": [
+        "https://github.com/realZachi/pg-jev"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-018",
+      "description": "Segundo o post, filtra, classifica e ordena linhas PostgreSQL com condições em linguagem natural; os dados consultados são enviados a uma API externa.",
+      "notes": []
+    },
+    {
+      "title": "Post relacionado do autor",
+      "urls": [
+        "https://x.com/hanakoxbt/status/2101709924828934222"
+      ],
+      "sources": [
+        "https://x.com/hanakoxbt/status/2105771704698220884"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-019",
+      "description": "Publicação citada como relacionada; o texto recuperado aponta para um artigo do X, mas seu conteúdo não foi extraído nesta coleta.",
+      "notes": []
+    },
+    {
+      "title": "Reverse Engineer Anything",
+      "urls": [
+        "https://x.com/IntCyberDigest/status/2108699960782774733"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Desenvolvimento",
+      "id": "tool-020",
+      "description": "O autor apresenta um projeto para ajudar agentes a investigar como uma funcionalidade de outro aplicativo foi construída, sem acesso ao código-fonte. A alegação sobre liderança nos trending do GitHub não foi verificada.",
+      "notes": [
+        "Observação: O texto recuperado não contém URL do repositório. Não inventar destino a partir do nome. A imagem não foi analisada."
+      ]
+    },
+    {
+      "title": "Seleção de projetos de agentes de IA",
+      "urls": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-021",
+      "description": "A publicação aponta um mapa com mais de 300 projetos de agentes e destaca cinco repositórios. As explicações abaixo resumem as caracterizações feitas pelo autor; não são recomendações verificadas nem testes dos projetos.",
+      "notes": [
+        "Observação: A alegação de mais de 300 projetos e cerca de 225 mil estrelas combinadas é do post, não verificada. Descrições são paráfrases da publicação."
+      ]
+    },
+    {
+      "title": "Spec Kit",
+      "urls": [
+        "https://github.com/github/spec-kit"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-022",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "TrendRadar",
+      "urls": [
+        "https://github.com/sansan0/TrendRadar"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-023",
+      "description": "Listado no post; sem descrição individual recuperada.",
+      "notes": []
+    },
+    {
+      "title": "typesafe-mcp",
+      "urls": [
+        "https://github.com/itsmostafa/typesafe-mcp"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-024",
+      "description": "Ferramenta não oficial descrita no post para invocar seleções, pontuações e classificações de Jev por clientes MCP.",
+      "notes": []
+    },
+    {
+      "title": "User Stories & Use Cases — Hermes Agent",
+      "urls": [
+        "https://hermes-agent.nousresearch.com/docs/user-stories"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-025",
+      "description": "Página oficial que reúne histórias de uso da comunidade, com filtros por categoria e fonte. Na consulta, informava 371 histórias, 15 categorias e 11 fontes; números dinâmicos. O conteúdo é uma coleção de relatos e não uma validação independente dos resultados descritos.",
+      "notes": []
+    },
+    {
+      "title": "jev-drone",
+      "urls": [
+        "https://github.com/RomanSlack/jev-drone"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-026",
+      "description": "Simulação de drone em MuJoCo com decisões de desvio de obstáculos atribuídas a Jev no post.",
+      "notes": []
+    },
+    {
+      "title": "jev-trader",
+      "urls": [
+        "https://github.com/jarrodwatts/jev-trader"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Produtividade e organização",
+      "id": "tool-027",
+      "description": "Experimento de decisões de negociação em Kuru/Monad. O post observa que o modo padrão usa simulação/mock e que a rentabilidade não foi verificada.",
+      "notes": []
+    },
+    {
+      "title": "jevpilot",
+      "urls": [
+        "https://github.com/standardagents/jevpilot"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-028",
+      "description": "Simulador de direção em Three.js onde Jev escolhe entre opções de trajetória e velocidade, conforme o post.",
+      "notes": []
+    },
+    {
+      "title": "majidmanzarpour/threejs-game-skills",
+      "urls": [
+        "https://github.com/majidmanzarpour/threejs-game-skills"
+      ],
+      "sources": [
+        "https://x.com/majidmanzarpour/status/2104536199214088496"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-029",
+      "description": "Repositório indicado pelo autor para skills de agentes voltadas à criação de jogos com Three.js.",
+      "notes": []
+    },
+    {
+      "title": "MiroFish",
+      "urls": [
+        "https://github.com/666ghj/MiroFish"
+      ],
+      "sources": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-030",
+      "description": "O autor descreve como simulação multiagente para explorar cenários e produzir previsões.",
+      "notes": []
+    },
+    {
+      "title": "Three.js Game Skills — skills para desenvolvimento de jogos",
+      "urls": [
+        "https://x.com/majidmanzarpour/status/2104536199214088496"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Jogos e simulação",
+      "id": "tool-031",
+      "description": "O autor relata uma atualização de skills para desenvolvimento de jogos com Three.js, ajustadas para o modelo citado no post. Menciona geração de música por IA, capturas de tela para QA com saída reduzida e roteamento de skills testado em 80 execuções. Métricas, compatibilidade e resultados são alegações do autor; não foram testados nesta coleta.",
+      "notes": [
+        "Observação: Menções a Claude Opus e ElevenLabs não correspondem a URLs no post; não inventar links diretos nem instalar a skill."
+      ]
+    },
+    {
+      "title": "typesafe-mario",
+      "urls": [
+        "https://github.com/fhshaik/typesafe-mario"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-032",
+      "description": "Experimento que usa dados do estado do jogo para escolher ações de Mario, segundo o post.",
+      "notes": []
+    },
+    {
+      "title": "AppFlowy — destino pendente",
+      "urls": [
+        "https://t.co/yOq5CQTfPx"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": true,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-033",
+      "description": "Descrito no post como alternativa open source ao Notion. O encurtador retornou HTTP 404; o caminho GitHub mostrado está truncado, portanto o destino não foi completado.",
+      "notes": []
+    },
+    {
+      "title": "blendi-remade/dioramas",
+      "urls": [
+        "https://github.com/blendi-remade/dioramas"
+      ],
+      "sources": [
+        "https://x.com/BlendiByl/status/2105097043601752483"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-034",
+      "description": "Framework JavaScript para experiências web 3D, segundo a descrição e metadados do repositório. Licença MIT indicada pelo GitHub.",
+      "notes": []
+    },
+    {
+      "title": "Plausible — destino pendente",
+      "urls": [
+        "https://t.co/rhQT0OQOZm"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": true,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-035",
+      "description": "Descrito no post como alternativa open source ao Google Analytics. O encurtador retornou HTTP 404 e o caminho GitHub mostrado está truncado.",
+      "notes": []
+    },
+    {
+      "title": "REA — repositório morluto/rea",
+      "urls": [
+        "https://github.com/morluto/rea"
+      ],
+      "sources": [
+        "https://x.com/brunobertolini/status/2108395787332080055"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-036",
+      "description": "Projeto indicado pelo autor em um relato de uso de análise de outro aplicativo para apoiar a implementação de uma funcionalidade. Funcionamento não testado nesta coleta.",
+      "notes": []
+    },
+    {
+      "title": "Top — Codeforces",
+      "urls": [
+        "https://codeforces.com/top"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-037",
+      "description": "",
+      "notes": [
+        "Observação: Conteúdo da página não verificado."
+      ]
+    },
+    {
+      "title": "15 projetos GitHub apresentados como componentes de uma pilha de agentes",
+      "urls": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-038",
+      "description": "O autor reúne 15 projetos para compor etapas de uma pilha: especificação, memória, coleta de dados web, documentos, contexto, ambientes isolados, monitoramento e vídeo. A afirmação de 1,21 milhão de estrelas combinadas e a descrição de pilha open source são do post e não foram verificadas individualmente.",
+      "notes": []
+    },
+    {
+      "title": "199-biotechnologies/motion-dev-animations-skill",
+      "urls": [
+        "http://github.com/199-biotechnologies/motion-dev-animations-skill"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-039",
+      "description": "Skills de animação web com Motion. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "30 repositórios e experimentos relacionados a Jev",
+      "urls": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-040",
+      "description": "Post em japonês com projetos agrupados por navegação/controle, desenvolvimento e revisão, MCP/skills, busca e bancos de dados, vídeo, guardrails, marketing, casa inteligente, simulação e pesquisa com modelos abertos. Os resumos abaixo são traduções/paráfrases das descrições do autor. Estrelas são números citados pelo post à época; não foram atualizados nem validados. O autor distingue explicitamente os quatro últimos projetos de pesquisa como independentes, não oficiais.",
+      "notes": [
+        "Observação: Avisos do post: verificar custos e envio de dados por repositório; lista não constitui teste independente."
+      ]
+    },
+    {
+      "title": "3D Icons",
+      "urls": [
+        "http://3dicons.co"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-041",
+      "description": "Ícones tridimensionais para interfaces.",
+      "notes": []
+    },
+    {
+      "title": "404s Design",
+      "urls": [
+        "http://404s.design"
+      ],
+      "sources": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-042",
+      "description": "Referências para páginas de erro 404.",
+      "notes": []
+    },
+    {
+      "title": "424 técnicas cinematográficas para criação de vídeos",
+      "urls": [
+        "https://x.com/VibeEverything/status/2104160871589220365"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-043",
+      "description": "Post em coreano que apresenta um catálogo de 424 técnicas cinematográficas para criação de vídeos: movimento de câmera, ângulos, composição, iluminação, cor, transições e estilos de filme ou gênero. Segundo o autor, cada técnica inclui definição, efeito de direção, situações de uso, exemplos em vídeo e prompts. A lista ou página-fonte não aparece no texto recuperado.",
+      "notes": [
+        "Observação: Tradução resumida do texto do post. Não foi possível identificar a biblioteca citada nem extrair um link externo; conteúdo da mídia não foi inspecionado."
+      ]
+    },
+    {
+      "title": "60fps Design",
+      "urls": [
+        "http://60fps.design"
+      ],
+      "sources": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-044",
+      "description": "Detalhes e referências de animação para interfaces.",
+      "notes": []
+    },
+    {
+      "title": "A 12-page PDF on building a Jev harness — ficha do recurso",
+      "urls": [
+        "https://madewithjev.com/builds/jev-harness-pdf"
+      ],
+      "sources": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-045",
+      "description": "Página de catálogo que reproduz o anúncio do PDF de 12 páginas e o resumo de dez etapas. Não é o arquivo PDF em si; a ficha alerta que as métricas vêm do autor e devem ser conferidas na fonte. Página consultada diretamente.",
+      "notes": []
+    },
+    {
+      "title": "Agent-Reach",
+      "urls": [
+        "http://github.com/Panniantong/Agent-Reach"
+      ],
+      "sources": [
+        "https://x.com/liambraus/status/2105292404764852424"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-046",
+      "description": "O autor descreve como uma integração de coleta que reúne fontes como X, YouTube, Reddit e GitHub.",
+      "notes": []
+    },
+    {
+      "title": "Alcove",
+      "urls": [
+        "http://tryalcove.com"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-047",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Amicons",
+      "urls": [
+        "http://amicons.design"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-048",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Anexar páginas, arquivos e alterações ao Hermes Agent",
+      "urls": [
+        "https://x.com/witcheer/status/2105300357421179009"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-049",
+      "description": "O post descreve uma interface em que se digita @ e escolhe @ url para anexar uma página à mensagem antes de o agente lê-la. Menciona também opções para anexar arquivo, pasta, diff do Git e commits recentes. É uma descrição da funcionalidade atribuída ao Hermes; verificar disponibilidade na versão instalada.",
+      "notes": [
+        "Observação: Nenhum link externo no texto recuperado."
+      ]
+    },
+    {
+      "title": "AppLlama",
+      "urls": [
+        "http://appllama.io"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-050",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Aprendizado de UX e UI para iniciantes — thread",
+      "urls": [
+        "https://x.com/appariciojunior/status/1492464177448898562"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-051",
+      "description": "Publicação de abertura de uma sequência com indicações de materiais para aprender UX e UI. O autor apresenta os recursos como gratuitos, mas os links estão nas respostas da thread, ainda não recuperadas. Publicação de abertura de uma sequência de links para aprender UX/UI. O autor apresenta os recursos como gratuitos, mas os links estão nas respostas da thread e ainda não foram recuperados. Publicação de abertura de uma sequência de recursos para aprender UX/UI. A mensagem inicial não contém os links; eles devem ser extraídos das respostas da thread antes de concluir esta entrada.",
+      "notes": [
+        "Observação: Post inicial recuperado por espelho público, sem URLs internas. Tentativa de extração do Thread Reader falhou por indisponibilidade do backend de extração, não por confirmação de ausência da thread. Recuperação das respostas pendente; não marcar extração completa.; O post inicial não traz URLs internas. Tentativa de usar Thread Reader ficou pendente porque o backend de extração não estava disponível. Não marcar a extração como concluída.; A extração anterior ficou incompleta. Marcar como pendente até recuperar as respostas e os links internos."
+      ]
+    },
+    {
+      "title": "Bento Grids",
+      "urls": [
+        "http://bentogrids.com"
+      ],
+      "sources": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-052",
+      "description": "Ideias para layouts em grade Bento.",
+      "notes": []
+    },
+    {
+      "title": "Bibliotecas Incríveis — F*cking Good Libraries",
+      "urls": [
+        "https://fglibs.com/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-053",
+      "description": "Catálogo de bibliotecas, componentes e skills para criar interfaces e interações. Reúne recursos como componentes animados, gráficos interativos, estados de carregamento e shaders WebGPU. A página também apresenta uma opção de conexão via MCP. Catálogo de bibliotecas, componentes e skills para interfaces e interações: componentes animados, gráficos interativos, estados de carregamento e shaders WebGPU. A página apresenta também uma opção de conexão via MCP.",
+      "notes": [
+        "Observação: Título Bibliotecas Incríveis fornecido pelo usuário. Não afirmar gratuidade universal ou compatibilidade sem verificar cada recurso."
+      ]
+    },
+    {
+      "title": "Bills & Due-Date Agent — agente para contas e vencimentos",
+      "urls": [
+        "https://x.com/HermesWatcher/status/2108965899076309273"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Produtividade e organização",
+      "id": "tool-054",
+      "description": "A publicação descreve um projeto de agente pessoal para reunir contas, vencimentos, variações de valores, faturas esperadas, pagamentos automáticos e comprovantes em uma fila de revisão. O autor enfatiza que o agente organiza e sinaliza itens para revisão humana, em vez de pagar contas por conta própria. O post menciona um blueprint visual com estrutura para cadastro, rotinas, memória, regras, automações e revisão; não foi identificado link externo no texto recuperado.",
+      "notes": [
+        "Observação: A publicação contém mídia visual; sem link externo de projeto extraído. Descrição atribuída ao autor do post; o blueprint não foi transcrito nem validado."
+      ]
+    },
+    {
+      "title": "Cal.diy — link resolvido do item chamado Cal.com no post",
+      "urls": [
+        "https://github.com/calcom/cal.diy"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": true,
+      "kind": "resource",
+      "category": "Produtividade e organização",
+      "id": "tool-055",
+      "description": "O item é chamado Cal.com no texto do post, mas o link curto redirecionou a cal.diy. Mantidos o destino observado e a divergência de nome; não foram tratados como equivalentes sem ressalva.",
+      "notes": []
+    },
+    {
+      "title": "charlie947/motion-graphics-skills",
+      "urls": [
+        "http://github.com/charlie947/motion-graphics-skills"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-056",
+      "description": "Skills para vídeos de lançamento. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Codex ChatGPT Web",
+      "urls": [
+        "https://github.com/miuuyy/codex-chatgpt-web"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-057",
+      "description": "Repositório TypeScript que propõe integrar modelos disponíveis no ChatGPT Web ao Codex, com modos de navegador e um modo de ferramentas via MCP. O README anuncia que isso usa limites de uso separados do Codex; não confirmei se esse uso é permitido pelas políticas aplicáveis, seguro, suportado oficialmente ou compatível com a conta do usuário. O projeto declara licença MIT.",
+      "notes": [
+        "Observação: Não instalar nem autenticar por esta descrição. A arquitetura envolve interação com a sessão web e pode implicar risco de conta, privacidade e compatibilidade; revisar documentação e termos oficiais antes de qualquer uso. Não apresentar a alegação de evitar cota como endosso."
+      ]
+    },
+    {
+      "title": "Codex: separar exploração, implementação e revisão",
+      "urls": [
+        "https://x.com/hanakoxbt/status/2105771704698220884"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-058",
+      "description": "A publicação propõe separar tarefas de leitura do repositório, pesquisa documental, implementação e revisão arquitetural, usando modelos distintos. Recomenda chamar o revisor antes de planos grandes, quando o mesmo erro se repete e antes de concluir. O autor inclui uma instrução para inspecionar configurações existentes, mostrar um diff e não editar sem autorização. Nomes de modelos, preços e capacidades são específicos ao post e podem mudar; não foram validados como recomendação atual.",
+      "notes": [
+        "Observação: Instrução do post não foi executada. Não alterar configurações do usuário nem endossar a escolha de modelos; registrar como proposta do autor."
+      ]
+    },
+    {
+      "title": "CopilotKit/OpenIntelligentUI — GitHub",
+      "urls": [
+        "https://github.com/CopilotKit/OpenIntelligentUI"
+      ],
+      "sources": [
+        "https://x.com/CopilotKit/status/2108555099241128416"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-059",
+      "description": "Projeto TypeScript de interface de chat open source que pode responder em texto, componentes nativos ou interfaces interativas geradas, incluindo explicações 3D, comparações e ferramentas com controles. O README identifica CopilotKit e AG-UI como tecnologias relacionadas e descreve as cenas do vídeo de lançamento como demonstrações renderizadas. README e metadados GitHub consultados; licença indicada no repositório: MIT.",
+      "notes": []
+    },
+    {
+      "title": "Coucou",
+      "urls": [
+        "https://github.com/Louis-CFM/coucou"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Produtividade e organização",
+      "id": "tool-060",
+      "description": "O GitHub descreve o Coucou como um companheiro na barra do Mac e no iPhone para acompanhar agentes de programação, incluindo Claude Code, Codex, Cursor, Gemini CLI e Antigravity, com possibilidade de aprovar ações pela interface do sistema. O metadado consultado indica licença MIT. Aplicativo descrito pelo GitHub como um companheiro no notch do Mac e no iPhone para acompanhar agentes de programação e aprovar ações. Metadados consultados indicam licença MIT; detalhes do README não foram recuperados nesta coleta. Duplicata da entrada acima. Consolidar em um cartão único e preservar a URL original.",
+      "notes": []
+    },
+    {
+      "title": "CTA Gallery",
+      "urls": [
+        "http://cta.gallery"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073",
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-061",
+      "description": "Referências para chamadas à ação nas interfaces. Inspiração para chamadas à ação.",
+      "notes": []
+    },
+    {
+      "title": "cth9191/animate",
+      "urls": [
+        "http://github.com/cth9191/animate"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-062",
+      "description": "Clipes em canvas com planejamento visual. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Desenvolvimento de jogos com agentes de IA, Blender e Unity",
+      "urls": [
+        "https://x.com/rewind02/status/2108860261897584940"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Jogos e simulação",
+      "id": "tool-063",
+      "description": "O autor propõe preparar escopo, referências visuais e regras antes da implementação. Sugere integrar ferramentas por MCP, separar tarefas de criação e revisão e testar um protótipo simples antes de acrescentar mecânicas. Recomenda feedback específico e registro das correções para reutilização. Trata-se do fluxo relatado pelo autor, não de procedimento testado nesta coleta; versões e capacidades citadas não foram verificadas.",
+      "notes": [
+        "Observação: Texto recuperado por espelho público. Não há links externos de ferramentas no texto principal; nomes citados não devem virar URLs supostamente extraídas. Post anterior preservado após interrupção."
+      ]
+    },
+    {
+      "title": "Design Bookmark",
+      "urls": [
+        "http://designbookmark.com"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-064",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Dioramas — framework para sites 3D cinematográficos e interativos",
+      "urls": [
+        "https://x.com/BlendiByl/status/2105097043601752483"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Desenvolvimento",
+      "id": "tool-065",
+      "description": "O autor apresenta o Dioramas como framework aberto para sites 3D interativos, com 20 exemplos. Menciona modelos 3D gerados por IA e prompts/código no repositório. Metadados do GitHub indicam licença MIT; gratuidades, número de exemplos, dependências externas e funcionamento são declarações do autor, ainda não verificados por execução.",
+      "notes": [
+        "Observação: O post menciona fal, Meshy 7.1 e Nano Banana 2; nomes não transformados em links porque não são URLs extraídas."
+      ]
+    },
+    {
+      "title": "Distilly — transformar materiais em perfis para agentes",
+      "urls": [
+        "https://github.com/titanwings/distilly/tree/main"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-066",
+      "description": "Repositório Python que descreve um fluxo para converter materiais fornecidos — como mensagens, documentos, entrevistas ou fontes públicas — em um perfil reutilizável baseado em evidências observáveis, embalado como skill para agentes compatíveis. O README afirma que não pretende clonar a pessoa. Indica licença MIT e descoberta local em vários hosts, incluindo Hermes Agent e Codex.",
+      "notes": [
+        "Observação: Não foi instalado nem executado. Materiais pessoais ou privados exigem consentimento, minimização e revisão antes de uso; capacidades declaradas não foram testadas."
+      ]
+    },
+    {
+      "title": "Documentação oficial da Stitch CLI",
+      "urls": [
+        "https://stitch.google.com/docs/cli/overview"
+      ],
+      "sources": [
+        "https://x.com/stitchbygoogle/status/2105695155164741984"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-067",
+      "description": "Página oficial de introdução à CLI. O encurtador goo.gle/stitch-cli, citado em uma resposta pública do perfil, redireciona para este endereço.",
+      "notes": []
+    },
+    {
+      "title": "Drawably",
+      "urls": [
+        "http://drawably.dev"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-068",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "earthtojake/text-to-cad",
+      "urls": [
+        "https://github.com/earthtojake/text-to-cad"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2107331263732531545"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-069",
+      "description": "Repositório indicado para consultar os exemplos, formatos exportados, requisitos, instalação e licença.",
+      "notes": []
+    },
+    {
+      "title": "Evil Buttons",
+      "urls": [
+        "http://evilbuttons.com"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-070",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Fooocus — destino pendente",
+      "urls": [
+        "https://t.co/7u6sLDgPsR"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": true,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-071",
+      "description": "O post atribui ao projeto geração de imagens local. O encurtador retornou HTTP 404; a faceta expõe apenas um caminho GitHub truncado. Destino canônico não confirmado.",
+      "notes": []
+    },
+    {
+      "title": "Footer Design",
+      "urls": [
+        "http://footer.design"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073",
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-072",
+      "description": "Inspiração para o desenho de rodapés. Referências para rodapés.",
+      "notes": []
+    },
+    {
+      "title": "frankxai/awesome-motion-design-agent-skills",
+      "urls": [
+        "http://github.com/frankxai/awesome-motion-design-agent-skills"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-073",
+      "description": "Catálogo de skills de animação. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "freeLLM — catálogo de métodos de acesso a modelos de IA",
+      "urls": [
+        "https://freellm.sh/#models"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-074",
+      "description": "Site que reúne um catálogo de modelos e provedores, com filtros para tipo de acesso, limites, cadastro, cartão, tipos de mídia e status. Na página consultada, anunciava 153 modelos e 18 provedores; há acesso gratuito permanente, cotas limitadas, créditos promocionais e opções de auto-hospedagem, conforme cada entrada. Os dados mudam e precisam ser confirmados no provedor antes do uso.",
+      "notes": [
+        "Observação: Não tratar 'grátis' como ilimitado, privado ou estável; conferir política de dados, cotas e termos de cada serviço."
+      ]
+    },
+    {
+      "title": "freellmapi",
+      "urls": [
+        "https://github.com/tashfeenahmed/freellmapi"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-075",
+      "description": "Repositório enviado pelo usuário. Não consegui consultar os metadados ou o README devido a falha de conexão durante a coleta; evito presumir como funciona, seus provedores ou suas condições de uso. Repositório informado pelo usuário. Consulta de metadados não concluiu por falha de conexão; finalidade detalhada, licença e operação permanecem pendentes.",
+      "notes": [
+        "Observação: Não inferir que fornece API gratuita confiável sem consultar o README."
+      ]
+    },
+    {
+      "title": "GameDev OS by Scenario — estúdio de jogos organizado em especialistas de IA",
+      "urls": [
+        "https://x.com/emmanuel_2m/status/2103097017073361137"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Jogos e simulação",
+      "id": "tool-076",
+      "description": "O post apresenta o GameDev OS como uma biblioteca de skills para agentes de programação, organizada em nove especialidades e 64 skills. A estrutura citada inclui arte 2D e 3D, cenários, direção de arte, som, vídeo, marketing, direção técnica e gestão de custos. O autor descreve um fluxo em que os especialistas colaboram para produzir recursos, ambientes, efeitos sonoros e trailers. Quantidades, modelos compatíveis, gratuidade e funcionamento são alegações do post, não verificadas nesta coleta.",
+      "notes": [
+        "Observação: O texto termina pedindo comentário para receber a biblioteca, mas não contém URL de repositório nem destino direto. Não inventar link; resposta/comentário não recuperado."
+      ]
+    },
+    {
+      "title": "Gemini Notebook MCP CLI",
+      "urls": [
+        "https://github.com/jacob-bd/gemini-notebook-mcp-cli"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-077",
+      "description": "Projeto Python que oferece acesso programático ao Gemini Notebook (antigo NotebookLM) por CLI, servidor MCP e skills para agentes. O README descreve funções de autenticação, gerenciamento de notebooks e integração com agentes; informa suporte testado principalmente para contas pessoais e suporte Enterprise experimental. O GitHub indica licença MIT.",
+      "notes": [
+        "Observação: Não instalado ou autenticado. O projeto pode lidar com credenciais de conta Google; consultar as opções de armazenamento protegido e os riscos descritos no README antes de usar."
+      ]
+    },
+    {
+      "title": "Glass UI",
+      "urls": [
+        "http://glass.samasante.com"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-078",
+      "description": "Componentes e efeitos visuais com aparência de vidro.",
+      "notes": []
+    },
+    {
+      "title": "Godot Engine — download para Windows",
+      "urls": [
+        "https://godotengine.org/download/windows/?utm_source=chatgpt.com"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-079",
+      "description": "Página oficial de downloads do Godot para Windows. Na consulta, apresentava a versão 4.7.2 para x86_64 e requisitos gráficos; o programa é distribuído como pacote autocontido, conforme a página. Versões e compatibilidade podem mudar.",
+      "notes": [
+        "Observação: URL original preservada, inclusive o parâmetro utm_source."
+      ]
+    },
+    {
+      "title": "Graphical UI",
+      "urls": [
+        "http://graphicalui.com"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-080",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "haidrrrry/claude-remotion-skill",
+      "urls": [
+        "http://github.com/haidrrrry/claude-remotion-skill"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-081",
+      "description": "Edição com Remotion, legendas e som. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Hermes Agent",
+      "urls": [
+        "https://github.com/NousResearch/hermes-agent"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-082",
+      "description": "Listado no post como um componente da pilha de agentes.",
+      "notes": []
+    },
+    {
+      "title": "Hermes Agent no Android/Termux",
+      "urls": [
+        "https://hermes-agent.nousresearch.com/docs/getting-started/termux"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-083",
+      "description": "Página oficial indicada pelo usuário para instalação e configuração do Hermes Agent no Termux. Instruções detalhadas não foram extraídas nesta coleta.",
+      "notes": [
+        "Observação: Documentação pode mudar; manter como referência oficial."
+      ]
+    },
+    {
+      "title": "How to design better looking apps with Google AI Studio",
+      "urls": [
+        "https://aistudio.google.com/learn/ai-ui-design-google-ai-studio"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-084",
+      "description": "Material de aprendizagem do Google AI Studio sobre criação de interfaces com melhor apresentação visual. A página carrega conteúdo dinamicamente e a consulta direta exibiu somente a identificação do produto; detalhes e passos do tutorial não foram verificados.",
+      "notes": []
+    },
+    {
+      "title": "How to Install BMad | BMad Method",
+      "urls": [
+        "https://docs.bmad-method.org/start/install-bmad/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-085",
+      "description": "Guia oficial de instalação do BMad Method. A documentação navega também por instruções para iniciar alterações, trabalhar com codebases existentes, planejar, dividir requisitos em histórias e configurar contexto. Consulte a página para comandos e pré-requisitos atuais; nenhuma instalação foi feita.",
+      "notes": []
+    },
+    {
+      "title": "howseen-ai/claude-motion-design",
+      "urls": [
+        "http://github.com/howseen-ai/claude-motion-design",
+        "https://github.com/howseen-ai/claude-motion-design"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-086",
+      "description": "Vídeos com HTML, Playwright e FFmpeg. Skill do Claude Code para criar vídeos de motion design com HTML, Playwright e FFmpeg, sem usar After Effects ou Remotion, conforme a descrição do repositório. O GitHub registra licença MIT. O projeto não foi instalado nem testado. Skill para produção de motion design com HTML, Playwright e FFmpeg, conforme a descrição do repositório. Metadados do GitHub indicam licença MIT. Já listado em posts anteriores; deduplicar mantendo as fontes. Paráfrase do post; destino não testado.",
+      "notes": [
+        "Observação: Link já apareceu nas listas desses posts. Deduplicar o cartão no HTML final, preservando este link direto e ambas as fontes. Estrelas e atualização são variáveis e foram omitidas da descrição."
+      ]
+    },
+    {
+      "title": "iart-ai/motion-design-skills",
+      "urls": [
+        "http://github.com/iart-ai/motion-design-skills"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-087",
+      "description": "Ritmo, cores, tipografia e animação. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Introduction - Neobrutalism components (rótulo fornecido pelo usuário)",
+      "urls": [
+        "https://youtu.be/UkjAj6SqG80?is=_CiTpyUr8xOuBWBX"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-088",
+      "description": "O rótulo enviado pelo usuário sugere uma introdução aos componentes Neobrutalism. Porém, o oEmbed do YouTube para este mesmo identificador retornou outro título: “The End of Paid AI? 2 FREE Tools for Unlimited Images & Videos”, do canal AI Agents Studio. O vídeo não foi assistido; há divergência entre o rótulo e os metadados, então o conteúdo permanece pendente de confirmação.",
+      "notes": [
+        "Observação: Manter URL original e não afirmar que o vídeo trata de Neobrutalism enquanto o título/metadados conflitarem."
+      ]
+    },
+    {
+      "title": "Introduction — Neobrutalism components",
+      "urls": [
+        "https://www.neobrutalism.dev/docs"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-089",
+      "description": "Documentação de uma coleção de componentes React com estilo neobrutalista, feita com Tailwind e baseada em componentes Shadcn UI sobre Base UI. A introdução explica o neobrutalismo como combinação de brutalismo web com tipografia, ilustração e animações contemporâneas. O projeto publica componentes e guias de instalação; documentação consultada diretamente.",
+      "notes": [
+        "Observação: Separado do vídeo associado pelo usuário: o metadado oEmbed desse vídeo aponta para conteúdo de título diferente."
+      ]
+    },
+    {
+      "title": "Jev agentic harness — guia sobre harnesses para agentes de programação",
+      "urls": [
+        "https://madewithjev.com/jev-agentic-harness"
+      ],
+      "sources": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-090",
+      "description": "Artigo explicativo sobre usar Jev para responder perguntas delimitadas dentro de um harness: o código define opções e permissões, valida a escolha e registra o resultado. O guia ressalta que a abordagem, por si só, não prova melhoria do agente e recomenda avaliação por cenários reproduzíveis e revisão humana. Página consultada diretamente; este parece ser o guia relacionado ao “article below” citado no post, associação contextual.",
+      "notes": []
+    },
+    {
+      "title": "jev-search",
+      "urls": [
+        "https://github.com/superagents-lab/jev-search"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-091",
+      "description": "Pipeline de pesquisa que delega a Jev a escolha de termos/período e a ordenação de resultados, conforme a descrição do post.",
+      "notes": []
+    },
+    {
+      "title": "jevgrep — localizar código perguntando o que ele faz",
+      "urls": [
+        "https://github.com/dzhng/jevgrep"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-092",
+      "description": "CLI para agentes de programação que usa Jev para identificar arquivos relevantes e contexto-fonte a partir de uma pergunta sobre o comportamento do código. O GitHub indica implementação em TypeScript e licença MIT.",
+      "notes": [
+        "Observação: Não instalado ou testado."
+      ]
+    },
+    {
+      "title": "jevlike",
+      "urls": [
+        "https://github.com/vinnylarouge/jevlike"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Pesquisa e matemática",
+      "id": "tool-093",
+      "description": "Pesquisa independente de modelo pequeno para avaliar conjuntos variáveis de opções, não apresentada como réplica oficial.",
+      "notes": []
+    },
+    {
+      "title": "Jiro",
+      "urls": [
+        "http://jiro.build"
+      ],
+      "sources": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-094",
+      "description": "O post anuncia mais de 1.200 prompts de design.",
+      "notes": []
+    },
+    {
+      "title": "LottieFiles/motion-design-skill",
+      "urls": [
+        "http://github.com/LottieFiles/motion-design-skill"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-095",
+      "description": "Princípios de motion design. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Makefaster — AI that makes your site faster. Automatically.",
+      "urls": [
+        "https://makefaster.dev/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-096",
+      "description": "O título e a página de entrada apresentam Makefaster como IA para acelerar sites automaticamente. Na consulta, a página principal expôs apenas o título; não foi possível verificar funcionamento, métricas, integração ou condições de uso.",
+      "notes": []
+    },
+    {
+      "title": "mobile-jev",
+      "urls": [
+        "https://github.com/droidrun/mobile-jev"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-097",
+      "description": "O post relata controle de dispositivos Android conectados ao Mobilerun, com CLI, interface web e logs.",
+      "notes": []
+    },
+    {
+      "title": "Motion.dev",
+      "urls": [
+        "http://Motion.dev"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-098",
+      "description": "Site Motion.dev citado no post. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "motiondivision/motion",
+      "urls": [
+        "http://github.com/motiondivision/motion"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-099",
+      "description": "Biblioteca Motion para interfaces. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "MotionSites",
+      "urls": [
+        "https://motionsites.org"
+      ],
+      "sources": [
+        "https://x.com/franpradasAI/status/2108871345119674651"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-100",
+      "description": "Recurso descrito pelo autor do post como prompts para criar sites com movimento e personalidade. Texto do post; não testado.",
+      "notes": []
+    },
+    {
+      "title": "n8n",
+      "urls": [
+        "https://github.com/n8n-io/n8n"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-101",
+      "description": "O post o apresenta como alternativa open source ao Zapier.",
+      "notes": []
+    },
+    {
+      "title": "NanoJev",
+      "urls": [
+        "https://github.com/TianyuCodings/NanoJev"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Pesquisa e matemática",
+      "id": "tool-102",
+      "description": "Implementação independente baseada em Qwen3-0.6B, segundo o post, com código/modelo e demonstrações de controle.",
+      "notes": []
+    },
+    {
+      "title": "Navbar Gallery",
+      "urls": [
+        "http://navbar.gallery"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073",
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-103",
+      "description": "Referências visuais para barras de navegação. Inspiração para barras de navegação.",
+      "notes": []
+    },
+    {
+      "title": "Nirvana OS Engine — release v0.15.0-beta.1",
+      "urls": [
+        "https://github.com/gutomec/nirvana-os-engine/releases/download/v0.15.0-beta.1/nirvana-os-engine.tar.gz"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-104",
+      "description": "Arquivo TAR.GZ da versão beta 0.15.0-beta.1 do Nirvana OS Engine. O usuário relatou que o link não foi encontrado. Verificação HEAD feita em 10/10/2026 retornou HTTP 200 e redirecionamento para o ativo do GitHub, com tamanho informado de 2.822.063 bytes; isso confirma que o endereço respondia naquele instante, mas não confirma download completo, integridade nem instalação.",
+      "notes": [
+        "Observação: Manter a URL literal. Se o erro persistir para o usuário, investigar cliente, conexão, autenticação, redirecionamento ou ambiente sem presumir causa."
+      ]
+    },
+    {
+      "title": "Nous Research — nota sobre captação de recursos",
+      "urls": [
+        "https://x.com/dillonrolnick/status/2107854520592286021"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-105",
+      "description": "Dillon compartilha suas reflexões sobre uma captação de recursos e aponta para uma nota no site da Nous Research.",
+      "notes": []
+    },
+    {
+      "title": "Oito recursos de design para salvar",
+      "urls": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-106",
+      "description": "Lista de referências para prompts, navegação, rodapés, chamadas à ação, páginas de erro, seções de site, grades Bento e animação. As explicações e a contagem de prompts são as apresentadas pelo autor; não foram verificados os recursos individuais.",
+      "notes": [
+        "Observação: Preservar descrição como paráfrase do post. navbar.gallery, footer.design e cta.gallery já aparecem em outro post coletado; deduplicar recursos no HTML final e preservar ambas as fontes."
+      ]
+    },
+    {
+      "title": "Open Intelligent UI — template de interface inteligente",
+      "urls": [
+        "https://x.com/CopilotKit/status/2108555099241128416"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-107",
+      "description": "A publicação anuncia um template open source para incorporar interfaces inteligentes ao próprio produto, afirmando compatibilidade com diferentes modelos, frameworks de agentes e componentes/design systems, além de Web, Mobile e Slack. O post remete ao repositório por uma publicação citada; a descrição funcional abaixo foi verificada no README, sem executar o projeto.",
+      "notes": [
+        "Observação: A compatibilidade ampla alegada no post é atribuída ao autor. Repositório associado pela publicação citada, não por link direto no post CopilotKit."
+      ]
+    },
+    {
+      "title": "openjev-sglang",
+      "urls": [
+        "https://github.com/ekzhang/openjev-sglang"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Pesquisa e matemática",
+      "id": "tool-108",
+      "description": "Implementação independente de API compatível usando Qwen e SGLang, descrita para servidores GPU.",
+      "notes": []
+    },
+    {
+      "title": "Papermorph — transformar PDF em livro web narrado e interativo",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2106553639661953290"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-109",
+      "description": "O post descreve um fluxo que parte de um PDF e cria plano de livro, storyboard, narração, animações, quizzes e um livro web interativo. Diz que o projeto começou como uma skill para transformar livros em vídeos didáticos e que o autor planeja adicionar modelos de imagem para storyboards. São informações do post, não uma verificação da implementação atual.",
+      "notes": [
+        "Observação: O post afirma uso de Opus 5.5 e ausência de modelos de imagem na versão descrita. Preservar como alegações do autor; não inferir que o código esteja disponível no link do Reddit."
+      ]
+    },
+    {
+      "title": "Patchright Enhanced",
+      "urls": [
+        "http://github.com/whaleyxbt/patchright-enhanced"
+      ],
+      "sources": [
+        "https://x.com/liambraus/status/2105292404764852424"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-110",
+      "description": "O post o descreve como uso de Playwright para observar requisições de sites e extrair dados por script.",
+      "notes": []
+    },
+    {
+      "title": "Penpot",
+      "urls": [
+        "https://github.com/penpot/penpot"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-111",
+      "description": "O post o apresenta como alternativa open source ao Figma.",
+      "notes": []
+    },
+    {
+      "title": "Pi Interactive Subagents — subagentes em painéis tmux",
+      "urls": [
+        "https://github.com/ArdaYILDIZ-DEV/pi-interactive-subagents"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-112",
+      "description": "Extensão TypeScript para o coding agent Pi que executa subagentes em painéis tmux separados, permite continuar trabalhando sem bloquear a sessão principal e devolve resultados como notificações. O README descreve painel de status ao vivo, mensagens de direcionamento e controle de ferramentas por allowlist; agentes filhos só podem iniciar subagentes explicitamente autorizados. Inclui agentes de exemplo para reconhecimento, pesquisa e implementação. Não verifiquei instalação ou execução.",
+      "notes": [
+        "Observação: Projeto específico do Pi; dependências e modelos configurados nos exemplos podem mudar. Não presumir compatibilidade direta com Hermes Agent."
+      ]
+    },
+    {
+      "title": "Pipeline de pesquisa assistido por Jev",
+      "urls": [
+        "https://x.com/N01ennn/status/2104514351147155889"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-113",
+      "description": "O post descreve uma arquitetura em que um modelo de decisão classifica a necessidade de leitura, direciona fontes, reordena resultados, verifica alegações e sinaliza duplicatas antes de um LLM redigir uma nota breve. Afirma que casos incertos são encaminhados a um modelo mais capaz. As métricas de acurácia, preço e economia citadas são alegações da publicação, não validadas aqui.",
+      "notes": [
+        "Observação: Não foi fornecido link para o artigo acadêmico referido nem para código do pipeline. Não reproduzir percentuais ou preços como fatos verificados."
+      ]
+    },
+    {
+      "title": "Post com recursos para criação de sites; MotionSites é o primeiro item visível",
+      "urls": [
+        "https://x.com/franpradasAI/status/2108871345119674651"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-114",
+      "description": "O post em espanhol anuncia uma lista de 25 recursos para criar sites e apresenta MotionSites como prompts para criar sites com movimento e personalidade. O texto recuperado inclui somente o primeiro recurso e diz que os demais estão abaixo; esses outros itens não aparecem nas facetas do post principal e ainda não foram recuperados.",
+      "notes": [
+        "Observação: Lista anunciada com 25 itens, mas somente MotionSites está disponível no texto principal recuperado. Respostas/continuação pendentes; não inventar os outros 24 recursos. Há mídia anexada ao post."
+      ]
+    },
+    {
+      "title": "Post em r/ClaudeWorkflows",
+      "urls": [
+        "https://www.reddit.com/r/ClaudeWorkflows/s/NIp38IDWvM"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-115",
+      "description": "Link do Reddit enviado para inclusão no catálogo. Não consegui carregar a página nesta coleta (HTTP 403); título e conteúdo da publicação permanecem pendentes, sem resumo inventado.",
+      "notes": [
+        "Observação: Tentar novamente ou usar título/texto fornecido pelo usuário. Preservar shortlink."
+      ]
+    },
+    {
+      "title": "Post sobre anúncio criado com ferramentas de geração de imagem e vídeo",
+      "urls": [
+        "https://x.com/abxxai/status/2098788790374695048"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-116",
+      "description": "O autor afirma ter criado um anúncio usando Image 2.5, Seedance 2.5 e Arcads e promete um detalhamento do fluxo com prompts. O texto recuperado não inclui link externo nem o detalhamento prometido; as ferramentas são mencionadas sem URLs diretas. A publicação contém vídeo incorporado.",
+      "notes": [
+        "Observação: Não converter nomes de produtos mencionados em links presumidos."
+      ]
+    },
+    {
+      "title": "Post sobre um guia de harness para coding agents com Jev",
+      "urls": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-117",
+      "description": "O autor recomenda um PDF de 12 páginas e um artigo sobre construção de harnesses para agentes de programação. A publicação atribui ao material a alegação de até 200× mais rapidez e 400× menor custo; esses números são alegações do material/post, não benchmarks verificados aqui. O texto cita uma publicação X que aponta para um artigo, e uma página de Made with Jev identifica o recurso em PDF anunciado. O arquivo PDF bruto não foi localizado diretamente.",
+      "notes": [
+        "Observação: O post não traz link direto para o PDF; a ficha de catálogo é referência secundária. Não atribuir autoria do PDF como verificada nem tratar os números de desempenho como resultados confirmados. Made with Jev já consta no catálogo geral; as páginas específicas foram registradas como recursos relacionados, preservando esta publicação como fonte adicional."
+      ]
+    },
+    {
+      "title": "Prompt Motion",
+      "urls": [
+        "http://prompt-motion.com"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-118",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Ramanujan — bancada multi-modelo de pesquisa em matemática computacional",
+      "urls": [
+        "https://github.com/AniketWathore/Ramanujan"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Pesquisa e matemática",
+      "id": "tool-119",
+      "description": "Workbench de terminal para pesquisa em matemática computacional. O README descreve subagentes em paralelo, pesquisa bibliográfica, worktrees isoladas, checkpoints e verificações determinísticas com SymPy e Z3. O repositório informa Python 3.12+, Node 22+ e licença MIT, e alerta que está em desenvolvimento ativo. Alegações do README; não instalado ou testado.",
+      "notes": []
+    },
+    {
+      "title": "REA — análise de aplicativos como referência de implementação",
+      "urls": [
+        "https://x.com/brunobertolini/status/2108395787332080055"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Desenvolvimento",
+      "id": "tool-120",
+      "description": "Bruno relata que um agente conseguiu implementar uma funcionalidade depois de analisar outro aplicativo que oferecia comportamento semelhante. O post indica o repositório morluto/rea. A rapidez e o sucesso descritos são um relato do autor, não resultados reproduzidos nesta coleta.",
+      "notes": [
+        "Observação: Preservar a atribuição do relato e a referência original. Possível relação com o post sobre Reverse Engineer Anything; confirmar no repositório antes de consolidar como o mesmo projeto."
+      ]
+    },
+    {
+      "title": "REA — investigar como aplicativos funcionam",
+      "urls": [
+        "https://x.com/Fluyeporlaweb/status/2107803627117039934"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Desenvolvimento",
+      "id": "tool-121",
+      "description": "O autor apresenta o REA, Reverse Engineer Anything, como apoio para agentes investigarem funcionalidades de aplicativos sem acesso ao código-fonte original. Cita análise de executáveis, aplicações JavaScript/Electron, APKs e sites. Ressalta que compreender o funcionamento não equivale a recuperar o código original nem concede permissão para copiar o aplicativo. O post apresenta o REA, Reverse Engineer Anything, para investigar funcionalidades de aplicações sem acesso ao código-fonte. Descreve análise de executáveis, apps JavaScript/Electron, APKs e sites. Ressalta que isso não recupera o código original nem concede autorização para copiar.",
+      "notes": [
+        "Observação: O post termina com Repo↓, mas não traz URL de repositório em seu texto ou nas entidades recuperadas. Respostas não consultadas. Alegações de processamento exclusivamente local, compatibilidade, licença e contagem de estrelas não verificadas. Não apresentar como garantia de privacidade.; O post termina com 'Repo↓', mas o texto e os dados recuperados não contêm URL do repositório. O destino morluto/rea está registrado em outra fonte, brunobertolini, e não é atribuído a este post sem confirmação. Alegações de uso local, compatibilidade, licença e estrelas não verificadas."
+      ]
+    },
+    {
+      "title": "Recursos de motion design para agentes",
+      "urls": [
+        "https://x.com/N01ennn/status/2108182955671580771"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-122",
+      "description": "Seleção de recursos para vídeos e animação de interfaces. As indicações e descrições são do autor, não testes realizados nesta coleta. Duplicata da lista de repositórios já coletada. Manter os cartões consolidados e preservar esta publicação como fonte adicional.",
+      "notes": [
+        "Observação: Não validar por inferência a atribuição à Netflix nem versões, métricas, licenças ou compatibilidades. Remotion já aparece em outra fonte; consolidar duplicata preservando URLs originais e referências. Não executar comandos de instalação citados."
+      ]
+    },
+    {
+      "title": "Refero Styles",
+      "urls": [
+        "http://styles.refero.design"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-123",
+      "description": "Estilos de design observados em produtos reais.",
+      "notes": []
+    },
+    {
+      "title": "Remotion — repositório",
+      "urls": [
+        "https://github.com/remotion-dev/remotion",
+        "http://github.com/remotion-dev/remotion"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2108614720915653040",
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-124",
+      "description": "Repositório indicado na publicação para criação programática de vídeos e animações. Condições de licença e eventuais custos devem ser consultados no projeto; a afirmação de gratuidade irrestrita do post não foi validada. Vídeos programados com React. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Remotion — vídeos e animações com código",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2108614720915653040"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-125",
+      "description": "O post apresenta o Remotion como um projeto para criação de vídeos, demonstrações de produtos, animações de sites e motion graphics, inclusive com auxílio de agentes de IA.",
+      "notes": [
+        "Observação: Contagem de estrelas e alegações de gratuidade são afirmações da publicação, não fatos verificados nesta coleta. Descrição em português para seção recolhível."
+      ]
+    },
+    {
+      "title": "remotion-dev/skills",
+      "urls": [
+        "http://github.com/remotion-dev/skills"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-126",
+      "description": "Skills para agentes usarem Remotion. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Scrapling",
+      "urls": [
+        "http://github.com/d4vinci/Scrapling",
+        "https://github.com/D4Vinci/Scrapling"
+      ],
+      "sources": [
+        "https://x.com/liambraus/status/2105292404764852424",
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-127",
+      "description": "O autor o apresenta como scraper de propósito geral para páginas web. Listado no post como parte da camada de coleta de dados web.",
+      "notes": []
+    },
+    {
+      "title": "screenpipe",
+      "urls": [
+        "https://github.com/screenpipe/screenpipe"
+      ],
+      "sources": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-128",
+      "description": "O autor apresenta como ferramenta de registro pesquisável da atividade no computador, para memória de agente.",
+      "notes": []
+    },
+    {
+      "title": "Scrolltide",
+      "urls": [
+        "http://scrolltide.co"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-129",
+      "description": "Prompts de design acompanhados de código para criar experiências 3D e páginas com efeitos de rolagem.",
+      "notes": []
+    },
+    {
+      "title": "Second Brain OS — sistema aberto de organização do conhecimento",
+      "urls": [
+        "https://x.com/polydao/status/2106996306946498606"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Documentos e conhecimento",
+      "id": "tool-130",
+      "description": "O autor apresenta um repositório com guia de implementação, skills e comandos de agentes, scripts Python e um vault inicial. Descreve separação entre arquivos brutos preservados e wiki mantida por agente, com registro de alterações. Também lista trilhas sobre grafos de conhecimento, harnesses, loops e avaliação de agentes. Quantidades, qualidade, gratuidade e licença são alegações do post e não foram auditadas nesta coleta.",
+      "notes": [
+        "Observação: Não afirmar que os scripts foram executados, que não têm dependências sem inspeção, nem que licença ou recursos continuam como descritos. Preservar distinção entre alegações da publicação e validação do repositório."
+      ]
+    },
+    {
+      "title": "Seleção de recursos para designers",
+      "urls": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-131",
+      "description": "O post reúne recursos de design para sites e interfaces. As explicações abaixo são paráfrases em português das descrições do autor; os sites não foram testados.",
+      "notes": [
+        "Observação: URLs preservadas conforme expansão do post. Extração pelo espelho público bem-sucedida; acesso direto ao X não verificado. Usar details/summary para as descrições no HTML final."
+      ]
+    },
+    {
+      "title": "Seleção de skills e ferramentas de motion design",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-132",
+      "description": "A publicação organiza recursos de criação visual em skills e fluxos de trabalho, motores de renderização e ferramentas de apoio. Os destinos coincidem com a seleção anteriormente recebida de N01ennn. Duplicata da lista de repositórios já coletada. Manter os cartões consolidados e preservar esta publicação como fonte adicional.",
+      "notes": [
+        "Observação: Destinos conferidos contra o texto e as URLs expandidas deste post. Consolidar recursos repetidos no HTML, mantendo ambas as fontes. Motion.dev aparece repetido dentro do post: manter um único recurso. Não incorporar o artigo citado somente no outro post como citação desta publicação. Não instalar as ferramentas; compatibilidades e versões não verificadas."
+      ]
+    },
+    {
+      "title": "SemIf",
+      "urls": [
+        "https://github.com/TheoLeeCJ/SemIf"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Pesquisa e matemática",
+      "id": "tool-133",
+      "description": "O autor classifica como pesquisa independente com modelos abertos para estimar probabilidades de escolhas, e não como versão oficial do Jev.",
+      "notes": []
+    },
+    {
+      "title": "Shotreel",
+      "urls": [
+        "http://shotreel.app"
+      ],
+      "sources": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-134",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": []
+    },
+    {
+      "title": "Sites para designers — seleção de Noah",
+      "urls": [
+        "https://x.com/noahelhadedy/status/2108815823561220574"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-135",
+      "description": "A publicação reúne nove sites indicados para designers. Não apresenta explicações individuais sobre suas funcionalidades. Os links abaixo foram extraídos das URLs expandidas da publicação; as descrições específicas permanecem pendentes de consulta aos respectivos sites.",
+      "notes": [
+        "Observação: Não acrescentar links da biografia do autor como se fossem parte do post. Recuperado por espelho público; acesso direto ao X não verificado. Funcionalidades dos destinos não verificadas."
+      ]
+    },
+    {
+      "title": "skillbox",
+      "urls": [
+        "https://github.com/kitze/skillbox"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-136",
+      "description": "Plataforma de gestão e distribuição de skills/MCP; o post menciona integração que recomenda skills para tarefas.",
+      "notes": []
+    },
+    {
+      "title": "Skillry — vídeos e prompts de Opus 5.5",
+      "urls": [
+        "https://x.com/dfolloni/status/2107944267562074281"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-137",
+      "description": "O autor indica uma biblioteca no Skillry com vídeos criados com Opus 5.5 e os prompts associados. Na visita à página, ela anunciava 513 vídeos organizados em motion graphics, explicadores, cenas 3D e jogos, com comparação entre original e recriação. O próprio site também anuncia planos pagos para Skills premium.",
+      "notes": [
+        "Observação: A publicação diz quase 500; no momento da consulta a página indicava 513. Não garantir que cada entrada tenha prompt completo ou que todo conteúdo seja gratuito."
+      ]
+    },
+    {
+      "title": "Skills UI — catálogo de skills de design",
+      "urls": [
+        "https://www.skillsui.app/skills"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-138",
+      "description": "Biblioteca de skills de design organizadas por estilos e áreas, incluindo interfaces animadas, profissionais, elegantes, dashboards e visuais futuristas. A página consultada informa 42 skills, com itens gratuitos e Pro, e diz que cada skill consiste em dois arquivos para aplicar em projetos. Também promove um Design Extractor para obter referências de uma captura de tela. A contagem e os planos podem mudar.",
+      "notes": [
+        "Observação: A página indica 11 skills Free e 31 Pro no momento da consulta. Não foram baixadas ou testadas."
+      ]
+    },
+    {
+      "title": "Stitch by Google",
+      "urls": [
+        "https://stitch.withgoogle.com/"
+      ],
+      "sources": [
+        "https://x.com/stitchbygoogle/status/2105695155164741984"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-139",
+      "description": "Site do produto Stitch.",
+      "notes": []
+    },
+    {
+      "title": "Stitch CLI — design de interfaces pelo terminal",
+      "urls": [
+        "https://x.com/stitchbygoogle/status/2105695155164741984"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-140",
+      "description": "Stitch by Google anuncia uma interface de linha de comando para conectar agentes locais de programação, gerar telas e sistemas de design e enviar capturas de um servidor de desenvolvimento para o Stitch. O post diz que o comando está disponível, mas não inclui diretamente o link de documentação no texto recuperado.",
+      "notes": [
+        "Observação: Instalação, disponibilidade e autenticação da CLI não foram testadas. Menção @antigravity não é URL."
+      ]
+    },
+    {
+      "title": "Sunwood-ai-labs/hyperframes-motion-reel-skill",
+      "urls": [
+        "http://github.com/Sunwood-ai-labs/hyperframes-motion-reel-skill"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-141",
+      "description": "Showreel musical em HyperFrames. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "SupaHero",
+      "urls": [
+        "http://supahero.io"
+      ],
+      "sources": [
+        "https://x.com/himanshubuildss/status/2108738253239255073"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-142",
+      "description": "Inspiração para as seções principais de abertura de páginas.",
+      "notes": []
+    },
+    {
+      "title": "text-to-cad — skills para gerar modelos CAD a partir de texto",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2107331263732531545"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Design e interfaces",
+      "id": "tool-143",
+      "description": "O post apresenta uma biblioteca de skills para agentes de programação criarem modelos CAD e arquivos de engenharia a partir de descrições em linguagem natural. Segundo a publicação, inclui exportação para STEP, STL, 3MF e GLB, além de desenhos DXF, descrições URDF e G-code. As funcionalidades, exemplos, licença MIT e contagem de estrelas são alegações do post, ainda não verificadas no repositório.",
+      "notes": [
+        "Observação: Nenhuma skill instalada ou modelo CAD gerado. Não tratar como validado para manufatura ou segurança de peças."
+      ]
+    },
+    {
+      "title": "Três ferramentas open source para coleta por agentes",
+      "urls": [
+        "https://x.com/liambraus/status/2105292404764852424"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Agentes e automação",
+      "id": "tool-144",
+      "description": "Post em espanhol que apresenta três ferramentas para coleta de dados na web. As capacidades descritas são paráfrases do autor e não foram testadas.",
+      "notes": [
+        "Observação: O texto promete coleta ampla; não interpretar como autorização para scraping, acesso garantido ou conformidade com termos de serviço."
+      ]
+    },
+    {
+      "title": "TypeSafeAI/jev-harness — GitHub",
+      "urls": [
+        "https://github.com/TypeSafeAI/jev-harness"
+      ],
+      "sources": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-145",
+      "description": "Repositório TypeScript de um harness de coding agent para Jev; a descrição do projeto resume o fluxo como proposta do LLM, decisão delimitada por Jev, execução decidida pelo código e registro de cada etapa. Link encontrado no guia Jev agentic harness; metadados GitHub consultados diretamente.",
+      "notes": []
+    },
+    {
+      "title": "undefined-ui/second-brain-os",
+      "urls": [
+        "https://github.com/undefined-ui/second-brain-os"
+      ],
+      "sources": [
+        "https://x.com/polydao/status/2106996306946498606"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-146",
+      "description": "Repositório indicado no post para consultar o guia, a estrutura, os scripts, as skills e os recursos mencionados.",
+      "notes": []
+    },
+    {
+      "title": "Unsection",
+      "urls": [
+        "http://unsection.com"
+      ],
+      "sources": [
+        "https://x.com/iamtanzil_/status/2106710926145781986"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Design e interfaces",
+      "id": "tool-147",
+      "description": "Seções prontas para páginas e interfaces.",
+      "notes": []
+    },
+    {
+      "title": "webadderall/Recordly — GitHub",
+      "urls": [
+        "https://github.com/webadderall/Recordly"
+      ],
+      "sources": [
+        "https://recordly.dev/"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-148",
+      "description": "Repositório do projeto, ligado diretamente pelo site oficial.",
+      "notes": []
+    },
+    {
+      "title": "Windhawk — marketplace de personalizações para Windows",
+      "urls": [
+        "https://windhawk.net/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-149",
+      "description": "A página oficial descreve o Windhawk como um marketplace de personalizações para Windows e programas. Permite aplicar modificações disponíveis ou criar personalizações próprias. A página consultada carrega a interface por JavaScript, por isso a descrição foi baseada no metadado oficial do site; o aplicativo e os mods não foram instalados ou testados.",
+      "notes": [
+        "Observação: Compatibilidade, segurança e licença variam conforme cada mod e exigem análise individual."
+      ]
+    },
+    {
+      "title": "Cua",
+      "urls": [
+        "https://github.com/trycua/cua"
+      ],
+      "sources": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-150",
+      "description": "O autor sugere para agentes interagirem com desktops virtuais ou ambientes controlados.",
+      "notes": []
+    },
+    {
+      "title": "Docling",
+      "urls": [
+        "https://github.com/docling-project/docling"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-151",
+      "description": "Listado no post como parte do processamento de documentos.",
+      "notes": []
+    },
+    {
+      "title": "Documentação do Codex — subagentes",
+      "urls": [
+        "https://developers.openai.com/codex/subagents"
+      ],
+      "sources": [
+        "https://x.com/hanakoxbt/status/2105771704698220884"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-152",
+      "description": "Referência oficial indicada pelo post sobre configuração e uso de subagentes no Codex.",
+      "notes": []
+    },
+    {
+      "title": "raggy — RAG leve por linha de comando para documentos locais",
+      "urls": [
+        "https://github.com/paulknysh/raggy"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Documentos e conhecimento",
+      "id": "tool-153",
+      "description": "CLI Python para RAG sobre documentos locais, usando LangChain, Chroma e Ollama, com busca vetorial e BM25. O README lista PDF, DOCX, PPTX, texto, Markdown, HTML e imagens com OCR; respostas podem usar modelo local ou API remota. Python 3.10+ e licença MIT indicados no repositório. Nenhuma instalação/teste foi feito.",
+      "notes": []
+    },
+    {
+      "title": "typesafe-computer-use",
+      "urls": [
+        "https://github.com/awlevin/typesafe-computer-use"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-154",
+      "description": "Automação de macOS que, segundo o post, usa OCR e dados de acessibilidade para clicar e digitar.",
+      "notes": []
+    },
+    {
+      "title": "https://x.com/ataiiam/status/2108553441199223093",
+      "urls": [
+        "https://x.com/ataiiam/status/2108553441199223093"
+      ],
+      "sources": [
+        "https://x.com/CopilotKit/status/2108555099241128416"
+      ],
+      "pending": false,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-155",
+      "description": "Publicação citada ou relacionada neste registro.",
+      "notes": [
+        "Observação: A compatibilidade ampla alegada no post é atribuída ao autor. Repositório associado pela publicação citada, não por link direto no post CopilotKit."
+      ]
+    },
+    {
+      "title": "https://x.com/i/article/2104561908137283584",
+      "urls": [
+        "https://x.com/i/article/2104561908137283584"
+      ],
+      "sources": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "pending": false,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-156",
+      "description": "Publicação citada ou relacionada neste registro.",
+      "notes": [
+        "Observação: O post não traz link direto para o PDF; a ficha de catálogo é referência secundária. Não atribuir autoria do PDF como verificada nem tratar os números de desempenho como resultados confirmados. Made with Jev já consta no catálogo geral; as páginas específicas foram registradas como recursos relacionados, preservando esta publicação como fonte adicional."
+      ]
+    },
+    {
+      "title": "https://x.com/polydao/status/2104783226833186920",
+      "urls": [
+        "https://x.com/polydao/status/2104783226833186920"
+      ],
+      "sources": [
+        "https://x.com/AnnatarXBT/status/2108868206358085779"
+      ],
+      "pending": false,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-157",
+      "description": "Publicação citada ou relacionada neste registro.",
+      "notes": [
+        "Observação: O post não traz link direto para o PDF; a ficha de catálogo é referência secundária. Não atribuir autoria do PDF como verificada nem tratar os números de desempenho como resultados confirmados. Made with Jev já consta no catálogo geral; as páginas específicas foram registradas como recursos relacionados, preservando esta publicação como fonte adicional."
+      ]
+    },
+    {
+      "title": "notra",
+      "urls": [
+        "https://github.com/usenotra/notra"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-158",
+      "description": "O post o descreve como ferramenta de acompanhamento de menções a marcas em respostas de IA e classificação de sentimento/posição.",
+      "notes": []
+    },
+    {
+      "title": "Publicação em r/SATNA_PROJECT",
+      "urls": [
+        "https://www.reddit.com/r/SATNA_PROJECT/s/tbp6p00Ui3"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-159",
+      "description": "Link do Reddit enviado para o catálogo. A página não carregou nesta consulta (HTTP 403), então título, conteúdo e eventuais links internos permanecem pendentes; não há resumo inferido.",
+      "notes": [
+        "Observação: Tentar recuperar novamente antes da finalização do HTML ou pedir ao usuário o texto da postagem."
+      ]
+    },
+    {
+      "title": "Anthropic OSS Scanner — varredura de segurança para repositórios OSS",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2108690218639630658"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Segurança e OSINT",
+      "id": "tool-160",
+      "description": "O post descreve o serviço da Anthropic como um scanner gratuito, baseado em Claude, para projetos open source considerados críticos, com relatórios, passos de reprodução e correções quando disponíveis. A publicação cita resultados preliminares atribuídos à Anthropic; esses números não foram verificados independentemente. O README do repositório explica que a inscrição é feita por pull request e que os relatórios são gerados por modelo, sem revisão humana. A auditoria ocorre em ambiente isolado sem acesso à internet. Os endereços de contato configurados no projeto ficam públicos.",
+      "notes": [
+        "Observação: As alegações de desempenho/achados citadas no post permanecem atribuídas à publicação. O scanner gera relatórios que não passam por revisão humana, segundo o README."
+      ]
+    },
+    {
+      "title": "Anthropic Red Team — OSS Scanner",
+      "urls": [
+        "https://red.anthropic.com/oss-scanner"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2108690218639630658"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-161",
+      "description": "Página do serviço referenciada no README oficial do repositório. Link citado no README do projeto.",
+      "notes": []
+    },
+    {
+      "title": "anthropics/oss-scanner — GitHub",
+      "urls": [
+        "https://github.com/anthropics/oss-scanner"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2108690218639630658"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-162",
+      "description": "Repositório com instruções para inscrever um projeto, preparar o Dockerfile e threat model, validar a configuração e entender o fluxo de análise. Metadados indicam licença Apache-2.0. README e metadados GitHub consultados.",
+      "notes": []
+    },
+    {
+      "title": "Bitwarden — destino pendente",
+      "urls": [
+        "https://t.co/Ml0McwzxCB"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": true,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-163",
+      "description": "Descrito no post como alternativa open source ao 1Password. O encurtador retornou HTTP 404 e a faceta apresenta apenas caminho GitHub truncado; destino canônico não confirmado.",
+      "notes": []
+    },
+    {
+      "title": "Esse modelo de IA GRÁTIS substitui o Jev...",
+      "urls": [
+        "https://youtu.be/4QRoDP1ZwJU?is=Xf_wjkmL-lb7lqJz"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-164",
+      "description": "Vídeo do canal Aly IA Lab. O título menciona um modelo de IA gratuito, mas a descrição e a transcrição ainda não foram recuperadas. Não é possível identificar com segurança o modelo ou resumir o conteúdo apenas por esse título. Vídeo do canal Aly IA Lab. O título menciona um modelo gratuito, mas a descrição e a transcrição não foram obtidas; não é possível identificar o modelo ou explicar a comparação apenas pelo título.",
+      "notes": [
+        "Observação: Preservar URL exatamente como enviada, inclusive parâmetro is. Título reproduzido conforme metadados, sem completar a expressão Jev... por suposição. Vídeo não assistido.; URL preservada exatamente como enviada. Vídeo não assistido; não completar 'Jev...' por suposição."
+      ]
+    },
+    {
+      "title": "HA-Jev",
+      "urls": [
+        "https://github.com/AboveColin/HA-Jev"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Hardware e dispositivos",
+      "id": "tool-165",
+      "description": "Experimento com Home Assistant que classifica estados domésticos e aciona automações simples; o post recomenda não usar em equipamentos de segurança.",
+      "notes": []
+    },
+    {
+      "title": "IPED — Digital Forensic Tool",
+      "urls": [
+        "https://github.com/sepinf-inc/IPED"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-166",
+      "description": "Ferramenta open source para processamento e análise de evidências digitais. O README descreve processamento em lote pela linha de comando, suporte multiplataforma e interface de análise, além de formatos de imagens e discos forenses.",
+      "notes": [
+        "Observação: O repositório informa que o branch master é de desenvolvimento e instável; para compilação cita JDK 11 com JavaFX e Maven. Licença consta como NOASSERTION nos metadados; não afirmar licença permissiva."
+      ]
+    },
+    {
+      "title": "Jev-Moderation-Bot",
+      "urls": [
+        "https://github.com/brainstormity/Jev-Moderation-Bot"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-167",
+      "description": "Bot Discord descrito para identificar spam e URLs de golpe e aplicar moderação; o autor observa necessidade de intervenção humana em falsos positivos.",
+      "notes": []
+    },
+    {
+      "title": "Made with Jev — projetos construídos com Jev",
+      "urls": [
+        "https://madewithjev.com/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-168",
+      "description": "Diretório de projetos, repositórios, skills, ferramentas e guias relacionados a Jev. Na página consultada, o catálogo indicava 822 entradas e categorias como coding, memória, roteamento, segurança, pesquisa e agentes. Esses números são dinâmicos e não representam validação independente dos projetos.",
+      "notes": [
+        "Observação: Site inclui conteúdo patrocinado; distinguir catálogo comunitário de recomendação ou endosso."
+      ]
+    },
+    {
+      "title": "NoTrack AI — chat com diferentes modelos",
+      "urls": [
+        "https://notrack.ai/pt-BR/chat"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-169",
+      "description": "Página de chat em português que apresenta modos Normal, Mais curto, Detalhado e Criativo e permite anexar arquivos. A página consultada também exibe planos/cotas e um produto patrocinado; preços e limites são dinâmicos. Não verifiquei suas alegações de privacidade nem testei o serviço.",
+      "notes": []
+    },
+    {
+      "title": "OpenHarness — centro de controle para coding agents",
+      "urls": [
+        "https://github.com/autonomous-ai/openharness"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-170",
+      "description": "O README apresenta um aplicativo para acompanhar múltiplos agentes de programação em diferentes máquinas, com painéis lado a lado, sessões persistentes e suporte a vários harnesses. Descreve o tráfego do relay como criptografado ponta a ponta. Repositório em Dart, licença MIT segundo metadados GitHub. Alegações de segurança e desempenho são do projeto e não foram testadas.",
+      "notes": []
+    },
+    {
+      "title": "pi-warden",
+      "urls": [
+        "https://github.com/DevMortimer/pi-warden"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Segurança e OSINT",
+      "id": "tool-171",
+      "description": "O post apresenta monitoramento de regras do projeto, repetição de falhas e relatos de conclusão sem verificação em agentes Pi.",
+      "notes": []
+    },
+    {
+      "title": "Post sobre GeoSpy AI e estimativa de localização por imagem",
+      "urls": [
+        "https://x.com/simplifyinAI/status/2108876898344575380"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Segurança e OSINT",
+      "id": "tool-172",
+      "description": "O post afirma que o GeoSpy AI estima onde uma foto foi tirada analisando o conteúdo visual, mesmo sem dados GPS, e alega rapidez e precisão métrica em áreas compatíveis. Essas informações são alegações da publicação, não foram verificadas independentemente. O texto recuperado não contém URL externa para o serviço; há apenas mídia do próprio post.",
+      "notes": [
+        "Observação: Sem link externo de ferramenta extraído; não transformar o nome GeoSpy AI em URL presumida."
+      ]
+    },
+    {
+      "title": "Strix",
+      "urls": [
+        "https://github.com/usestrix/strix"
+      ],
+      "sources": [
+        "https://x.com/thegreatest_sv/status/2107489054249861141"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-173",
+      "description": "O autor sugere para investigar a segurança de aplicações próprias com apoio de agentes.",
+      "notes": []
+    },
+    {
+      "title": "A note on our fundraise",
+      "urls": [
+        "https://nousresearch.com/a-note-on-our-fundraise"
+      ],
+      "sources": [
+        "https://x.com/dillonrolnick/status/2107854520592286021"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-174",
+      "description": "Nota sobre captação de recursos indicada pelo autor. O conteúdo integral do artigo não foi consultado nesta coleta.",
+      "notes": []
+    },
+    {
+      "title": "Ollama",
+      "urls": [
+        "https://github.com/ollama/ollama"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-175",
+      "description": "O post o descreve como ferramenta para executar modelos de IA localmente.",
+      "notes": []
+    },
+    {
+      "title": "airbnb/lottie-web",
+      "urls": [
+        "http://github.com/airbnb/lottie-web"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-176",
+      "description": "Reprodução de animações Lottie. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Catálogo de plugins do Hermes Agent",
+      "urls": [
+        "https://hermes-agent.nousresearch.com/docs/plugins"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-177",
+      "description": "Página oficial de documentação para descobrir plugins do Hermes Agent, com filtros por origem, categoria e data. Na consulta, a página mostrava o catálogo carregando, sem itens renderizados; por isso o conteúdo dinâmico do catálogo não foi recuperado.",
+      "notes": [
+        "Observação: Link de referência registrado; catálogo carregado por JavaScript e lista não verificada nesta extração."
+      ]
+    },
+    {
+      "title": "Como ter a letra cursiva PERFEITA 🤯",
+      "urls": [
+        "https://youtu.be/CTtEYmk2Nhw?is=HR9N-P7XPJglblNT"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-178",
+      "description": "",
+      "notes": []
+    },
+    {
+      "title": "Demonstração de jogo inspirado em League of Legends e Dragon Ball FighterZ",
+      "urls": [
+        "https://x.com/GamefxAI/status/2106387548486738010"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Jogos e simulação",
+      "id": "tool-179",
+      "description": "O autor diz ter pedido ao Opus 5.5 para analisar elementos de League of Legends e Dragon Ball FighterZ e combiná-los em um jogo. A publicação apresenta o resultado em vídeo, mas não fornece repositório, código, prompt ou detalhes técnicos no texto recuperado. É uma demonstração alegada pelo autor, não uma reprodução verificada.",
+      "notes": [
+        "Observação: Não inferir que o jogo esteja publicado ou que tenha sido implementado conforme descrito. Nenhum link interno recuperado do texto."
+      ]
+    },
+    {
+      "title": "Discussão no Reddit sobre Papermorph",
+      "urls": [
+        "https://www.reddit.com/r/ClaudeAI/comments/1wwhlgb/opus_55_can_oneshot_a_video_so_i_pushed_it_a/"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2106553639661953290"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-180",
+      "description": "Link associado pela publicação para mostrar o projeto e a discussão original; conteúdo da thread não consultado nesta coleta.",
+      "notes": []
+    },
+    {
+      "title": "Fast Search no Hermes Agent pelo Nous Portal",
+      "urls": [
+        "https://x.com/tonbistudio/status/2103374537182314751"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Documentos e conhecimento",
+      "id": "tool-181",
+      "description": "O autor diz ter feito um vídeo mostrando como configurar a busca web do Hermes para usar Fast Search pelo Nous Portal. Alega que estaria disponível para contas do Portal independentemente do provedor de modelo escolhido. Essa disponibilidade e os passos de configuração não foram verificados nesta coleta.",
+      "notes": [
+        "Observação: O post não contém URL de documentação no texto extraído. Não houve mudança de configuração no Hermes."
+      ]
+    },
+    {
+      "title": "GNOS — harness de ensino para agentes de programação",
+      "urls": [
+        "https://github.com/madhvantyagi/Gnos/tree/main"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-182",
+      "description": "Projeto Python que organiza skills, scripts e ferramentas visuais para um agente montar um percurso de aprendizagem e aulas a partir do tema, do tempo disponível e de materiais de referência. O README descreve exercícios, acompanhamento do que o aluno resolve com ou sem ajuda e adaptação das próximas lições; pode apresentar conteúdo em texto, diagramas, simulações, vídeo narrado ou PDF. Indica plugins para Codex, Claude Code e Cursor e licença MIT.",
+      "notes": [
+        "Observação: Projeto não instalado ou testado. Recursos visuais e dependências variam por ambiente, conforme o README."
+      ]
+    },
+    {
+      "title": "greensock/GSAP",
+      "urls": [
+        "http://github.com/greensock/GSAP"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-183",
+      "description": "Biblioteca para animação e linhas do tempo. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "heygen-com/hyperframes",
+      "urls": [
+        "http://github.com/heygen-com/hyperframes",
+        "https://github.com/heygen-com/hyperframes"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346",
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-184",
+      "description": "Renderização de HTML em vídeo. Repositório associado à ferramenta HyperFrames, apresentada anteriormente nas listas como um motor para transformar composições HTML em vídeo. O repositório foi enviado diretamente pelo usuário; metadados atuais e conteúdo não foram consultados nesta etapa. Repositório para compor vídeos usando HTML e renderizá-los em MP4, voltado também a fluxos com agentes. Já citado em outras fontes deste catálogo; manter uma entrada única e agregar as referências. Listado no post na categoria de vídeo; já aparece em outra fonte da coleta. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "HyperFrames — repositório GitHub",
+      "urls": [
+        "https://share.google/zPOxAzmrtlANRySC1"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-185",
+      "description": "Link compartilhado para o repositório heygen-com/hyperframes, já registrado no catálogo. A página foi acessível, mas os metadados do projeto não foram reextraídos nesta etapa.",
+      "notes": [
+        "Observação: Preservar a URL share.google como origem e consolidar o cartão com o destino GitHub canônico."
+      ]
+    },
+    {
+      "title": "I Gave Claude Code 1.6 Billion Tokens For FREE Everyday",
+      "urls": [
+        "https://youtu.be/DGgMl8tnw6A?is=EUL2eiIKDBG1wUrc"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-186",
+      "description": "OEmbed identifica o título e o canal AI Tech. Vídeo não assistido; a descrição/tese do vídeo não foi recuperada, portanto o título não deve ser tratado como conteúdo verificado.",
+      "notes": [
+        "Observação: Sem resumo de conteúdo: apenas título e canal foram obtidos."
+      ]
+    },
+    {
+      "title": "jevmeter",
+      "urls": [
+        "https://github.com/ChetasLua/jevmeter"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-187",
+      "description": "O post descreve pontuação de falas em vídeo segundo um critério e exibição de um medidor; ressalva que isso não verifica fatos nem detecta mentiras.",
+      "notes": []
+    },
+    {
+      "title": "nateherkai/hyperframes-student-kit",
+      "urls": [
+        "http://github.com/nateherkai/hyperframes-student-kit"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-188",
+      "description": "Material educacional para HyperFrames. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "OpenMontage",
+      "urls": [
+        "https://github.com/calesthio/OpenMontage"
+      ],
+      "sources": [
+        "https://x.com/beamnxw/status/2100625120691720385"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-189",
+      "description": "Listado no post na categoria de vídeo.",
+      "notes": []
+    },
+    {
+      "title": "t3knobox/klik-anim-skill-creation",
+      "urls": [
+        "http://github.com/t3knobox/klik-anim-skill-creation"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-190",
+      "description": "Princípios de animação e câmera. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "unclutter",
+      "urls": [
+        "https://github.com/kitze/unclutter"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-191",
+      "description": "Extensão que o post descreve como ocultando anúncios e pop-ups identificados por Jev.",
+      "notes": []
+    },
+    {
+      "title": "youtube-sponsor-detection",
+      "urls": [
+        "https://github.com/trungdq88/youtube-sponsor-detection"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-192",
+      "description": "O post afirma que detecta segmentos de patrocínio em vídeos a partir de fala/legendas para permitir pular esses trechos; distingue isso de anúncios inseridos pela plataforma.",
+      "notes": []
+    },
+    {
+      "title": "yt-dlp",
+      "urls": [
+        "https://github.com/yt-dlp/yt-dlp"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "IA e referências",
+      "id": "tool-193",
+      "description": "O post o apresenta como ferramenta para baixar vídeos de plataformas diversas. Descrição atribuída ao autor; sem teste neste trabalho.",
+      "notes": []
+    },
+    {
+      "title": "10 repositórios que o autor descreve como alternativas gratuitas",
+      "urls": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "IA e referências",
+      "id": "tool-194",
+      "description": "O post reúne dez projetos em categorias variadas: download de vídeo, modelos locais de IA, geração de imagens, transcrição, analytics, espaço de trabalho colaborativo, design, automação, agendamento e gerenciador de senhas. As comparações de preço, gratuidade, licenças e funcionalidades são alegações do autor e não foram verificadas individualmente. Foram extraídos dez links encurtados; seis redirecionaram para destinos identificáveis. Quatro destinos não foram recuperados por falha de redirecionamento e permanecem pendentes, sem completar os caminhos truncados.",
+      "notes": [
+        "Observação: Links encurtados que retornaram 404 preservados como recebidos para rastreabilidade; não inventar seus destinos. A publicação também tem mídia, não incluída como recurso externo."
+      ]
+    },
+    {
+      "title": "AbubakrChan/product-launch-motion",
+      "urls": [
+        "http://github.com/AbubakrChan/product-launch-motion"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-195",
+      "description": "Filmes de lançamento com voz e acabamento visual. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Barty-Bart/motion-graphics",
+      "urls": [
+        "http://github.com/Barty-Bart/motion-graphics"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-196",
+      "description": "Imagens de apoio a partir de transcrições. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "debpalash/VoiceStudio — GitHub",
+      "urls": [
+        "https://github.com/debpalash/VoiceStudio"
+      ],
+      "sources": [
+        "https://x.com/Antonio_RodriIA/status/2108945685772980304"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Áudio e voz",
+      "id": "tool-197",
+      "description": "Aplicativo desktop local para clonagem/design de voz, dublagem de vídeo, ditado, transcrição e criação de audiolivros. O README atual descreve vários motores TTS/ASR, catálogo de idiomas e suporte a macOS, Windows e Linux; consulte requisitos e limitações do próprio projeto. Metadados e README do repositório consultados diretamente; associação ao post localizada por pesquisa, não por faceta de URL do tweet.",
+      "notes": []
+    },
+    {
+      "title": "echris6/motion-video-kit",
+      "urls": [
+        "https://github.com/echris6/motion-video-kit"
+      ],
+      "sources": [
+        "https://x.com/RoundtableSpace/status/2105209785335373948"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-198",
+      "description": "O GitHub descreve o repositório como um kit de skills para Claude Code voltado a vídeos, princípios de motion, ciclos independentes de crítica, áudio e padrões Three.js. Metadados indicam licença MIT.",
+      "notes": []
+    },
+    {
+      "title": "Esqueça Os Cursos: Foi Assim Que Eu Me Tornei Um HACKER Sem diplomas. (ROADMAP)",
+      "urls": [
+        "https://youtu.be/485Ej7Rb6HY?is=30dzzE72DvXMCMwo"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-199",
+      "description": "Metadados do YouTube identificam o canal GBZERO777 e esse título. O vídeo não foi assistido; não foi obtida descrição ou transcrição, então não é possível resumir o conteúdo além do título.",
+      "notes": []
+    },
+    {
+      "title": "Ferramenta de vídeo para transcrever, traduzir e dublar",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2101140470844011000"
+      ],
+      "sources": [],
+      "pending": true,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-200",
+      "description": "O post afirma que uma ferramenta open source e gratuita transforma um vídeo em transcrição, tradução, dublagem, reformatação e capa, com suporte a mais de cem idiomas. O nome e o link do projeto não aparecem no texto recuperado; o destino permanece pendente.",
+      "notes": [
+        "Observação: Não transformar a alegação em funcionalidade verificada nem inventar o repositório."
+      ]
+    },
+    {
+      "title": "Freesound",
+      "urls": [
+        "http://freesound.org"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-201",
+      "description": "Efeitos sonoros para uso em projetos, conforme as licenças dos arquivos.",
+      "notes": []
+    },
+    {
+      "title": "Game-icons.net",
+      "urls": [
+        "http://Game-icons.net"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-202",
+      "description": "Ícones para interfaces de jogos.",
+      "notes": []
+    },
+    {
+      "title": "Godot",
+      "urls": [
+        "http://godotengine.org"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-203",
+      "description": "O post indica plugins e recursos do ecossistema Godot, mas fornece o endereço principal do projeto, não um link direto para sua biblioteca.",
+      "notes": []
+    },
+    {
+      "title": "Hermes Watch — controle por voz para agentes",
+      "urls": [
+        "https://github.com/styles01/hermes-watch"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Hardware e dispositivos",
+      "id": "tool-204",
+      "description": "Segundo a descrição enviada pelo usuário, é um controle por voz com botão para falar, avatar procedural e indicador de status para M5Stack StopWatch, com ESP32-S3 e tela AMOLED circular. O projeto reúne firmware, plugin de hub, simulador desktop e atualização OTA por Wi-Fi.",
+      "notes": []
+    },
+    {
+      "title": "itch.io",
+      "urls": [
+        "http://itch.io"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-205",
+      "description": "Recursos para projetos de jogos independentes.",
+      "notes": []
+    },
+    {
+      "title": "jev-rules",
+      "urls": [
+        "https://github.com/EliaAlberti/jev-rules"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Desenvolvimento",
+      "id": "tool-206",
+      "description": "O post diz que seleciona instruções e materiais de referência conforme a tarefa e os arquivos editados.",
+      "notes": []
+    },
+    {
+      "title": "jev-voice-browser",
+      "urls": [
+        "https://github.com/moritzkremb/jev-voice-browser"
+      ],
+      "sources": [
+        "https://x.com/studio_yebisu/status/2101065176069886152"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Agentes e automação",
+      "id": "tool-207",
+      "description": "Experimento que combina reconhecimento de voz no navegador e Playwright para operar páginas, conforme o post.",
+      "notes": []
+    },
+    {
+      "title": "Kenney Assets",
+      "urls": [
+        "http://kenney.nl/assets"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-208",
+      "description": "Pacotes de recursos visuais para desenvolvimento de jogos.",
+      "notes": []
+    },
+    {
+      "title": "Lospec",
+      "urls": [
+        "http://lospec.com"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-209",
+      "description": "Paletas de cores e ferramentas para pixel art.",
+      "notes": []
+    },
+    {
+      "title": "Mixamo",
+      "urls": [
+        "http://mixamo.com"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-210",
+      "description": "Preparação de esqueletos e animação de personagens.",
+      "notes": []
+    },
+    {
+      "title": "Motion Video Kit — fluxo de produção audiovisual para agentes",
+      "urls": [
+        "https://x.com/RoundtableSpace/status/2105209785335373948"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-211",
+      "description": "O post propõe um pipeline para motion design que analisa vídeos de referência, cria storyboard antes da animação, monta cenas com GSAP e Three.js e revisa o resultado em ciclos de qualidade. Essas são as capacidades descritas na publicação; o kit não foi instalado ou testado.",
+      "notes": [
+        "Observação: O post também diz que há um prompt completo, mas esse prompt não estava incluído no texto recuperado. Não inventar nem afirmar qualidade do resultado."
+      ]
+    },
+    {
+      "title": "OpenGameArt",
+      "urls": [
+        "http://opengameart.org"
+      ],
+      "sources": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Jogos e simulação",
+      "id": "tool-212",
+      "description": "Arte para jogos compartilhada pela comunidade.",
+      "notes": []
+    },
+    {
+      "title": "Opus 5.5 videos — Skillry",
+      "urls": [
+        "https://skillry.dev/ai-videos/opus-5-5"
+      ],
+      "sources": [
+        "https://x.com/dfolloni/status/2107944267562074281"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-213",
+      "description": "Galeria consultada: exemplos audiovisuais, prompts e comparações de recriações. Conteúdo e contagem podem mudar; verificado nesta coleta.",
+      "notes": []
+    },
+    {
+      "title": "Post sobre alternativa local ao ElevenLabs — VoiceStudio",
+      "urls": [
+        "https://x.com/Antonio_RodriIA/status/2108945685772980304"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Áudio e voz",
+      "id": "tool-214",
+      "description": "O autor do post apresenta o VoiceStudio como alternativa open source e local ao ElevenLabs e afirma que oferece clonagem de voz, dublagem em 646 idiomas, audiolivros, ditado, transcrição e vários motores TTS, sem cobrança por caractere ou envio de áudio à nuvem. Essas afirmações são atribuídas ao post; não foram testadas. O repositório associado encontrado na pesquisa é o projeto abaixo. Seus metadados atuais indicam licença AGPL-3.0; requisitos e cobertura dependem da versão e do motor escolhido.",
+      "notes": [
+        "Observação: A página do projeto informa que está em beta ativo. Não instalar nem interpretar como validadas as comparações de marketing do autor do post."
+      ]
+    },
+    {
+      "title": "Prompt de anúncio cinematográfico com transformação visual em vídeo",
+      "urls": [
+        "https://x.com/Iancu_ai/status/2098420840073236536"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Vídeo e animação",
+      "id": "tool-215",
+      "description": "Post com um prompt extenso para um comercial ficcional de 30 segundos: cena urbana contínua, personagens e objetos que se transformam por partículas cristalinas e mudança final de figurino. O autor recomenda Seedance 2.5 e menciona Higgsfield; não há URL externa recuperada. O prompt inclui regras para manter identidade visual e evitar marcas/personagens reconhecíveis. A publicação é uma proposta criativa, não uma validação de que o vídeo foi produzido conforme o prompt.",
+      "notes": [
+        "Observação: Post contém vídeo anexado. Nomes de ferramentas permanecem texto, pois não foram publicados como URLs."
+      ]
+    },
+    {
+      "title": "Recordly — gravações de tela com edição de demonstrações",
+      "urls": [
+        "https://recordly.dev/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-216",
+      "description": "Aplicativo open source para gravar demos, tutoriais e vídeos de produto. O site apresenta recursos de zoom automático, animação suave do cursor, fundos, sobreposição dinâmica de webcam, edição em linha do tempo, captura de microfone e áudio do sistema, projetos reeditáveis e exportação em MP4 ou GIF. A página oferece download para Windows.",
+      "notes": []
+    },
+    {
+      "title": "Recursos para criar jogos",
+      "urls": [
+        "https://x.com/jowettbrendan/status/2108484711253483787"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "source",
+      "category": "Jogos e simulação",
+      "id": "tool-217",
+      "description": "Seleção de sites para quem desenvolve jogos. As explicações resumem as indicações da publicação; licenças e condições de cada recurso devem ser conferidas no destino.",
+      "notes": [
+        "Observação: URLs preservadas conforme expansão da publicação. Descrições atribuídas ao post, sem teste das ferramentas ou validação de licenças."
+      ]
+    },
+    {
+      "title": "The Hermes Workshop — dispositivos para agentes com hardware",
+      "urls": [
+        "https://teknium.io/hermes-devices/"
+      ],
+      "sources": [],
+      "pending": false,
+      "kind": "resource",
+      "category": "Hardware e dispositivos",
+      "id": "tool-218",
+      "description": "Catálogo consultado de dispositivos abertos ou controláveis por interfaces locais e APIs, com ideias de integração ao Hermes Agent. Inclui microcontroladores, SBCs, robôs, wearables, teclados, áudio, IoT, impressão 3D e outros. A página descreve fluxos que usam, entre outros, REST, MQTT, MCP, serial e OTA; as sugestões de integração são do catálogo e não foram testadas neste trabalho.",
+      "notes": []
+    },
+    {
+      "title": "whaleyxbt/claude-motion",
+      "urls": [
+        "http://github.com/whaleyxbt/claude-motion"
+      ],
+      "sources": [
+        "https://x.com/N01ennn/status/2108182955671580771",
+        "https://x.com/RoundtableSpace/status/2108456177029845346"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Vídeo e animação",
+      "id": "tool-219",
+      "description": "Animações, revisão de quadros e áudio por código. Paráfrase do post; destino não testado.",
+      "notes": []
+    },
+    {
+      "title": "Whisper",
+      "urls": [
+        "https://github.com/openai/whisper"
+      ],
+      "sources": [
+        "https://x.com/abir35627/status/2108713572566180087"
+      ],
+      "pending": false,
+      "kind": "resource",
+      "category": "Áudio e voz",
+      "id": "tool-220",
+      "description": "O post o apresenta como ferramenta de transcrição de áudio.",
+      "notes": []
+    }
+  ]
+}
