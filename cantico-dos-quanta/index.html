@@ -55,14 +55,61 @@
   .sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
   .sr:focus-within { position: fixed !important; width: auto; height: auto; clip: auto; left: 12px; top: 12px; max-width: min(520px, calc(100vw - 24px)); max-height: 70vh; overflow: auto; background: #fbf7ee; color: var(--ink); padding: 14px 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 7; white-space: normal; }
 </style>
-  <script type="module" crossorigin src="./assets/main-quanta.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js">
-  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js">
-  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js">
-  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js">
-  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js">
-  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js">
-  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css">
+<script>
+  window.__quantaErrors = [];
+  window.addEventListener("error", function(e) {
+    var msg = (e && e.message) ? e.message : String(e);
+    var loc = (e && e.filename) ? (e.filename.split("/").pop() + ":" + e.lineno) : "";
+    window.__quantaErrors.push(msg + " (" + loc + ")");
+    console.error("[Quanta Error]", msg, loc, e);
+    var b = document.getElementById("quanta-err");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "quanta-err";
+      b.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;background:#9a1c1c;color:#fff;padding:12px 16px;border-radius:10px;font:13px/1.4 monospace;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.45);max-height:45vh;overflow:auto;";
+      document.body.appendChild(b);
+    }
+    b.innerHTML += "<div>⚠️ <b>Erro no Livro 3D:</b> " + msg + "<br><small style='opacity:0.8'>" + loc + "</small></div>";
+  });
+  window.addEventListener("unhandledrejection", function(e) {
+    var msg = (e && e.reason) ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e);
+    window.__quantaErrors.push(msg);
+    console.error("[Quanta Promise Rejection]", msg, e);
+    var b = document.getElementById("quanta-err");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "quanta-err";
+      b.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;background:#9a1c1c;color:#fff;padding:12px 16px;border-radius:10px;font:13px/1.4 monospace;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.45);max-height:45vh;overflow:auto;";
+      document.body.appendChild(b);
+    }
+    b.innerHTML += "<div>⚠️ <b>Promise Rejection:</b> " + msg + "</div>";
+  });
+  // Failsafe timer: reveals the book automatically after 3.8s or immediately upon click/tap
+  setTimeout(function() {
+    if (!document.body.classList.contains("ready")) {
+      console.log("[Quanta] Failsafe: exibindo o livro 3D.");
+      document.body.classList.add("ready");
+    }
+  }, 3800);
+  document.addEventListener("DOMContentLoaded", function() {
+    var ld = document.getElementById("loader");
+    if (ld) {
+      ld.style.cursor = "pointer";
+      ld.title = "Toque para abrir o livro agora";
+      ld.addEventListener("click", function() {
+        document.body.classList.add("ready");
+      });
+    }
+  });
+</script>
+  <script type="module" crossorigin src="./assets/main-quanta.js?v=20261103d"></script>
+  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js?v=20261103d">
+  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js?v=20261103d">
+  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js?v=20261103d">
+  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js?v=20261103d">
+  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js?v=20261103d">
+  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js?v=20261103d">
+  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css?v=20261103d">
 </head>
 <body>
 <canvas id="c" tabindex="0" aria-label="O Cântico dos Quanta: um livro vivo aberto. Navegue pelas páginas com as setas ou passe o cursor sobre as ilustrações para erguê-las em 3D."></canvas>
