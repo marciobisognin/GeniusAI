@@ -1516,12 +1516,57 @@
       if (e.target === readModal) readModal.classList.remove('open');
     });
 
-    // Slider de Elevação 3D
+    // Slider de Elevação 3D com Modo Hover Automático
     const liftSlider = document.getElementById('lift-slider');
+    let currentLift = 0.95;
+    let targetLift = 0.95;
+    let autoHoverMode = true;
+
     liftSlider.addEventListener('input', (e) => {
+      autoHoverMode = false;
       const val = parseFloat(e.target.value);
+      currentLift = val;
+      targetLift = val;
       expContainerGroup.scale.set(val, val, val);
       expContainerGroup.position.y = (val - 1.0) * 12;
+    });
+
+    // Raycasting para ergue o 3D conforme o leitor passa o mouse sobre as ilustrações (estilo @techartist_)
+    const raycaster = new THREE.Raycaster();
+    const mouseVec = new THREE.Vector2();
+
+    window.addEventListener('pointermove', (e) => {
+      if (e.target.closest('#ui-layer') && !e.target.closest('#canvas-container')) return;
+      mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+      if (autoHoverMode) {
+        raycaster.setFromCamera(mouseVec, camera);
+        const intersects = raycaster.intersectObject(openPages);
+        if (intersects.length > 0) {
+          const hit = intersects[0].point;
+          // Se o mouse estiver sobre a metade direita (ilustrações), ergue em 3D
+          if (hit.x > 0) {
+            targetLift = 1.0;
+          } else {
+            targetLift = 0.08; // Deita na folha como desenho plano
+          }
+        } else {
+          targetLift = 0.08;
+        }
+      }
+    });
+
+    // Toque no celular para alternar elevação da ilustração
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('#ui-layer')) return;
+      mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouseVec, camera);
+      const intersects = raycaster.intersectObject(openPages);
+      if (intersects.length > 0 && intersects[0].point.x > 0) {
+        targetLift = targetLift > 0.5 ? 0.08 : 1.0;
+      }
     });
 
     // =========================================================================
@@ -1560,6 +1605,14 @@
 
       bookGroup.rotation.y += (targetRotation.y - bookGroup.rotation.y) * 0.08;
       bookGroup.rotation.x += (targetRotation.x - bookGroup.rotation.x) * 0.08;
+
+      // Animação suave do popWorld / Lift conforme o mouse passa sobre o livro
+      if (autoHoverMode) {
+        currentLift += (targetLift - currentLift) * 0.09;
+        expContainerGroup.scale.set(currentLift, currentLift, currentLift);
+        expContainerGroup.position.y = (currentLift - 1.0) * 12;
+        if (liftSlider) liftSlider.value = currentLift.toFixed(2);
+      }
 
       if (currentExpUpdate) {
         currentExpUpdate(delta, time);
