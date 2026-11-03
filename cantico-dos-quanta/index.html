@@ -1,0 +1,1575 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>O Cântico dos Quanta · Livro Vivo 3D Completo</title>
+  <style>
+    :root {
+      --bg: #151311;
+      --paper: #f5ede0;
+      --paper-dark: #e8ded0;
+      --ink: #1c2433;
+      --ink-muted: #5a5448;
+      --accent: #9a3b2a;
+      --gold: #d4a024;
+      --gold-dark: #916a10;
+      --cyan: #00d2ff;
+      --purple: #a855f7;
+      --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%; height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--serif);
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+    #canvas-container {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      touch-action: none;
+    }
+    canvas#c { display: block; width: 100%; height: 100%; outline: none; }
+
+    /* UI Overlay */
+    #ui-layer {
+      position: absolute; inset: 0;
+      pointer-events: none;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: clamp(10px, 2vw, 24px);
+      z-index: 10;
+    }
+    header.book-header {
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: auto;
+      gap: 12px;
+    }
+    .header-left {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .badge {
+      background: rgba(24, 21, 18, 0.88);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-family: var(--sans);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(212, 160, 36, 0.3);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .badge span { color: var(--gold); font-weight: 700; }
+
+    .header-actions {
+      display: flex; gap: 8px;
+    }
+    .icon-btn {
+      background: rgba(24, 21, 18, 0.85);
+      color: #e0d8cc;
+      border: 1px solid rgba(212, 160, 36, 0.35);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      backdrop-filter: blur(8px);
+      transition: all 0.2s ease;
+    }
+    .icon-btn:hover {
+      background: rgba(45, 38, 30, 0.95);
+      border-color: var(--gold);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Controls Panel */
+    .controls-panel {
+      pointer-events: auto;
+      background: rgba(245, 237, 224, 0.96);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(200, 150, 30, 0.4);
+      border-radius: 16px;
+      padding: 14px 18px;
+      max-width: 420px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      font-family: var(--sans);
+      align-self: flex-start;
+      margin-bottom: 8px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .controls-panel h3 {
+      font-family: var(--serif);
+      font-size: 16px;
+      color: var(--ink);
+      margin-bottom: 4px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .controls-panel p {
+      font-size: 11px;
+      line-height: 1.45;
+      color: var(--ink-muted);
+      margin-bottom: 10px;
+    }
+    .slider-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+    }
+    .slider-row label {
+      font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; min-width: 80px; color: var(--ink);
+    }
+    .slider-row input[type="range"] {
+      flex: 1; accent-color: var(--accent); cursor: pointer; height: 4px;
+    }
+    .btn-group {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;
+    }
+    .btn {
+      flex: 1; min-width: 95px;
+      background: #fff;
+      border: 1px solid #d5c8b5;
+      color: var(--ink);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      transition: all 0.2s ease;
+    }
+    .btn:hover { background: #fdfaf6; border-color: var(--accent); }
+    .btn.active {
+      background: var(--ink); color: #fff; border-color: var(--ink);
+    }
+    .btn.active .dot { background: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #bbb; }
+
+    /* Footer & Page Navigation */
+    footer.book-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: auto;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-bar {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(24, 21, 18, 0.9);
+      padding: 6px 12px;
+      border-radius: 30px;
+      border: 1px solid rgba(212, 160, 36, 0.35);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      transition: opacity 0.2s ease;
+    }
+    .nav-bar.disabled {
+      opacity: 0.5; pointer-events: none;
+    }
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.15);
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--gold);
+      color: #000;
+      transform: scale(1.08);
+      border-color: var(--gold);
+    }
+    .nav-btn:disabled {
+      opacity: 0.3; cursor: not-allowed;
+    }
+    .page-indicator {
+      font-family: var(--sans);
+      font-size: 12px;
+      font-weight: 600;
+      color: #f0e6d6;
+      padding: 0 8px;
+      min-width: 140px;
+      text-align: center;
+    }
+    .page-indicator span { color: var(--gold); }
+
+    .hint-chip {
+      background: rgba(24, 21, 18, 0.75);
+      color: #bbb;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-family: var(--sans);
+      font-size: 11px;
+      display: flex; align-items: center; gap: 6px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Modal de Leitura Integral */
+    #read-modal {
+      position: absolute; inset: 0;
+      background: rgba(10, 8, 6, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 20px;
+      pointer-events: auto;
+    }
+    #read-modal.open { display: flex; }
+    .modal-card {
+      background: var(--paper);
+      color: var(--ink);
+      width: min(720px, 94vw);
+      max-height: 85vh;
+      border-radius: 16px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      border: 2px solid var(--gold);
+      animation: popIn 0.25s ease-out;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .modal-header {
+      padding: 16px 22px;
+      background: #eae0d0;
+      border-bottom: 1px solid #d5c8b5;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .modal-header h2 {
+      font-family: var(--serif);
+      font-size: 18px;
+      color: var(--ink);
+    }
+    .modal-close {
+      background: none; border: none; font-size: 24px; color: var(--ink);
+      cursor: pointer; line-height: 1; padding: 4px;
+    }
+    .modal-body {
+      padding: 24px 28px;
+      overflow-y: auto;
+      font-family: var(--serif);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .modal-body p { margin-bottom: 16px; text-align: justify; }
+    .modal-body blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 14px;
+      font-style: italic;
+      color: #4a443a;
+      margin: 18px 0;
+    }
+    .formula-box {
+      background: #fdfaf5;
+      border: 1px dashed var(--gold);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin: 16px 0;
+      text-align: center;
+      font-family: var(--sans);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--accent);
+    }
+
+    /* Drawer de Sumário (Índice) */
+    #toc-drawer {
+      position: absolute; top: 0; left: 0; bottom: 0;
+      width: min(360px, 85vw);
+      background: rgba(24, 21, 18, 0.97);
+      backdrop-filter: blur(20px);
+      z-index: 90;
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 10px 0 40px rgba(0,0,0,0.5);
+      border-right: 1px solid rgba(212, 160, 36, 0.3);
+      display: flex; flex-direction: column;
+      pointer-events: auto;
+    }
+    #toc-drawer.open { transform: translateX(0); }
+    .drawer-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .drawer-header h3 {
+      color: var(--gold);
+      font-family: var(--serif);
+      font-size: 16px;
+      letter-spacing: 0.05em;
+    }
+    .drawer-list {
+      flex: 1; overflow-y: auto; padding: 12px;
+    }
+    .toc-item {
+      padding: 12px 14px;
+      border-radius: 10px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+    .toc-item:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(212, 160, 36, 0.2);
+    }
+    .toc-item.active {
+      background: rgba(212, 160, 36, 0.15);
+      border-color: var(--gold);
+    }
+    .toc-number {
+      font-size: 10px; font-weight: 700; color: var(--gold);
+      text-transform: uppercase; letter-spacing: 0.1em;
+      margin-bottom: 2px;
+    }
+    .toc-title {
+      font-size: 13px; font-weight: 600; color: #f0e6d6;
+      line-height: 1.35;
+    }
+
+    /* Aba de Desafio no 3D (Overlay) */
+    .flap-card {
+      position: absolute;
+      left: clamp(20px, 4vw, 50px);
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(290px, 38vw);
+      background: rgba(245, 237, 224, 0.94);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(154, 59, 42, 0.4);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      pointer-events: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      transition: all 0.3s ease;
+    }
+    .flap-card:hover {
+      transform: translateY(-52%) scale(1.02);
+      border-color: var(--accent);
+    }
+    .flap-label {
+      font-size: 10px; font-weight: 700; color: var(--accent);
+      text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .flap-question {
+      font-size: 12px; font-weight: 600; color: var(--ink); line-height: 1.4;
+    }
+    .flap-answer {
+      max-height: 0; overflow: hidden; opacity: 0;
+      font-size: 11px; line-height: 1.45; color: var(--ink-muted);
+      transition: all 0.35s ease;
+      margin-top: 0;
+      border-top: 1px dashed transparent;
+      padding-top: 0;
+    }
+    .flap-card.open .flap-answer {
+      max-height: 160px; opacity: 1; margin-top: 8px;
+      border-top-color: #d5c8b5; padding-top: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .flap-card { display: none; }
+      .controls-panel { max-width: 100%; }
+      header.book-header { flex-direction: column; align-items: stretch; }
+      .header-actions { justify-content: flex-end; }
+      footer.book-footer { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div id="canvas-container">
+    <canvas id="c"></canvas>
+  </div>
+
+  <div id="ui-layer">
+    <header class="book-header">
+      <div class="header-left">
+        <div class="badge">
+          <span>O CÂNTICO DOS QUANTA</span> · LIVRO VIVO 3D
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="icon-btn" id="btn-toc">📑 Sumário</button>
+        <button class="icon-btn" id="btn-read">📖 Explicação Completa</button>
+      </div>
+    </header>
+
+    <!-- Aba de Desafio no espaço 2D correspondente à página esquerda -->
+    <div class="flap-card" id="flap-card">
+      <div class="flap-label">
+        <span>Desafio Cognitivo Quântico</span>
+        <span id="flap-status">Toque para Abrir ▾</span>
+      </div>
+      <div class="flap-question" id="flap-question">
+        O que acontece se colocarmos um detector na fenda?
+      </div>
+      <div class="flap-answer" id="flap-answer">
+        A superposição quântica é desfeita. A observação força o elétron a escolher um trajeto determinista, destruindo as franjas de onda.
+      </div>
+    </div>
+
+    <!-- Painel de Controles Dinâmico do Experimento Atual -->
+    <div class="controls-panel" id="controls-panel">
+      <h3 id="exp-title">
+        <span>Laboratório de Fenda Dupla</span>
+        <span style="font-size: 11px; color: var(--accent); font-family: var(--sans);">POP-UP 3D</span>
+      </h3>
+      <p id="exp-desc">
+        O feixe de partículas propaga-se da esquerda para a direita. Alterne entre o comportamento ondulatório puro e o colapso pela medição.
+      </p>
+
+      <div class="slider-row">
+        <label>Elevação 3D</label>
+        <input type="range" id="lift-slider" min="0" max="1" step="0.01" value="0.95" />
+      </div>
+
+      <div id="dynamic-controls">
+        <!-- Injetado dinamicamente via JS de acordo com o capítulo -->
+      </div>
+    </div>
+
+    <footer class="book-footer">
+      <div class="hint-chip">
+        <span>🖐️ Arraste para girar 360° · Botões abaixo ou setas para folhear</span>
+      </div>
+
+      <div class="nav-bar" id="nav-bar-container">
+        <button class="nav-btn" id="btn-prev" title="Capítulo Anterior">◀</button>
+        <div class="page-indicator" id="page-indicator">
+          PÁGINA <span id="cur-page-num">1</span> DE <span id="tot-page-num">9</span>
+        </div>
+        <button class="nav-btn" id="btn-next" title="Próximo Capítulo">▶</button>
+      </div>
+    </footer>
+  </div>
+
+  <!-- Drawer de Sumário (TOC) -->
+  <div id="toc-drawer">
+    <div class="drawer-header">
+      <h3>Sumário da Obra</h3>
+      <button class="modal-close" id="btn-close-toc" style="color: #fff;">&times;</button>
+    </div>
+    <div class="drawer-list" id="toc-list"></div>
+  </div>
+
+  <!-- Modal de Explicação Completa -->
+  <div id="read-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 id="modal-title">Título do Capítulo</h2>
+        <button class="modal-close" id="btn-close-modal">&times;</button>
+      </div>
+      <div class="modal-body" id="modal-content"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from './three.module.js';
+
+    // =========================================================================
+    // 1. BANCO DE DADOS COMPLETO DOS 9 CAPÍTULOS & EXPERIMENTOS
+    // =========================================================================
+    const CHAPTERS = [
+      {
+        id: 'capa',
+        num: 'Apresentação',
+        title: 'O Cântico dos Quanta',
+        subtitle: 'Os Peixes Solúveis e o Nascimento da Realidade Quântica',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod (Trad. Manuel Ruas)',
+        flap: {
+          q: 'Por que o título «O Cântico dos Quanta»?',
+          a: 'Trata-se de uma homenagem lírica à estranheza da natureza: tal como no surrealismo de André Breton, a realidade microscópica desafia as leis banais do bom senso mecanicista.'
+        },
+        readText: `
+          <p>«Será o mundo apenas uma ilusão? O espaço existirá de facto? E o tempo? Haverá universos paralelos ao nosso?»</p>
+          <p>Estas interrogações prodigiosas, que outrora pertenciam ao domínio exclusivo dos poetas e dos místicos, são hoje formuladas com todo o rigor pela física quântica. Nascida no início do século XX para resolver o enigma da radiação térmica e das partículas subatômicas, ela transformou-se na teoria científica mais precisa e bem-sucedida de toda a história da humanidade.</p>
+          <blockquote>“Quem não fica chocado com a mecânica quântica é porque não a compreendeu.” — Niels Bohr</blockquote>
+          <p>Neste livro vivo interactivo, cada capítulo desdobra-se fisicamente da página como uma maquete tridimensional. Você é convidado a folhear as páginas, interagir com os experimentos que revolucionaram o pensamento humano e testemunhar o colapso do determinismo clássico em tempo real.</p>
+        `,
+        expTitle: 'Experiência Inaugural de Alain Aspect',
+        expDesc: 'Dois fótons disparados de Orsay em sentidos opostos permanecem correlacionados como um único sistema indivisível, desafiando a velocidade da luz.',
+        initExp: (group) => {
+          const sourceGeo = new THREE.SphereGeometry(6, 32, 32);
+          const sourceMat = new THREE.MeshBasicMaterial({ color: 0xd4a024 });
+          const source = new THREE.Mesh(sourceGeo, sourceMat);
+          source.position.set(0, 15, 0);
+          group.add(source);
+
+          const ringGeo = new THREE.TorusGeometry(12, 1.2, 16, 48);
+          const ringMat1 = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
+          const ringMat2 = new THREE.MeshBasicMaterial({ color: 0xa855f7 });
+          const r1 = new THREE.Mesh(ringGeo, ringMat1);
+          const r2 = new THREE.Mesh(ringGeo, ringMat2);
+          r1.position.set(-60, 15, 0); r1.rotation.y = Math.PI / 4;
+          r2.position.set(60, 15, 0); r2.rotation.y = -Math.PI / 4;
+          group.add(r1, r2);
+
+          const count = 80;
+          const pos = new Float32Array(count * 3);
+          for(let i=0; i<count; i++) {
+            const side = i % 2 === 0 ? 1 : -1;
+            pos[i*3] = (Math.random() * 55) * side;
+            pos[i*3+1] = 15 + (Math.random() - 0.5) * 3;
+            pos[i*3+2] = (Math.random() - 0.5) * 6;
+          }
+          const pGeo = new THREE.BufferGeometry();
+          pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+          const pMat = new THREE.PointsMaterial({ color: 0xffffff, size: 3.5, transparent: true, opacity: 0.85 });
+          const particles = new THREE.Points(pGeo, pMat);
+          group.add(particles);
+
+          return (delta, t) => {
+            r1.rotation.z = t * 1.5;
+            r2.rotation.z = -t * 1.5;
+            const arr = pGeo.attributes.position.array;
+            for(let i=0; i<count; i++) {
+              const side = i % 2 === 0 ? 1 : -1;
+              arr[i*3] += side * delta * 50;
+              if (Math.abs(arr[i*3]) > 60) arr[i*3] = 0;
+            }
+            pGeo.attributes.position.needsUpdate = true;
+          };
+        },
+        controlsHtml: `
+          <div style="font-family: var(--sans); font-size: 12px; color: var(--gold); text-align: center; padding: 6px;">
+            ✦ Par de fótons entrelaçados emitido pela cascata atômica central.
+          </div>
+        `
+      },
+      {
+        id: 'ch1',
+        num: 'Capítulo 1',
+        title: 'Os Peixes Solúveis',
+        subtitle: 'A Ilusão da Realidade Mecânica & A Fronteira Quântica',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'O que era o determinismo de Laplace?',
+          a: 'Pierre-Simon Laplace postulava que um génio conhecendo todas as posições e velocidades das partículas no cosmos poderia prever o futuro absoluto. A física quântica provou que esse génio é impossível.'
+        },
+        readText: `
+          <p>No início do século XX, a física clássica parecia ter concluído o seu edifício triunfal. O universo era um relógio newtoniano gigantesco: se conhecêssemos a posição e a velocidade de cada átomo no presente, poderíamos deduzir com exatidão todo o passado e todo o futuro.</p>
+          <p>No entanto, sob essa fachada sólida, as partículas recusavam-se a obedecer. Ao aproximarmo-nos da escala atómica, a matéria sólida dissolve-se como os «peixes solúveis» do manifesto surrealista de André Breton. Não existem trajetórias contínuas, não há esferas duras balísticas. Há apenas ondas de probabilidade e saltos imprevisíveis.</p>
+          <div class="formula-box">O Colapso da Previsibilidade: A natureza profunda é intrinsecamente probabilística.</div>
+        `,
+        expTitle: 'O Relógio Mecânico vs. Agitação Térmica',
+        expDesc: 'Veja o pêndulo regular newtoniano colidir com a agitação quântica imprevisível das partículas subjacentes.',
+        initExp: (group) => {
+          const rodGeo = new THREE.CylinderGeometry(1.5, 1.5, 50);
+          const rodMat = new THREE.MeshStandardMaterial({ color: 0xd4a024, metalness: 0.8, roughness: 0.2 });
+          const rod = new THREE.Mesh(rodGeo, rodMat);
+          rod.position.set(0, 35, 0);
+          group.add(rod);
+
+          const bobGeo = new THREE.SphereGeometry(8, 32, 32);
+          const bob = new THREE.Mesh(bobGeo, rodMat);
+          bob.position.set(0, 10, 0);
+          group.add(bob);
+
+          const pCount = 200;
+          const pos = new Float32Array(pCount * 3);
+          for(let i=0; i<pCount*3; i+=3) {
+            pos[i] = (Math.random() - 0.5) * 80;
+            pos[i+1] = Math.random() * 25;
+            pos[i+2] = (Math.random() - 0.5) * 50;
+          }
+          const pGeo = new THREE.BufferGeometry();
+          pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+          const pMat = new THREE.PointsMaterial({ color: 0x00d2ff, size: 2.8, transparent: true, opacity: 0.8 });
+          const cloud = new THREE.Points(pGeo, pMat);
+          group.add(cloud);
+
+          let chaosLevel = 0.8;
+          window._setChaos = (v) => { chaosLevel = v; };
+
+          return (delta, t) => {
+            const angle = Math.sin(t * 3.0) * 0.45;
+            rod.rotation.z = angle;
+            bob.position.x = Math.sin(angle) * 25;
+            bob.position.y = 35 - Math.cos(angle) * 25;
+
+            const arr = pGeo.attributes.position.array;
+            for(let i=0; i<pCount*3; i+=3) {
+              arr[i] += (Math.random() - 0.5) * chaosLevel * 4;
+              arr[i+1] += (Math.random() - 0.5) * chaosLevel * 4;
+              if (arr[i+1] < 0) arr[i+1] = 0;
+              if (arr[i+1] > 30) arr[i+1] = 30;
+            }
+            pGeo.attributes.position.needsUpdate = true;
+          };
+        },
+        controlsHtml: `
+          <div class="slider-row">
+            <label>Agitação Quântica</label>
+            <input type="range" min="0.1" max="2.0" step="0.1" value="0.8" oninput="window._setChaos && window._setChaos(parseFloat(this.value))" />
+          </div>
+        `
+      },
+      {
+        id: 'ch2_planck',
+        num: 'Capítulo 2A',
+        title: 'A Catástrofe Ultravioleta',
+        subtitle: 'Max Planck e o Nascimento do Quantum (1900)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'O que era a catástrofe ultravioleta?',
+          a: 'A física clássica previa que qualquer corpo aquecido emitiria energia infinita nas frequências mais altas (UV). Planck resolveu postulando que a energia só é trocada em pacotes discretos: E = h·ν.'
+        },
+        readText: `
+          <p>No final do século XIX, um problema aparentemente técnico tirava o sono dos físicos em Berlim: a radiação emitida por uma cavidade aquecida (o corpo negro). Segundo a lei clássica de Rayleigh-Jeans, à medida que a frequência da luz aumenta em direção ao ultravioleta, a quantidade de radiação emitida deveria crescer até ao infinito!</p>
+          <p>Isso significava que uma simples lâmpada ou lareira deveria emitir um clarão mortal de radiação gama infinita. No dia 14 de Dezembro de 1900, Max Planck apresentou um «ato de desespero»: para que a matemática coincidisse com a realidade, a energia não poderia ser contínua, mas transmitida em pequenos pacotes indivisíveis chamados <i>quanta</i>.</p>
+          <div class="formula-box">E = h · ν (Constante de Planck: h ≈ 6.626 × 10⁻³⁴ J·s)</div>
+        `,
+        expTitle: 'Forno de Cavidade Radiante de Planck',
+        expDesc: 'Aqueça a cavidade do corpo negro. Observe como a curva de Planck decai suavemente no ultravioleta, evitando a explosão infinita clássica.',
+        initExp: (group) => {
+          const boxGeo = new THREE.BoxGeometry(45, 35, 45);
+          const boxMat = new THREE.MeshStandardMaterial({ color: 0x222226, roughness: 0.9 });
+          const box = new THREE.Mesh(boxGeo, boxMat);
+          box.position.set(0, 18, 0);
+          group.add(box);
+
+          const glowGeo = new THREE.SphereGeometry(12, 24, 24);
+          const glowMat = new THREE.MeshBasicMaterial({ color: 0xff4400 });
+          const glow = new THREE.Mesh(glowGeo, glowMat);
+          glow.position.set(0, 18, 0);
+          group.add(glow);
+
+          const curvePts = [];
+          for(let i=0; i<60; i++) {
+            const x = -30 + i;
+            const y = Math.exp(-Math.pow((x - 5)/12, 2)) * 25;
+            curvePts.push(new THREE.Vector3(x, y + 2, 25));
+          }
+          const cGeo = new THREE.BufferGeometry().setFromPoints(curvePts);
+          const cMat = new THREE.LineBasicMaterial({ color: 0xd4a024, linewidth: 3 });
+          const curve = new THREE.Line(cGeo, cMat);
+          group.add(curve);
+
+          window._setTemp = (t) => {
+            const col = new THREE.Color().setHSL(0.08 - t*0.06, 1.0, 0.4 + t*0.3);
+            glowMat.color.copy(col);
+          };
+
+          return (delta, t) => {
+            glow.scale.setScalar(1.0 + Math.sin(t * 8.0) * 0.05);
+          };
+        },
+        controlsHtml: `
+          <div class="slider-row">
+            <label>Temperatura (K)</label>
+            <input type="range" min="0" max="1" step="0.05" value="0.7" oninput="window._setTemp && window._setTemp(parseFloat(this.value))" />
+          </div>
+        `
+      },
+      {
+        id: 'ch2_photoelectric',
+        num: 'Capítulo 2B',
+        title: 'O Efeito Fotoelétrico',
+        subtitle: 'Albert Einstein e o Fóton como Partícula de Luz (1905)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'Por que a luz vermelha não arranca elétrons?',
+          a: 'Porque a energia de cada fóton individual de luz vermelha é inferior à função trabalho do metal. Não importa quão intensa seja a luz vermelha, nenhum elétron é ejetado!'
+        },
+        readText: `
+          <p>Embora Planck considerasse os quanta apenas um artifício matemático, um jovem funcionário do Instituto de Patentes de Berna levou a ideia até às últimas consequências em 1905: Albert Einstein.</p>
+          <p>Ao iluminar uma placa metálica, elétrons são ejetados instantaneamente. A teoria ondulatória previa que uma luz fraca demoraria horas para acumular energia suficiente no elétron. Contudo, na prática a emissão é imediata se a cor for azul ou ultravioleta, e nula se for vermelha! Einstein provou que a própria luz é composta por partículas de energia concentrada: os fótons.</p>
+          <div class="formula-box">Energia Cinética Máxima: E_cin = h·ν - Φ (Função Trabalho)</div>
+        `,
+        expTitle: 'Célula Fotoelétrica Interativa',
+        expDesc: 'Mude o comprimento de onda da luz. Luz vermelha não extrai elétrons; luz azul/UV arranca elétrons velozes com alta corrente.',
+        initExp: (group) => {
+          const plateGeo = new THREE.BoxGeometry(4, 30, 30);
+          const plateMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.9, roughness: 0.1 });
+          const plate = new THREE.Mesh(plateGeo, plateMat);
+          plate.position.set(-35, 18, 0);
+          group.add(plate);
+
+          const anodeGeo = new THREE.TorusGeometry(14, 2, 16, 32);
+          const anode = new THREE.Mesh(anodeGeo, plateMat);
+          anode.position.set(35, 18, 0);
+          anode.rotation.y = Math.PI / 2;
+          group.add(anode);
+
+          const eCount = 60;
+          const ePos = new Float32Array(eCount * 3);
+          for(let i=0; i<eCount*3; i+=3) {
+            ePos[i] = -35 + Math.random() * 70;
+            ePos[i+1] = 18 + (Math.random() - 0.5) * 14;
+            ePos[i+2] = (Math.random() - 0.5) * 14;
+          }
+          const eGeo = new THREE.BufferGeometry();
+          eGeo.setAttribute('position', new THREE.BufferAttribute(ePos, 3));
+          const eMat = new THREE.PointsMaterial({ color: 0x00d2ff, size: 4.0 });
+          const electrons = new THREE.Points(eGeo, eMat);
+          group.add(electrons);
+
+          let freq = 0.8;
+          window._setFreq = (f) => {
+            freq = f;
+            electrons.visible = freq > 0.35;
+          };
+
+          return (delta, t) => {
+            if (freq <= 0.35) return;
+            const speed = (freq - 0.35) * 120;
+            const arr = eGeo.attributes.position.array;
+            for(let i=0; i<eCount*3; i+=3) {
+              arr[i] += speed * delta;
+              if (arr[i] > 35) arr[i] = -35;
+            }
+            eGeo.attributes.position.needsUpdate = true;
+          };
+        },
+        controlsHtml: `
+          <div class="slider-row">
+            <label>Frequência (ν)</label>
+            <input type="range" min="0" max="1" step="0.05" value="0.8" oninput="window._setFreq && window._setFreq(parseFloat(this.value))" />
+          </div>
+          <div style="font-size: 11px; color: var(--ink-muted); display: flex; justify-content: space-between;">
+            <span>Vermelho (Sem ejeção)</span>
+            <span>Azul / UV (Corrente Alta)</span>
+          </div>
+        `
+      },
+      {
+        id: 'ch2_bohr',
+        num: 'Capítulo 2C',
+        title: 'O Átomo de Bohr & De Broglie',
+        subtitle: 'Órbitas Quantizadas e Ondas de Matéria (1913–1924)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'Por que o elétron não cai no núcleo?',
+          a: 'Na física clássica, uma carga acelerada irradia energia e colapsaria em 1 bilionésimo de segundo. Bohr postulou órbitas estáveis fixas onde o elétron simplesmente não irradia!'
+        },
+        readText: `
+          <p>Niels Bohr propôs que o elétron só pode habitar certas órbitas privilegiadas ao redor do núcleo. Quando salta de um nível superior para um inferior, ele emite um fóton de frequência perfeitamente calibrada pela diferença energética.</p>
+          <p>Em 1924, o príncipe francês Louis de Broglie deu a explicação mais bela da física: o elétron é também uma onda! Uma órbita atómica só é estável quando acomoda um número inteiro de comprimentos de onda de De Broglie, formando uma onda estacionária perfeitamente fechada sobre si mesma.</p>
+          <div class="formula-box">Condição Quântica: n·λ = 2π·r &nbsp;|&nbsp; λ = h / p</div>
+        `,
+        expTitle: 'Átomo Quântico com Salto de Fóton',
+        expDesc: 'O elétron como onda estacionária em torno do núcleo dourado. Clique em "Salto Quântico" para assistir à emissão de luz!',
+        initExp: (group) => {
+          const nucGeo = new THREE.SphereGeometry(6, 32, 32);
+          const nucMat = new THREE.MeshStandardMaterial({ color: 0xd4a024, roughness: 0.2 });
+          const nucleus = new THREE.Mesh(nucGeo, nucMat);
+          nucleus.position.set(0, 18, 0);
+          group.add(nucleus);
+
+          const rings = [20, 36, 52];
+          rings.forEach(r => {
+            const g = new THREE.TorusGeometry(r, 0.4, 8, 64);
+            const m = new THREE.MeshBasicMaterial({ color: 0x445566, transparent: true, opacity: 0.4 });
+            const mesh = new THREE.Mesh(g, m);
+            mesh.position.set(0, 18, 0);
+            mesh.rotation.x = Math.PI / 2;
+            group.add(mesh);
+          });
+
+          const eGeo = new THREE.SphereGeometry(3.5, 16, 16);
+          const eMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff });
+          const electron = new THREE.Mesh(eGeo, eMat);
+          group.add(electron);
+
+          let currentOrbit = 2;
+          let angle = 0;
+
+          window._quantumJump = () => {
+            currentOrbit = currentOrbit === 2 ? 1 : 2;
+          };
+
+          return (delta, t) => {
+            angle += delta * (4.0 / currentOrbit);
+            const r = rings[currentOrbit];
+            electron.position.set(Math.cos(angle) * r, 18, Math.sin(angle) * r);
+          };
+        },
+        controlsHtml: `
+          <div class="btn-group">
+            <button class="btn active" onclick="window._quantumJump && window._quantumJump()"><span class="dot"></span>Executar Salto Quântico (ΔE = hν)</button>
+          </div>
+        `
+      },
+      {
+        id: 'ch3_double_slit',
+        num: 'Capítulo 3',
+        title: 'A Fenda Dupla de Young',
+        subtitle: 'Dualidade Onda-Corpúsculo e Princípio de Incerteza (1927)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'O elétron passa pelas duas fendas ao mesmo tempo?',
+          a: 'Sim! No modo ondulatório sem observador, o estado quântico é uma superposição de ambas as trajetórias. Só quando medimos é que ele se materializa em uma única fenda.'
+        },
+        readText: `
+          <p>«Se você quiser entender a mecânica quântica, contemple a experiência da fenda dupla», disse Richard Feynman. «Ela contém o único mistério verdadeiro.»</p>
+          <p>Disparando elétrons um a um contra uma placa com duas fendas, cada partícula produz no anteparo traseiro um padrão de interferência com franjas brilhantes e escuras — provando que cada elétron individual interfere consigo próprio, passando por ambas as fendas ao mesmo tempo!</p>
+          <p>Mas se instalarmos um detector laser para espiar por qual das fendas o elétron passa, a superposição é destruída instantaneamente. O padrão de onda desaparece e surgem duas listras de projéteis materiais clássicos.</p>
+          <div class="formula-box">Incerteza de Heisenberg: Δx · Δp ≥ ℏ/2</div>
+        `,
+        expTitle: 'Laboratório Quântico de Fenda Dupla',
+        expDesc: 'Alterne entre o Modo Onda (interferência brilhante) e o Detector Ativo (colapso da função de onda em duas fendas clássicas).',
+        initExp: (group) => {
+          const gunGeo = new THREE.CylinderGeometry(5, 7, 24, 24);
+          const gunMat = new THREE.MeshStandardMaterial({ color: 0x333339, metalness: 0.8 });
+          const gun = new THREE.Mesh(gunGeo, gunMat);
+          gun.position.set(0, 14, 55); gun.rotation.x = Math.PI / 2;
+          group.add(gun);
+
+          const wallMat = new THREE.MeshStandardMaterial({ color: 0x8a6d3b, metalness: 0.6, roughness: 0.3 });
+          const wLeft = new THREE.Mesh(new THREE.BoxGeometry(28, 28, 2), wallMat);
+          wLeft.position.set(-18, 14, 0);
+          const wMid = new THREE.Mesh(new THREE.BoxGeometry(4, 28, 2), wallMat);
+          wMid.position.set(0, 14, 0);
+          const wRight = new THREE.Mesh(new THREE.BoxGeometry(28, 28, 2), wallMat);
+          wRight.position.set(18, 14, 0);
+          group.add(wLeft, wMid, wRight);
+
+          const screenMat = new THREE.MeshBasicMaterial({ color: 0x112233 });
+          const screen = new THREE.Mesh(new THREE.BoxGeometry(65, 30, 2), screenMat);
+          screen.position.set(0, 15, -55);
+          group.add(screen);
+
+          const pCount = 500;
+          const pos = new Float32Array(pCount * 3);
+          const seed = new Float32Array(pCount);
+          for(let i=0; i<pCount; i++) {
+            pos[i*3] = (Math.random() - 0.5) * 4;
+            pos[i*3+1] = 14 + (Math.random() - 0.5) * 4;
+            pos[i*3+2] = Math.random() * 110 - 55;
+            seed[i] = Math.random();
+          }
+          const pGeo = new THREE.BufferGeometry();
+          pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+          const pMat = new THREE.PointsMaterial({ color: 0x00d2ff, size: 3.2 });
+          const pts = new THREE.Points(pGeo, pMat);
+          group.add(pts);
+
+          let isWave = true;
+          window._setDoubleSlit = (wave) => {
+            isWave = wave;
+            pMat.color.setHex(isWave ? 0x00d2ff : 0xff6655);
+          };
+
+          return (delta, t) => {
+            const arr = pGeo.attributes.position.array;
+            for(let i=0; i<pCount; i++) {
+              arr[i*3+2] -= delta * 45;
+              if (arr[i*3+2] < -55) {
+                arr[i*3+2] = 55;
+                arr[i*3] = (Math.random() - 0.5) * 4;
+              } else if (arr[i*3+2] < 0) {
+                if (isWave) {
+                  arr[i*3] += Math.sin(seed[i] * Math.PI * 4) * delta * 20;
+                } else {
+                  const target = seed[i] > 0.5 ? 4 : -4;
+                  arr[i*3] += (target - arr[i*3]) * 0.08;
+                }
+              }
+            }
+            pGeo.attributes.position.needsUpdate = true;
+          };
+        },
+        controlsHtml: `
+          <div class="btn-group">
+            <button class="btn active" id="btn-mode-wave" onclick="document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window._setDoubleSlit && window._setDoubleSlit(true);"><span class="dot"></span>Modo Onda (Interferência)</button>
+            <button class="btn" id="btn-mode-part" onclick="document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active')); this.classList.add('active'); window._setDoubleSlit && window._setDoubleSlit(false);"><span class="dot"></span>Detector Ativo (Colapso Ψ)</button>
+          </div>
+        `
+      },
+      {
+        id: 'ch4_epr_aspect',
+        num: 'Capítulo 4',
+        title: 'Do Paradoxo EPR a Alain Aspect',
+        subtitle: 'A Desigualdade de Bell e a Ação Fantasmagórica à Distância (1982)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'Informação pode viajar mais rápido que a luz?',
+          a: 'Não. O entrelaçamento quântico é instantâneo e não-local, mas não pode transmitir mensagens controladas acima de c, preservando a Relatividade de Einstein.'
+        },
+        readText: `
+          <p>Em 1935, Albert Einstein, Boris Podolsky e Nathan Rosen formularam o paradoxo EPR: se a mecânica quântica estivesse certa, duas partículas entrelaçadas separadas por anos-luz poderiam influenciar-se mutuamente no mesmo instante!</p>
+          <p>Einstein chamou a isto «ação fantasmagórica à distância» (<i>spooky action at a distance</i>) e acreditava que deviam existir «variáveis ocultas» locais. Mas em 1964, John Stewart Bell deduziu um limite matemático inegável para qualquer teoria local.</p>
+          <p>Em 1982, no Institut d'Optique de Orsay, Alain Aspect realizou o teste definitivo com fótons entrelaçados emitidos por átomos de cálcio. A desigualdade de Bell foi violada com precisão absoluta: a não-localidade da natureza é real!</p>
+          <div class="formula-box">Teorema de Bell: |S| ≤ 2 (Clássico) vs. |S| = 2√2 ≈ 2.828 (Quântico)</div>
+        `,
+        expTitle: 'Medidor de Correlação de Bell & Aspect',
+        expDesc: 'Detectores nos extremos medindo polarização de fótons gêmeos. Veja o valor S violar a física clássica.',
+        initExp: (group) => {
+          const dMat = new THREE.MeshStandardMaterial({ color: 0x334455, metalness: 0.7 });
+          const detA = new THREE.Mesh(new THREE.BoxGeometry(16, 24, 16), dMat);
+          detA.position.set(-65, 15, 0);
+          const detB = new THREE.Mesh(new THREE.BoxGeometry(16, 24, 16), dMat);
+          detB.position.set(65, 15, 0);
+          group.add(detA, detB);
+
+          const beamGeo = new THREE.CylinderGeometry(0.8, 0.8, 130);
+          beamGeo.rotateZ(Math.PI / 2);
+          const beamMat = new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.6 });
+          const beam = new THREE.Mesh(beamGeo, beamMat);
+          beam.position.set(0, 15, 0);
+          group.add(beam);
+
+          return (delta, t) => {
+            beam.material.opacity = 0.5 + Math.sin(t * 8.0) * 0.3;
+          };
+        },
+        controlsHtml: `
+          <div style="font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--accent); text-align: center; padding: 6px; background: #fff; border-radius: 8px; border: 1px solid #d5c8b5;">
+            Violação de Bell Medida: S = 2.814 ± 0.015 (Não-Localidade Confirmada)
+          </div>
+        `
+      },
+      {
+        id: 'ch5_schrodinger_cat',
+        num: 'Capítulo 5',
+        title: 'O Gato de Schrödinger',
+        subtitle: 'A Superposição Macroscópica e a Transição Quântica (1935)',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'Por que não vemos gatos zumbis no dia a dia?',
+          a: 'A decoerência quântica! No mundo macroscópico, colisões inevitáveis com trilhões de moléculas de ar destroem a superposição em uma fração infinitesimale de segundo.'
+        },
+        readText: `
+          <p>Para expor o absurdo da interpretação de Copenhague aplicada ao mundo macroscópico, Erwin Schrödinger imaginou em 1935 uma experiência mental perturbadora:</p>
+          <p>Coloca-se um gato dentro de uma caixa blindada de aço com um átomo radioativo que tem 50% de chance de decair em 1 hora. Se decair, um contador Geiger aciona um martelo que quebra um frasco de veneno, matando o felino. Se não decair, o gato vive.</p>
+          <p>Segundo a mecânica quântica estrita, enquanto a caixa permanecer fechada e sem observador, o sistema está na sobreposição pura:</p>
+          <div class="formula-box">|Ψ⟩ = 1/√2 · (|Gato Vivo⟩ + |Gato Morto⟩)</div>
+          <p>É o ato da medição (abrir a tampa) que força o colapso determinista!</p>
+        `,
+        expTitle: 'A Caixa Quântica de Schrödinger',
+        expDesc: 'A caixa está selada em superposição quântica. Clique para abrir a tampa e forçar o colapso do observador!',
+        initExp: (group) => {
+          const boxMat = new THREE.MeshStandardMaterial({ color: 0x4a4d52, metalness: 0.8, roughness: 0.2 });
+          const boxBase = new THREE.Mesh(new THREE.BoxGeometry(45, 25, 45), boxMat);
+          boxBase.position.set(0, 12.5, 0);
+          group.add(boxBase);
+
+          const lidMat = new THREE.MeshStandardMaterial({ color: 0xd4a024, metalness: 0.7, roughness: 0.3 });
+          const lid = new THREE.Mesh(new THREE.BoxGeometry(47, 3, 47), lidMat);
+          lid.position.set(0, 26, 0);
+          group.add(lid);
+
+          const atom = new THREE.Mesh(new THREE.SphereGeometry(5, 16, 16), new THREE.MeshBasicMaterial({ color: 0x00d2ff }));
+          atom.position.set(0, 16, 0);
+          group.add(atom);
+
+          let isOpen = false;
+          let state = 'superposição';
+
+          window._openCatBox = () => {
+            isOpen = !isOpen;
+            const statusEl = document.getElementById('cat-status-badge');
+            if (isOpen) {
+              state = Math.random() > 0.5 ? 'VIVO 🐱 (Átomo não decaiu)' : 'MORTO ☠️ (Frasco de veneno quebrado)';
+              atom.material.color.setHex(state.includes('VIVO') ? 0x00ff88 : 0xff3344);
+              if (statusEl) {
+                statusEl.textContent = 'Colapso Ψ: ' + state;
+                statusEl.style.color = state.includes('VIVO') ? '#008833' : '#bb1122';
+              }
+            } else {
+              atom.material.color.setHex(0x00d2ff);
+              if (statusEl) {
+                statusEl.textContent = 'Estado: Superposição 50% Vivo + 50% Morto';
+                statusEl.style.color = 'var(--gold-dark)';
+              }
+            }
+          };
+
+          return (delta, t) => {
+            const targetRot = isOpen ? -Math.PI / 2.2 : 0;
+            lid.rotation.x += (targetRot - lid.rotation.x) * 0.1;
+            atom.scale.setScalar(1.0 + Math.sin(t * 6.0) * 0.15);
+          };
+        },
+        controlsHtml: `
+          <div class="btn-group">
+            <button class="btn active" onclick="window._openCatBox && window._openCatBox()"><span class="dot"></span>Abrir / Fechar Caixa (Observação)</button>
+          </div>
+          <div id="cat-status-badge" style="margin-top: 8px; font-family: var(--sans); font-size: 11px; font-weight: 700; color: var(--gold-dark); text-align: center; background: #fff; padding: 6px; border-radius: 6px; border: 1px solid #d5c8b5;">
+            Estado: Superposição 50% Vivo + 50% Morto
+          </div>
+        `
+      },
+      {
+        id: 'ch8_many_worlds',
+        num: 'Capítulo 8',
+        title: 'O Multiverso dos Muitos Mundos',
+        subtitle: 'Hugh Everett e a Bifurcação das Realidades Paralelas',
+        authors: 'Sven Ortoli & Jean-Pierre Pharabod',
+        flap: {
+          q: 'A função de onda colapsa de verdade?',
+          a: 'Para Hugh Everett, não existe colapso! Cada resultado possível de uma medição quântica ocorre de facto em uma ramificação paralela do universo.'
+        },
+        readText: `
+          <p>Em 1957, o físico Hugh Everett III propôs a hipótese mais audaciosa da ciência: e se a função de onda nunca colapsar?</p>
+          <p>Na teoria dos «Muitos Mundos», sempre que uma partícula tem duas opções quânticas, o universo inteiro divide-se em duas realidades paralelas coexistentes. No caso do gato de Schrödinger, existe um ramo do cosmos onde o gato vive e outro onde o gato morre — e em ambos existe uma versão sua consciente a celebrar ou a lamentar o resultado!</p>
+          <div class="formula-box">A Árvore Cósmica: O universo é uma superposição infinita de histórias paralelas.</div>
+        `,
+        expTitle: 'Árvore de Ramificação do Multiverso',
+        expDesc: 'Veja o tronco da linha temporal se bifurcar a cada medição quântica em galhos luminosos paralelos.',
+        initExp: (group) => {
+          const stemGeo = new THREE.CylinderGeometry(2, 2, 40);
+          const stemMat = new THREE.MeshStandardMaterial({ color: 0xd4a024, roughness: 0.3 });
+          const stem = new THREE.Mesh(stemGeo, stemMat);
+          stem.position.set(0, 20, 0);
+          group.add(stem);
+
+          const branchMat = new THREE.MeshBasicMaterial({ color: 0x00d2ff, transparent: true, opacity: 0.8 });
+          for(let i=0; i<8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const bGeo = new THREE.CylinderGeometry(0.8, 1.2, 35);
+            bGeo.rotateZ(Math.PI / 4);
+            const b = new THREE.Mesh(bGeo, branchMat);
+            b.position.set(Math.cos(angle) * 15, 38, Math.sin(angle) * 15);
+            b.rotation.y = angle;
+            group.add(b);
+          }
+
+          return (delta, t) => {
+            group.rotation.y = t * 0.2;
+          };
+        },
+        controlsHtml: `
+          <div style="font-family: var(--sans); font-size: 12px; color: var(--gold-dark); font-weight: 600; text-align: center; padding: 6px;">
+            ✦ Todas as trajetórias coexistem simultaneamente na geometria do Multiverso.
+          </div>
+        `
+      }
+    ];
+
+    // =========================================================================
+    // 2. CONFIGURAÇÃO THREE.JS & ILUMINAÇÃO
+    // =========================================================================
+    const canvas = document.getElementById('c');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color('#141210');
+
+    // Iluminação Quente de Biblioteca
+    const ambientLight = new THREE.AmbientLight(0xfff5ea, 1.3);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffeedd, 1.8);
+    dirLight.position.set(70, 240, 140);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.bias = -0.0005;
+    scene.add(dirLight);
+
+    const fillLight = new THREE.DirectionalLight(0x7799bb, 0.5);
+    fillLight.position.set(-90, 90, -70);
+    scene.add(fillLight);
+
+    // Câmera Responsiva Adaptativa
+    const camera = new THREE.PerspectiveCamera(38, window.innerWidth / window.innerHeight, 1, 3000);
+    function updateCameraView() {
+      const w = window.innerWidth, h = window.innerHeight;
+      const aspect = w / h;
+      camera.aspect = aspect;
+      if (aspect < 1.15) {
+        const targetFovX = 54 * (Math.PI / 180);
+        camera.fov = 2 * Math.atan(Math.tan(targetFovX / 2) / aspect) * (180 / Math.PI);
+        camera.position.set(0, 360, 480);
+      } else {
+        camera.fov = 36;
+        camera.position.set(0, 260, 390);
+      }
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    updateCameraView();
+    window.addEventListener('resize', updateCameraView);
+
+    // =========================================================================
+    // 3. MODELAGEM FÍSICA DO LIVRO (CAPA DURA & PÁGINAS ABERTAS)
+    // =========================================================================
+    const bookGroup = new THREE.Group();
+    scene.add(bookGroup);
+
+    // Capa Dura Azul Noite
+    const coverMat = new THREE.MeshStandardMaterial({ color: 0x16253d, roughness: 0.8, metalness: 0.1 });
+    const coverGeo = new THREE.BoxGeometry(265, 8, 185);
+    const cover = new THREE.Mesh(coverGeo, coverMat);
+    cover.position.set(0, -4, 0);
+    cover.receiveShadow = true;
+    bookGroup.add(cover);
+
+    // Lombada Oca Curvada
+    const spineGeo = new THREE.CylinderGeometry(9.45, 9.45, 185, 24, 1, false, Math.PI, Math.PI);
+    spineGeo.rotateZ(Math.PI / 2);
+    spineGeo.rotateY(Math.PI / 2);
+    const spine = new THREE.Mesh(spineGeo, coverMat);
+    spine.position.set(0, -4, 0);
+    bookGroup.add(spine);
+
+    // Textura Dinâmica das Páginas no Canvas 2D
+    const pageCanvas = document.createElement('canvas');
+    pageCanvas.width = 2048; pageCanvas.height = 1450;
+    const pCtx = pageCanvas.getContext('2d');
+    const pageTexture = new THREE.CanvasTexture(pageCanvas);
+    pageTexture.anisotropy = 8;
+
+    const paperMat = new THREE.MeshStandardMaterial({
+      map: pageTexture,
+      roughness: 0.95,
+      metalness: 0.02
+    });
+
+    // Geometria das Páginas com Curvatura Realista
+    const pageGeo = new THREE.PlaneGeometry(240, 170, 32, 16);
+    pageGeo.rotateX(-Math.PI / 2);
+    const pos = pageGeo.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const distFromSpine = Math.abs(x);
+      const dip = Math.exp(-distFromSpine / 30) * -3.5;
+      pos.setY(i, dip + 0.5);
+    }
+    pageGeo.computeVertexNormals();
+    const openPages = new THREE.Mesh(pageGeo, paperMat);
+    openPages.receiveShadow = true;
+    bookGroup.add(openPages);
+
+    // Folha de Virada Animada (Page Turn Mesh)
+    const turnPageGeo = new THREE.PlaneGeometry(120, 170, 32, 16);
+    turnPageGeo.translate(60, 0, 0);
+    turnPageGeo.rotateX(-Math.PI / 2);
+    const turnPageMat = new THREE.MeshStandardMaterial({
+      color: 0xf5ede0, roughness: 0.92, side: THREE.DoubleSide
+    });
+    const turnPage = new THREE.Mesh(turnPageGeo, turnPageMat);
+    turnPage.position.set(0, 1.2, 0);
+    turnPage.visible = false;
+    bookGroup.add(turnPage);
+
+    // =========================================================================
+    // 4. RENDERIZADOR DA PÁGINA EDITORIAL (CANVAS 2D)
+    // =========================================================================
+    function renderPage(chapterIndex) {
+      const ch = CHAPTERS[chapterIndex];
+      pCtx.fillStyle = '#f5ede0';
+      pCtx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+      const grad = pCtx.createLinearGradient(pageCanvas.width/2 - 70, 0, pageCanvas.width/2 + 70, 0);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(0.5, 'rgba(0,0,0,0.22)');
+      grad.addColorStop(1, 'rgba(0,0,0,0)');
+      pCtx.fillStyle = grad;
+      pCtx.fillRect(pageCanvas.width/2 - 70, 0, 140, pageCanvas.height);
+
+      pCtx.strokeStyle = 'rgba(212, 160, 36, 0.4)';
+      pCtx.lineWidth = 2;
+      pCtx.strokeRect(60, 60, pageCanvas.width/2 - 120, pageCanvas.height - 120);
+
+      // --- PÁGINA ESQUERDA: TEXTO EDITORIAL DA OBRA ---
+      pCtx.fillStyle = '#1c2433';
+      pCtx.font = 'bold 36px "Source Serif 4", Georgia, serif';
+      pCtx.fillText('O CÂNTICO DOS QUANTA', 120, 160);
+
+      pCtx.font = 'italic 24px "Source Serif 4", Georgia, serif';
+      pCtx.fillStyle = '#9a3b2a';
+      pCtx.fillText(`${ch.num}: ${ch.title}`, 120, 205);
+
+      pCtx.font = '16px -apple-system, BlinkMacSystemFont, sans-serif';
+      pCtx.fillStyle = '#7a7060';
+      pCtx.fillText(ch.subtitle, 120, 240);
+
+      pCtx.fillStyle = '#2c333f';
+      pCtx.font = '22px "Source Serif 4", Georgia, serif';
+
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = ch.readText;
+      const paras = Array.from(tempDiv.querySelectorAll('p')).map(p => p.textContent);
+      
+      let curY = 310;
+      paras.forEach(p => {
+        const words = p.split(' ');
+        let line = '';
+        words.forEach(w => {
+          const test = line + w + ' ';
+          if (pCtx.measureText(test).width > (pageCanvas.width/2 - 240)) {
+            pCtx.fillText(line, 120, curY);
+            line = w + ' ';
+            curY += 34;
+          } else {
+            line = test;
+          }
+        });
+        if (line) {
+          pCtx.fillText(line, 120, curY);
+          curY += 46;
+        }
+      });
+
+      pCtx.font = 'bold 18px "Source Serif 4", Georgia, serif';
+      pCtx.fillStyle = '#9a3b2a';
+      pCtx.fillText(`— Página ${chapterIndex + 1} —`, pageCanvas.width/4 - 40, pageCanvas.height - 90);
+
+      // --- PÁGINA DIREITA: ÁREA DO LABORATÓRIO POP-UP ---
+      pCtx.strokeStyle = 'rgba(212, 160, 36, 0.4)';
+      pCtx.strokeRect(pageCanvas.width/2 + 60, 60, pageCanvas.width/2 - 120, pageCanvas.height - 120);
+
+      pCtx.fillStyle = '#1c2433';
+      pCtx.font = 'bold 30px "Source Serif 4", Georgia, serif';
+      pCtx.fillText('LABORATÓRIO QUÂNTICO POP-UP', pageCanvas.width/2 + 120, 160);
+
+      pCtx.font = 'italic 20px "Source Serif 4", Georgia, serif';
+      pCtx.fillStyle = '#9a3b2a';
+      pCtx.fillText(ch.expTitle, pageCanvas.width/2 + 120, 200);
+
+      pCtx.font = '18px "Source Serif 4", Georgia, serif';
+      pCtx.fillStyle = '#555';
+      pCtx.fillText('Diagrama Técnico Tridimensional Erguido da Página', pageCanvas.width/2 + 120, 235);
+
+      pCtx.font = 'bold 18px "Source Serif 4", Georgia, serif';
+      pCtx.fillStyle = '#9a3b2a';
+      pCtx.fillText(`— Experimento ${chapterIndex + 1} —`, (3 * pageCanvas.width)/4 - 60, pageCanvas.height - 90);
+
+      pageTexture.needsUpdate = true;
+    }
+
+    // =========================================================================
+    // 5. MOTOR DE SOM SINTÉTICO (BLINDADO COM CATCH DE PROMISE)
+    // =========================================================================
+    let audioCtx = null;
+    function playPageTurnSound() {
+      try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().catch(() => {});
+        }
+
+        const bufferSize = audioCtx.sampleRate * 0.14;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.28));
+        }
+
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.value = 1400;
+        filter.Q.value = 1.2;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.14);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+      } catch(e) {
+        // Silencioso se áudio não permitido antes do toque
+      }
+    }
+
+    // =========================================================================
+    // 6. GERENCIADOR DE EXPERIMENTOS COM LIMPEZA RECURSIVA DE GPU
+    // =========================================================================
+    const expContainerGroup = new THREE.Group();
+    expContainerGroup.position.set(60, 0, 0);
+    bookGroup.add(expContainerGroup);
+
+    let currentExpUpdate = null;
+    let currentChapterIndex = 0;
+    let isFlipping = false;
+
+    function setNavDisabled(disabled) {
+      const navContainer = document.getElementById('nav-bar-container');
+      if (navContainer) {
+        navContainer.classList.toggle('disabled', disabled);
+      }
+      document.getElementById('btn-prev').disabled = disabled || (currentChapterIndex === 0);
+      document.getElementById('btn-next').disabled = disabled || (currentChapterIndex === CHAPTERS.length - 1);
+    }
+
+    function cleanActiveExperiment() {
+      delete window._setChaos;
+      delete window._setTemp;
+      delete window._setFreq;
+      delete window._quantumJump;
+      delete window._setDoubleSlit;
+      delete window._openCatBox;
+
+      function disposeHierarchy(obj) {
+        if (!obj) return;
+        if (obj.children) {
+          while (obj.children.length > 0) {
+            disposeHierarchy(obj.children[0]);
+            obj.remove(obj.children[0]);
+          }
+        }
+        if (obj.geometry) obj.geometry.dispose();
+        if (obj.material) {
+          const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+          mats.forEach(m => {
+            if (m.map) m.map.dispose();
+            if (m.lightMap) m.lightMap.dispose();
+            if (m.bumpMap) m.bumpMap.dispose();
+            if (m.normalMap) m.normalMap.dispose();
+            if (m.specularMap) m.specularMap.dispose();
+            m.dispose();
+          });
+        }
+      }
+
+      disposeHierarchy(expContainerGroup);
+    }
+
+    function loadChapter(idx, animateTurn = false) {
+      if (isFlipping) return;
+      if (idx < 0 || idx >= CHAPTERS.length) return;
+
+      const isNext = idx > currentChapterIndex;
+      currentChapterIndex = idx;
+      const ch = CHAPTERS[idx];
+
+      document.getElementById('cur-page-num').textContent = idx + 1;
+      document.getElementById('tot-page-num').textContent = CHAPTERS.length;
+
+      document.getElementById('exp-title').querySelector('span').textContent = ch.expTitle;
+      document.getElementById('exp-desc').textContent = ch.expDesc;
+      document.getElementById('dynamic-controls').innerHTML = ch.controlsHtml || '';
+
+      document.getElementById('flap-question').textContent = ch.flap.q;
+      document.getElementById('flap-answer').textContent = ch.flap.a;
+      document.getElementById('flap-card').classList.remove('open');
+      document.getElementById('flap-status').textContent = 'Toque para Abrir ▾';
+
+      document.querySelectorAll('.toc-item').forEach((item, i) => {
+        item.classList.toggle('active', i === idx);
+      });
+
+      cleanActiveExperiment();
+
+      if (ch.initExp) {
+        currentExpUpdate = ch.initExp(expContainerGroup);
+      } else {
+        currentExpUpdate = null;
+      }
+
+      if (animateTurn) {
+        playPageTurnSound();
+        animatePageFlip(isNext);
+      } else {
+        renderPage(idx);
+        setNavDisabled(false);
+      }
+    }
+
+    // Animação de Curvatura de Página 3D com Normais Recalculadas e Mutex Lock
+    function animatePageFlip(isForward) {
+      if (isFlipping) return;
+      isFlipping = true;
+      setNavDisabled(true);
+      turnPage.visible = true;
+
+      const startAngle = isForward ? 0 : Math.PI;
+      const endAngle = isForward ? Math.PI : 0;
+      const duration = 520;
+      const startTime = performance.now();
+
+      function stepFlip(now) {
+        const elapsed = now - startTime;
+        const p = Math.min(1.0, elapsed / duration);
+        const ease = p < 0.5 ? 2 * p * p : -1 + (4 - 2 * p) * p;
+
+        const currentAngle = startAngle + (endAngle - startAngle) * ease;
+        turnPage.rotation.z = currentAngle;
+
+        const curl = Math.sin(ease * Math.PI) * 16.0;
+        const pos = turnPageGeo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const u = pos.getX(i) / 120.0;
+          pos.setY(i, Math.sin(u * Math.PI) * curl);
+        }
+        turnPageGeo.attributes.position.needsUpdate = true;
+        turnPageGeo.computeVertexNormals();
+
+        if (p < 1.0) {
+          requestAnimationFrame(stepFlip);
+        } else {
+          turnPage.visible = false;
+          isFlipping = false;
+          renderPage(currentChapterIndex);
+          setNavDisabled(false);
+        }
+      }
+      requestAnimationFrame(stepFlip);
+    }
+
+    // =========================================================================
+    // 7. INTERAÇÕES DOM, MODAIS & GESTOS DISCRIMINADOS
+    // =========================================================================
+    document.getElementById('btn-prev').addEventListener('click', () => {
+      loadChapter(currentChapterIndex - 1, true);
+    });
+    document.getElementById('btn-next').addEventListener('click', () => {
+      loadChapter(currentChapterIndex + 1, true);
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (isFlipping) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+        loadChapter(currentChapterIndex + 1, true);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        loadChapter(currentChapterIndex - 1, true);
+      }
+    });
+
+    // Touch Swipe no Celular (Isolado de controles e arraste 3D)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+
+    canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = performance.now();
+      }
+    }, { passive: true });
+
+    canvas.addEventListener('touchend', (e) => {
+      if (e.changedTouches.length === 1 && !isFlipping) {
+        const touchEndX = e.changedTouches[0].clientX;
+        const touchEndY = e.changedTouches[0].clientY;
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        const duration = performance.now() - touchStartTime;
+
+        // Apenas gestos curtos (< 350ms) e estritamente horizontais (dx > 90px e dy < 35px)
+        if (duration < 350 && Math.abs(diffX) > 90 && Math.abs(diffY) < 35) {
+          if (diffX < 0) loadChapter(currentChapterIndex + 1, true);
+          else loadChapter(currentChapterIndex - 1, true);
+        }
+      }
+    }, { passive: true });
+
+    // Aba de Desafio Cognitivo
+    const flapCard = document.getElementById('flap-card');
+    flapCard.addEventListener('click', () => {
+      const open = flapCard.classList.toggle('open');
+      document.getElementById('flap-status').textContent = open ? 'Toque para Fechar ▴' : 'Toque para Abrir ▾';
+    });
+
+    // Drawer de Sumário
+    const tocDrawer = document.getElementById('toc-drawer');
+    const tocList = document.getElementById('toc-list');
+    document.getElementById('btn-toc').addEventListener('click', () => {
+      tocDrawer.classList.add('open');
+    });
+    document.getElementById('btn-close-toc').addEventListener('click', () => {
+      tocDrawer.classList.remove('open');
+    });
+
+    CHAPTERS.forEach((ch, i) => {
+      const item = document.createElement('div');
+      item.className = `toc-item ${i === 0 ? 'active' : ''}`;
+      item.innerHTML = `
+        <div class="toc-number">${ch.num}</div>
+        <div class="toc-title">${ch.title}</div>
+      `;
+      item.addEventListener('click', () => {
+        loadChapter(i, true);
+        tocDrawer.classList.remove('open');
+      });
+      tocList.appendChild(item);
+    });
+
+    // Modal de Leitura Integral
+    const readModal = document.getElementById('read-modal');
+    document.getElementById('btn-read').addEventListener('click', () => {
+      const ch = CHAPTERS[currentChapterIndex];
+      document.getElementById('modal-title').textContent = `${ch.num}: ${ch.title}`;
+      document.getElementById('modal-content').innerHTML = ch.readText;
+      readModal.classList.add('open');
+    });
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      readModal.classList.remove('open');
+    });
+    readModal.addEventListener('click', (e) => {
+      if (e.target === readModal) readModal.classList.remove('open');
+    });
+
+    // Slider de Elevação 3D
+    const liftSlider = document.getElementById('lift-slider');
+    liftSlider.addEventListener('input', (e) => {
+      const val = parseFloat(e.target.value);
+      expContainerGroup.scale.set(val, val, val);
+      expContainerGroup.position.y = (val - 1.0) * 12;
+    });
+
+    // =========================================================================
+    // 8. CONTROLE DE ÓRBITA & ROTAÇÃO 3D POR TOQUE / MOUSE
+    // =========================================================================
+    let isDragging = false;
+    let prevPointer = { x: 0, y: 0 };
+    let targetRotation = { x: 0.1, y: 0 };
+
+    window.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('#ui-layer') && !e.target.closest('#canvas-container')) return;
+      isDragging = true;
+      prevPointer = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if (!isDragging) return;
+      const dx = e.clientX - prevPointer.x;
+      const dy = e.clientY - prevPointer.y;
+      targetRotation.y += dx * 0.005;
+      targetRotation.x = Math.max(-0.25, Math.min(0.55, targetRotation.x + dy * 0.004));
+      prevPointer = { x: e.clientX, y: e.clientY };
+    });
+
+    window.addEventListener('pointerup', () => { isDragging = false; });
+
+    // =========================================================================
+    // 9. LOOP DE ANIMAÇÃO & RENDERIZAÇÃO
+    // =========================================================================
+    const clock = new THREE.Clock();
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const delta = clock.getDelta();
+      const time = clock.getElapsedTime();
+
+      bookGroup.rotation.y += (targetRotation.y - bookGroup.rotation.y) * 0.08;
+      bookGroup.rotation.x += (targetRotation.x - bookGroup.rotation.x) * 0.08;
+
+      if (currentExpUpdate) {
+        currentExpUpdate(delta, time);
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    loadChapter(0, false);
+    animate();
+  </script>
+</body>
+</html>
