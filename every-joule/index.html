@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Every Joule · Lesson 1: Energy stores</title>
+<meta name="description" content="Lesson 1 of Every Joule, a physics book about energy: everyday objects and the energy stores they hold. The diagram lifts off the page as a 3D ink drawing and energy flows as glowing colour between the stores." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%23c8961e%27/%3E%3Cpath d=%27M11 7h9v3h-6v4.5h5v3h-5V22h6v3h-9z%27 fill=%27%23f6efe0%27/%3E%3C/svg%3E" />
+<style>
+  /* critical CSS inline: the loader and the frame must be styled before any script arrives */
+  :root { --ink: #1c2433; --ink2: rgba(28,36,51,0.62); --accent: #9a3b2a; --serif: "Source Serif 4 Variable", "Source Serif 4", Georgia, serif; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #b9b0a2; color: var(--ink); font-family: var(--serif); -webkit-font-smoothing: antialiased; }
+  canvas#c { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
+  #ui { position: fixed; inset: 0; pointer-events: none; }
+  /* the book's serif for the loader (the same files the book uses, so they load once) */
+  @font-face { font-family: "Source Serif 4 Variable"; font-style: italic; font-display: block; font-weight: 200 900; src: url("./assets/source-serif-4-latin-wght-italic-B-rCj6ir.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Source Serif 4 Variable"; font-style: normal; font-display: block; font-weight: 200 900; src: url("./assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  /* the loader: on the book's paper, "Techartist" writes itself in ink, letter by letter; a drop of energy falls in
+     as the dot of the i and glows through the eight store colours of the jars while the book loads */
+  #loader { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 44%, #fbf6ea 0%, #efe6d3 58%, #ddd1b9 100%); z-index: 5; transition: opacity .7s; padding: 24px; text-align: center; }
+  #loader .mark { display: grid; justify-items: center; color: var(--ink); }
+  #loader .ta { font: italic 560 clamp(54px, 10vw, 104px)/1.05 "Source Serif 4 Variable", Georgia, serif; letter-spacing: -0.005em; display: inline-flex; align-items: baseline; }
+  #loader .ta i { font-style: inherit; display: inline-block; clip-path: inset(-20% 100% -20% 0); animation: write .16s linear forwards; }
+  #loader .ta i:nth-child(1) { animation-delay: .15s } #loader .ta i:nth-child(2) { animation-delay: .29s } #loader .ta i:nth-child(3) { animation-delay: .41s } #loader .ta i:nth-child(4) { animation-delay: .53s } #loader .ta i:nth-child(5) { animation-delay: .67s }
+  #loader .ta i:nth-child(6) { animation-delay: .80s } #loader .ta i:nth-child(7) { animation-delay: .91s } #loader .ta i:nth-child(8) { animation-delay: 1.03s } #loader .ta i:nth-child(9) { animation-delay: 1.12s } #loader .ta i:nth-child(10) { animation-delay: 1.24s }
+  @keyframes write { to { clip-path: inset(-20% 0 -20% 0); } }
+  #loader .ta .ii { position: relative; clip-path: none; animation: none; }
+  #loader .ta .ii b { display: inline-block; clip-path: inset(-20% 100% -20% 0); animation: write .16s 1.03s linear forwards; font-weight: inherit; }
+  #loader .ta .drop { position: absolute; left: 52%; top: 0.08em; width: 0.15em; height: 0.15em; margin-left: -0.075em; border-radius: 50%; color: #2f7bff; background: currentColor; box-shadow: 0 0 0.08em currentColor, 0 0 0.3em currentColor; opacity: 0; transform: translateY(-1.4em);
+    animation: drop .55s 1.42s cubic-bezier(.55,0,1,.45) forwards, stores 3.2s 2.0s linear infinite; }
+  @keyframes drop { 0% { opacity: 0; transform: translateY(-1.4em); } 20% { opacity: 1; } 78% { transform: translateY(0) scale(1.25, 0.75); } 90% { transform: translateY(-0.06em) scale(0.92, 1.08); } 100% { opacity: 1; transform: none; } }
+  @keyframes stores { 0%, 100% { color: #2f7bff; } 12.5% { color: #8a4dff; } 25% { color: #ff3fb4; } 37.5% { color: #ff7a1c; } 50% { color: #26c75a; } 62.5% { color: #e8233a; } 75% { color: #18c4dc; } 87.5% { color: #ffcf1a; } }
+  #loader .flourish { width: clamp(150px, 26vw, 270px); height: auto; margin-top: -0.2em; overflow: visible; }
+  #loader .flourish path { fill: none; stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 230; stroke-dashoffset: 230; animation: flourish .55s 1.45s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes flourish { to { stroke-dashoffset: 0; } }
+  #loader .by { margin-top: 14px; font: 600 11px/1 "Source Serif 4 Variable", Georgia, serif; letter-spacing: 0.32em; text-transform: uppercase; color: var(--accent); opacity: 0; animation: fadein .6s 1.75s forwards; }
+  #loader .title { margin-top: 10px; font: 600 clamp(24px, 3.4vw, 30px)/1.1 "Source Serif 4 Variable", Georgia, serif; letter-spacing: 0.01em; opacity: 0; animation: fadein .6s 1.9s forwards; }
+  #loader .sub { margin-top: 6px; font: italic 400 15px/1.3 "Source Serif 4 Variable", Georgia, serif; color: #5a5448; opacity: 0; animation: fadein .6s 2.0s forwards; }
+  #loader .pen { margin-top: 16px; opacity: 0; animation: fadein .5s 2.2s forwards; }
+  #loader .pen path { stroke-dasharray: 120; animation: pen 1.6s ease-in-out infinite; }
+  @keyframes pen { 0% { stroke-dashoffset: 120; } 55% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -120; } }
+  @keyframes fadein { to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #loader .ta i, #loader .ta .ii b { animation: none; clip-path: none; } #loader .ta .drop { animation: none; opacity: 1; transform: none; } #loader .flourish path { animation: none; stroke-dashoffset: 0; } #loader .by, #loader .title, #loader .sub, #loader .pen { animation: none; opacity: 1; } #loader .pen path { animation: none; stroke-dasharray: none; } }
+  /* still mode (a remembered choice) shows the mark finished */
+  body.still #loader .ta i, body.still #loader .ta .ii b { clip-path: none; } body.still #loader .ta .drop { opacity: 1; transform: none; } body.still #loader .flourish path { stroke-dashoffset: 0; } body.still #loader .by, body.still #loader .title, body.still #loader .sub, body.still #loader .pen { opacity: 1; }
+  body.ready #loader { opacity: 0; pointer-events: none; }
+  /* the copyright: beside the capsule on wide screens, in the top corner where the capsule spans the width */
+  #copy { position: fixed; right: 20px; bottom: max(34px, calc(env(safe-area-inset-bottom) + 20px)); font: 400 12px/1 var(--serif); letter-spacing: 0.03em; color: rgba(28,36,51,0.72); pointer-events: none; z-index: 1; white-space: nowrap; }
+  @media (max-width: 939px) { #copy { bottom: auto; top: max(14px, env(safe-area-inset-top)); right: 14px; } }
+  #nogl { position: fixed; inset: 0; display: none; place-items: center; background: #e9e3d6; z-index: 6; padding: 24px; text-align: center; }
+  body.nogl #nogl { display: grid; }
+  html, body { overscroll-behavior: none; }
+  body.still *, body.still *::before, body.still *::after { transition: none !important; animation: none !important; }
+  #a11y button[aria-pressed="true"] { font-weight: 700; text-decoration: underline; }
+  .sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .sr:focus-within { position: fixed !important; width: auto; height: auto; clip: auto; left: 12px; top: 12px; max-width: min(520px, calc(100vw - 24px)); max-height: 70vh; overflow: auto; background: #fbf7ee; color: var(--ink); padding: 14px 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 7; white-space: normal; }
+</style>
+  <script type="module" crossorigin src="./assets/main-BSpvVzGs.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js">
+  <link rel="modulepreload" crossorigin href="./assets/index-Bb-Nc_xU.js">
+  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js">
+  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js">
+  <link rel="modulepreload" crossorigin href="./assets/stores-BwMXNqO6.js">
+  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js">
+  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css">
+</head>
+<body>
+<canvas id="c" tabindex="0" aria-label="Every Joule: an open book. Use the text version below, or the arrow keys to turn pages."></canvas>
+<div id="ui"></div>
+<main id="a11y" class="sr" aria-label="Text version of the book"></main>
+<div id="a11yLive" class="sr" aria-live="polite" aria-atomic="true"></div>
+<div id="copy">© 2026 Techartist</div>
+<div id="loader" role="status" aria-live="polite">
+  <div class="mark">
+    <div class="ta" role="img" aria-label="Techartist"><i>T</i><i>e</i><i>c</i><i>h</i><i>a</i><i>r</i><i>t</i><i class="ii"><b>ı</b><span class="drop"></span></i><i>s</i><i>t</i></div>
+    <svg class="flourish" viewBox="0 0 230 14" aria-hidden="true"><path d="M4 9 C 48 3, 92 12, 132 7 S 200 3, 226 8"/></svg>
+    <span class="by">presents</span>
+    <span class="title">Every Joule</span>
+    <span class="sub">Lesson 1 · Energy stores</span>
+    <svg class="pen" width="120" height="36" viewBox="0 0 120 36" aria-label="Opening the book"><path d="M6 26 C 26 6, 44 6, 60 18 S 96 30, 114 10" fill="none" stroke="#2a2d33" stroke-width="2" stroke-linecap="round"/></svg>
+  </div>
+</div>
+<div id="nogl" role="alert"><div><h1 style="font:600 24px Georgia,serif;margin:0 0 10px">This book needs WebGL</h1><p style="font:16px/1.5 Georgia,serif;max-width:460px;margin:0 auto">Your browser could not start 3D graphics. Try a recent Chrome, Edge, Firefox or Safari, or turn on hardware acceleration. The <a href="teachers.html">teachers' page</a> and the text of every lesson still work without it.</p></div></div>
+<noscript><p style="position:fixed;inset:auto 0 0 0;padding:12px;background:#fff;text-align:center">Every Joule needs JavaScript to open the book.</p></noscript>
+</body>
+</html>
