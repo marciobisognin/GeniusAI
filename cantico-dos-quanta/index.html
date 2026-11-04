@@ -17,8 +17,8 @@
   @font-face { font-family: "Source Serif 4 Variable"; font-style: normal; font-display: block; font-weight: 200 900; src: url("./assets/source-serif-4-latin-wght-normal-DMe4EKeb.woff2") format("woff2-variations"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
   /* the loader: on the book's paper, "Techartist" writes itself in ink, letter by letter; a drop of energy falls in
      as the dot of the i and glows through the eight store colours of the jars while the book loads */
-  #loader { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 44%, #fbf6ea 0%, #efe6d3 58%, #ddd1b9 100%); z-index: 5; transition: opacity .7s; padding: 24px; text-align: center; }
-  #loader .mark { display: grid; justify-items: center; color: var(--ink); }
+  #loader { position: fixed; inset: 0; display: grid; place-items: center; background: radial-gradient(ellipse at 50% 44%, #fbf6ea 0%, #efe6d3 58%, #ddd1b9 100%); z-index: 5; transition: opacity .7s ease; padding: 24px; text-align: center; cursor: pointer; }
+  #loader .mark { display: grid; justify-items: center; color: var(--ink); pointer-events: none; }
   #loader .ta { font: italic 560 clamp(54px, 10vw, 104px)/1.05 "Source Serif 4 Variable", Georgia, serif; letter-spacing: -0.005em; display: inline-flex; align-items: baseline; }
   #loader .ta i { font-style: inherit; display: inline-block; clip-path: inset(-20% 100% -20% 0); animation: write .16s linear forwards; }
   #loader .ta i:nth-child(1) { animation-delay: .15s } #loader .ta i:nth-child(2) { animation-delay: .29s } #loader .ta i:nth-child(3) { animation-delay: .41s } #loader .ta i:nth-child(4) { animation-delay: .53s } #loader .ta i:nth-child(5) { animation-delay: .67s }
@@ -44,6 +44,7 @@
   /* still mode (a remembered choice) shows the mark finished */
   body.still #loader .ta i, body.still #loader .ta .ii b { clip-path: none; } body.still #loader .ta .drop { opacity: 1; transform: none; } body.still #loader .flourish path { stroke-dashoffset: 0; } body.still #loader .by, body.still #loader .title, body.still #loader .sub, body.still #loader .pen { opacity: 1; }
   body.ready #loader { opacity: 0; pointer-events: none; }
+  body.ready:not(.booting) #loader { display: none; }
   /* the copyright: beside the capsule on wide screens, in the top corner where the capsule spans the width */
   #copy { position: fixed; right: 20px; bottom: max(34px, calc(env(safe-area-inset-bottom) + 20px)); font: 400 12px/1 var(--serif); letter-spacing: 0.03em; color: rgba(28,36,51,0.72); pointer-events: none; z-index: 1; white-space: nowrap; }
   @media (max-width: 939px) { #copy { bottom: auto; top: max(14px, env(safe-area-inset-top)); right: 14px; } }
@@ -56,67 +57,34 @@
   .sr:focus-within { position: fixed !important; width: auto; height: auto; clip: auto; left: 12px; top: 12px; max-width: min(520px, calc(100vw - 24px)); max-height: 70vh; overflow: auto; background: #fbf7ee; color: var(--ink); padding: 14px 16px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); z-index: 7; white-space: normal; }
 </style>
 <script>
-  window.__quantaErrors = [];
-  window.addEventListener("error", function(e) {
-    var msg = (e && e.message) ? e.message : String(e);
-    var loc = (e && e.filename) ? (e.filename.split("/").pop() + ":" + e.lineno) : "";
-    window.__quantaErrors.push(msg + " (" + loc + ")");
-    console.error("[Quanta Error]", msg, loc, e);
-    var b = document.getElementById("quanta-err");
-    if (!b) {
-      b = document.createElement("div");
-      b.id = "quanta-err";
-      b.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;background:#9a1c1c;color:#fff;padding:12px 16px;border-radius:10px;font:13px/1.4 monospace;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.45);max-height:45vh;overflow:auto;";
-      document.body.appendChild(b);
+  function openBookNow() {
+    document.body.classList.add("ready");
+    if (window.__ej && window.__ej.S && window.__ej.S.landing) {
+      window.__ej.goTo(2);
     }
-    b.innerHTML += "<div>⚠️ <b>Erro no Livro 3D:</b> " + msg + "<br><small style='opacity:0.8'>" + loc + "</small><br><a href='./index.classic-3d.html' style='display:inline-block;margin-top:6px;background:#fff;color:#9a1c1c;padding:4px 10px;border-radius:5px;font-weight:bold;text-decoration:none'>Abrir Versão 3D Direta</a></div>";
-  });
-  window.addEventListener("unhandledrejection", function(e) {
-    var msg = (e && e.reason) ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e);
-    window.__quantaErrors.push(msg);
-    console.error("[Quanta Promise Rejection]", msg, e);
-    var b = document.getElementById("quanta-err");
-    if (!b) {
-      b = document.createElement("div");
-      b.id = "quanta-err";
-      b.style.cssText = "position:fixed;bottom:12px;left:12px;right:12px;background:#9a1c1c;color:#fff;padding:12px 16px;border-radius:10px;font:13px/1.4 monospace;z-index:99999;box-shadow:0 6px 24px rgba(0,0,0,0.45);max-height:45vh;overflow:auto;";
-      document.body.appendChild(b);
-    }
-    b.innerHTML += "<div>⚠️ <b>Promise Rejection:</b> " + msg + "<br><a href='./index.classic-3d.html' style='display:inline-block;margin-top:6px;background:#fff;color:#9a1c1c;padding:4px 10px;border-radius:5px;font-weight:bold;text-decoration:none'>Abrir Versão 3D Direta</a></div>";
-  });
-  // Failsafe timer: reveals the book automatically after 2.8s or immediately upon click/tap
-  setTimeout(function() {
-    if (!document.body.classList.contains("ready")) {
-      console.log("[Quanta] Failsafe: exibindo o livro 3D.");
-      document.body.classList.add("ready");
-    }
-  }, 2800);
+  }
   document.addEventListener("DOMContentLoaded", function() {
     var ld = document.getElementById("loader");
     if (ld) {
-      ld.style.cursor = "pointer";
-      ld.title = "Toque para abrir o livro agora";
-      ld.addEventListener("click", function() {
-        document.body.classList.add("ready");
-      });
-    }
-    var btn = document.getElementById("btn-enter");
-    if (btn) {
-      btn.addEventListener("click", function(e) {
-        e.stopPropagation();
-        document.body.classList.add("ready");
-      });
+      ld.addEventListener("click", openBookNow);
+      ld.addEventListener("touchstart", openBookNow, { passive: true });
     }
   });
+  // Failsafe timer (2.5s) to guarantee the loader dissolves and book opens cleanly
+  setTimeout(function() {
+    if (!document.body.classList.contains("ready")) {
+      document.body.classList.add("ready");
+    }
+  }, 2500);
 </script>
-  <script type="module" crossorigin src="./assets/main-quanta.js?v=20261103e"></script>
-  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js?v=20261103e">
-  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js?v=20261103e">
-  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js?v=20261103e">
-  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js?v=20261103e">
-  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js?v=20261103e">
-  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js?v=20261103e">
-  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css?v=20261103e">
+  <script type="module" crossorigin src="./assets/main-quanta.js?v=20261103f"></script>
+  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js?v=20261103f">
+  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js?v=20261103f">
+  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js?v=20261103f">
+  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js?v=20261103f">
+  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js?v=20261103f">
+  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js?v=20261103f">
+  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css?v=20261103f">
 </head>
 <body>
 <canvas id="c" tabindex="0" aria-label="O Cântico dos Quanta: um livro vivo aberto. Navegue pelas páginas com as setas ou passe o cursor sobre as ilustrações para erguê-las em 3D."></canvas>
@@ -132,13 +100,9 @@
     <span class="title">O Cântico dos Quanta</span>
     <span class="sub">Um Livro Vivo sobre a Física Quântica</span>
     <svg class="pen" width="120" height="36" viewBox="0 0 120 36" aria-label="Abrindo o livro"><path d="M6 26 C 26 6, 44 6, 60 18 S 96 30, 114 10" fill="none" stroke="#2a2d33" stroke-width="2" stroke-linecap="round"/></svg>
-    <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;pointer-events:auto;">
-      <button id="btn-enter" style="background:#1c2433;color:#fbf6ea;border:1px solid #d4a024;padding:10px 22px;border-radius:24px;font:600 14px var(--serif);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,0.25);">Abrir Livro 3D</button>
-      <a href="./index.classic-3d.html" style="background:rgba(28,36,51,0.08);color:#1c2433;border:1px solid rgba(28,36,51,0.25);padding:10px 20px;border-radius:24px;font:500 13px var(--serif);text-decoration:none;display:inline-flex;align-items:center;">Modo 3D Direto</a>
-    </div>
   </div>
 </div>
-<div id="nogl" role="alert"><div><h1 style="font:600 24px Georgia,serif;margin:0 0 10px">Este livro requer WebGL</h1><p style="font:16px/1.5 Georgia,serif;max-width:460px;margin:0 auto">Seu navegador não pôde inicializar gráficos 3D acelerados. Experimente uma versão recente do Chrome, Edge, Firefox ou Safari com aceleração por hardware ativada.</p><p style="margin-top:14px"><a href="./index.classic-3d.html" style="color:var(--accent);font-weight:bold;text-decoration:underline">Abrir Versão 3D Alternativa</a></p></div></div>
+<div id="nogl" role="alert"><div><h1 style="font:600 24px Georgia,serif;margin:0 0 10px">Este livro requer WebGL</h1><p style="font:16px/1.5 Georgia,serif;max-width:460px;margin:0 auto">Seu navegador não pôde inicializar gráficos 3D acelerados. Experimente uma versão recente do Chrome, Edge, Firefox ou Safari com aceleração por hardware ativada.</p></div></div>
 <noscript><p style="position:fixed;inset:auto 0 0 0;padding:12px;background:#fff;text-align:center">O Cântico dos Quanta necessita de JavaScript para abrir o livro.</p></noscript>
 </body>
 </html>
