@@ -1,0 +1,202 @@
+{
+  "title": "A Dança do Espaço-Tempo",
+  "subtitle": "Um Livro Vivo sobre a Teoria da Relatividade",
+  "author": "Albert Einstein & Techartist",
+  "lang": "pt-BR",
+  "description": "Um livro vivo interativo em 3D sobre a Teoria da Relatividade de Albert Einstein. O tempo dilata, o espaço se curva e as equações ganham vida na página com física real e ilustrações em nanquim.",
+  "copyright": "© 2026 Albert Einstein & Techartist · A Dança do Espaço-Tempo",
+  "presentation": "apresenta",
+  "brand": "Techartist",
+  "glossary": [
+    {
+      "id": "invariancia",
+      "term": "Invariância da Luz",
+      "label": "Invariância de c",
+      "lessons": [1, 2],
+      "definition": "Postulado central que estabelece que a velocidade da luz no vácuo (c ≈ 300.000 km/s) é idêntica para todos os observadores inerciais, independentemente do movimento da fonte.",
+      "short": "Velocidade universal constante da luz."
+    },
+    {
+      "id": "dilatacao",
+      "term": "Dilatação Temporal",
+      "label": "Dilatação do Tempo",
+      "lessons": [2],
+      "definition": "Efeito relativístico onde o tempo decorre mais lentamente para um objeto em movimento veloz em relação a um observador em repouso: Δt' = γ · Δt.",
+      "short": "O tempo corre mais devagar em alta velocidade."
+    },
+    {
+      "id": "lorentz",
+      "term": "Fator de Lorentz",
+      "label": "Fator γ (Gama)",
+      "lessons": [2, 3, 4],
+      "definition": "O coeficiente γ = 1 / √(1 - v²/c²) que quantifica o alongamento do tempo, a contração das distâncias e o ganho de momento relativístico.",
+      "short": "Fator de escala relativístico que tende ao infinito quando v se aproxima de c."
+    },
+    {
+      "id": "contracao",
+      "term": "Contração Espacial",
+      "label": "Contração de Lorentz",
+      "lessons": [3],
+      "definition": "Encurtamento físico de um objeto medido ao longo da direção do seu movimento em relação a um observador estacionário.",
+      "short": "Comprimento contrai na direção da velocidade."
+    },
+    {
+      "id": "emc2",
+      "term": "Equivalência Massa-Energia",
+      "label": "E = mc²",
+      "lessons": [4],
+      "definition": "Identidade física fundamental que demonstra que a massa é uma forma condensada de energia pura em repouso.",
+      "short": "Massa e energia são manifestações do mesmo princípio físico."
+    },
+    {
+      "id": "geodesica",
+      "term": "Geodésica Gravitacional",
+      "label": "Curvatura do Espaço-Tempo",
+      "lessons": [5],
+      "definition": "A menor distância entre dois eventos no espaço-tempo quadridimensional curvado pela presença de massa e energia.",
+      "short": "Trajetória natural de corpos livres na gravidade de Einstein."
+    }
+  ],
+  "lessons": [
+    {
+      "n": 1,
+      "title": "O Éter que Sumiu",
+      "runningHead": "O Fim do Absoluto Newtoniano",
+      "figure": "O Interferômetro de Michelson-Morley",
+      "explanation": [
+        "No final do século XIX, acreditava-se que as ondas de luz precisavam de uma substância invisível que permeasse todo o cosmos para vibrar: o éter luminífero.",
+        "Em 1887, Albert Michelson e Edward Morley montaram uma mesa óptica flutuando sobre mercúrio para detectar o vento de éter soprado pela rotação da Terra ao redor do Sol.",
+        "O experimento produziu o silêncio mais retumbante da história da física: a luz viajava exatamente na mesma velocidade em qualquer direção. O éter nunca existiu."
+      ],
+      "equation": {
+        "symbols": "c = 1 / \\sqrt{\\mu_0 \\epsilon_0} \\approx 299.792 \\text{ km/s}",
+        "words": "a velocidade da luz é universalmente fixa e invariante para todos os observadores"
+      },
+      "keywords": [
+        { "term": "Interferômetro", "definition": "Aparelho que divide um feixe de luz em dois caminhos perpendiculares para medir diferenças de percurso por padrões de interferência." },
+        { "term": "Éter Luminífero", "definition": "Meio mecânico clássico hipotético refutado conclusivamente em 1887." }
+      ],
+      "predict": {
+        "question": "Se um trem viaja a metade da velocidade da luz e acende os faróis, a velocidade do feixe medido na estação será:",
+        "options": ["1,5 vezes a velocidade da luz", "Exatamente a velocidade da luz (c)", "0,5 vezes a velocidade da luz"]
+      },
+      "explain": "A velocidade da luz no vácuo é o teto cósmico invariável. O espaço e o tempo se deformam dinamicamente para que qualquer observador meça sempre o mesmo valor exato de c.",
+      "tryHint": "Toque na mesa óptica ou no divisor de feixe central para alternar a rotação do interferômetro e conferir as franjas luminosas.",
+      "challenge": {
+        "text": "Alinhe os dois braços do interferômetro até atingir a interferência central simétrica."
+      }
+    },
+    {
+      "n": 2,
+      "title": "A Dilatação Temporal",
+      "runningHead": "O Relógio de Luz Relativístico",
+      "figure": "O Relógio de Fótons em Movimento",
+      "explanation": [
+        "Imagine um relógio formado por dois espelhos paralelos separados por uma distância fixa, onde o 'tique-taque' é um fóton ricocheteando entre eles.",
+        "Para quem viaja dentro da nave, o fóton sobe e desce em linha reta vertical percorrendo a distância 2L.",
+        "Para um observador na Terra que vê a nave passar veloz, o fóton precisa percorrer uma trajetória diagonal mais longa. Como a velocidade da luz não aumenta, o tempo daquele relógio tem que passar mais devagar."
+      ],
+      "equation": {
+        "symbols": "\\Delta t' = \\gamma \\cdot \\Delta t = \\frac{\\Delta t}{\\sqrt{1 - v^2/c^2}}",
+        "words": "o intervalo de tempo medido pelo observador estacionário é ampliado pelo fator de Lorentz"
+      },
+      "keywords": [
+        { "term": "Tempo Próprio", "definition": "Intervalo de tempo medido no referencial de repouso do relógio." },
+        { "term": "Relógio de Luz", "definition": "Experimento mental didático que demonstra a dilatação do tempo pela geometria pitagórica." }
+      ],
+      "predict": {
+        "question": "Se um astronauta viaja a 99% da velocidade da luz por 1 ano de seu relógio, ao retornar à Terra terão passado:",
+        "options": ["Exatamente 1 ano", "Cerca de 7 anos", "Menos de 1 mês"]
+      },
+      "explain": "A 0,99c o fator gama vale aproximadamente 7. Para cada segundo vivido na nave veloz, transcorrem 7 segundos no planeta Terra.",
+      "tryHint": "Altere a alavanca de velocidade da nave para ver o feixe diagonal do fóton se alongar em tempo real.",
+      "challenge": {
+        "text": "Eleve a velocidade da nave até atingir um fator de dilatação temporal superior a 2x."
+      }
+    },
+    {
+      "n": 3,
+      "title": "A Contração Espacial",
+      "runningHead": "A Geometria de Lorentz",
+      "figure": "A Régua e o Foguete Relativístico",
+      "explanation": [
+        "Se o tempo se dilata para manter a velocidade da luz constante, o espaço também não pode ser uma caixa rígida e imutável.",
+        "Um objeto em alta velocidade em relação a um observador tem seu comprimento reduzido estritamente na direção do movimento.",
+        "Para o viajante no foguete, ele não sente seu corpo encolher; do seu ponto de vista, é a distância até as estrelas que encurtou drasticamente."
+      ],
+      "equation": {
+        "symbols": "L' = L / \\gamma = L \\cdot \\sqrt{1 - v^2/c^2}",
+        "words": "o comprimento do objeto contrai proporcionalmente à raiz de um menos v ao quadrado sobre c ao quadrado"
+      },
+      "keywords": [
+        { "term": "Comprimento Próprio", "definition": "Comprimento medido no referencial em que o objeto está estático." },
+        { "term": "Simultaneidade Relativa", "definition": "Eventos que parecem simultâneos em um referencial não o são em outro que se move." }
+      ],
+      "predict": {
+        "question": "Um foguete de 100 metros de comprimento viaja a 86,6% da velocidade da luz. Medido da Terra, ele mede:",
+        "options": ["100 metros", "50 metros", "200 metros"]
+      },
+      "explain": "A 0,866c o fator gama é 2. A distância física observada é dividida exatamente por 2, resultando em 50 metros.",
+      "tryHint": "Arraste o cursor sobre o foguete para acelerá-lo e observe a malha estrutural se contrair ao longo do eixo X.",
+      "challenge": {
+        "text": "Acelere a estrutura até comprimi-la para metade do seu comprimento original."
+      }
+    },
+    {
+      "n": 4,
+      "title": "A Equação de Einstein: E = mc²",
+      "runningHead": "Energia e Inércia",
+      "figure": "A Conversão Nuclear Massa-Energia",
+      "explanation": [
+        "Em 1905, Einstein deduziu a consequência mais revolucionária da relatividade especial: a massa de um corpo é uma medida direta do seu conteúdo energético.",
+        "Como a velocidade da luz ao quadrado (c²) é um número gigantesco (90 bilhões de megajoules por quilo), uma quantidade ínfima de matéria encerra uma energia monumental.",
+        "É esta equação que explica o brilho do Sol por bilhões de anos e a física nuclear moderna."
+      ],
+      "equation": {
+        "symbols": "E^2 = (m_0 c^2)^2 + (p c)^2",
+        "words": "a energia total é a soma vetorial da energia de repouso com o momento linear relativístico"
+      },
+      "keywords": [
+        { "term": "Massa de Repouso", "definition": "A inércia intrínseca m0 de uma partícula medida no seu referencial estático." },
+        { "term": "Defeito de Massa", "definition": "Diferença entre a massa dos núcleos e a soma dos nucleons livres, convertida em calor radiante." }
+      ],
+      "predict": {
+        "question": "Se 1 grama inteiro de matéria for 100% aniquilado com antimatéria, a energia liberada equivale a:",
+        "options": ["Queimar 1 litro de gasolina", "A explosão de 21 mil toneladas de TNT", "A energia de uma bateria de celular"]
+      },
+      "explain": "Um único grama de matéria convertida libera 90 trilhões de Joules, comparável à queima de milhares de toneladas de combustível fóssil.",
+      "tryHint": "Pressione o núcleo de fissão central para liberar o feixe radiante e medir a energia luminosa.",
+      "challenge": {
+        "text": "Dispare a conversão de massa e atinja o patamar de saturação energética do detector."
+      }
+    },
+    {
+      "n": 5,
+      "title": "A Curvatura do Espaço-Tempo",
+      "runningHead": "A Relatividade Geral de 1915",
+      "figure": "O Tecido Deformado da Gravitação",
+      "explanation": [
+        "Em 1915, Einstein superou a visão de Newton da gravidade como uma força misteriosa de atração à distância.",
+        "Na Relatividade Geral, matéria e energia dizem ao espaço-tempo como se curvar; e o espaço-tempo curvado diz à matéria como se mover.",
+        "Planetas orbitam o Sol não por estarem presos a uma corda invisível, mas porque seguem a linha reta mais curta (uma geodésica) no tecido cósmico afundado pela massa solar."
+      ],
+      "equation": {
+        "symbols": "G_{\\mu\\nu} + \\Lambda g_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}",
+        "words": "a geometria tensorial do espaço-tempo é curvada pelo tensor de energia-momento da matéria"
+      },
+      "keywords": [
+        { "term": "Geodésica", "definition": "Trajetória de curvatura extrema percorrida livremente pela luz e pela matéria em um campo gravitacional." },
+        { "term": "Lente Gravitacional", "definition": "Desvio da trajetória da luz ao passar nas proximidades de corpos celestes massivos." }
+      ],
+      "predict": {
+        "question": "A luz de uma estrela distante passando raspando pela borda do Sol sofre:",
+        "options": ["Nenhum desvio, pois fótons não têm massa de repouso", "Um desvio angular de 1,75 segundos de arco", "Uma aceleração infinita"]
+      },
+      "explain": "Mesmo sem massa de repouso, a luz viaja pelas geodésicas do espaço-tempo que foi curvado pela massa do Sol, como comprovado no eclipse de Sobral em 1919.",
+      "tryHint": "Gire a órbita ao redor da estrela central ou clique na massa para afundar o poço gravitacional e observar a órbita do planeta.",
+      "challenge": {
+        "text": "Ajuste a profundidade do poço até estabilizar uma órbita elíptica fechada."
+      }
+    }
+  ]
+}

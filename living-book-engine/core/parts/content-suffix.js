@@ -1,0 +1,1 @@
+const _=W,we=Object.freeze(K.map(a=>_({...a,folios:[2*a.n+2,2*a.n+3]}))),be=K,ke=Object.freeze({...$}),ve=(a,e)=>q(a,e),Ae=Object.freeze(Object.defineProperty({__proto__:null,LESSONS:we,LESSONS_SOURCE:be,SIM_NUMBERS:ke,fillMargin:ve},Symbol.toStringTag,{value:"Module"}));export{J as G,we as L,Ae as _,W as d,Y as f,F as n,de as p,ue as v};
