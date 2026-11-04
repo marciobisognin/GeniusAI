@@ -59,9 +59,17 @@
 <script>
   function openBookNow() {
     document.body.classList.add("ready");
-    if (window.__ej && window.__ej.S && window.__ej.S.landing) {
-      window.__ej.goTo(2);
+    var attempts = 0;
+    function tryOpen() {
+      if (window.__ej && typeof window.__ej.goTo === "function") {
+        if (window.__ej.S && window.__ej.S.landing) {
+          window.__ej.goTo(2);
+        }
+      } else if (attempts++ < 40) {
+        setTimeout(tryOpen, 100);
+      }
     }
+    tryOpen();
   }
   document.addEventListener("DOMContentLoaded", function() {
     var ld = document.getElementById("loader");
@@ -69,22 +77,31 @@
       ld.addEventListener("click", openBookNow);
       ld.addEventListener("touchstart", openBookNow, { passive: true });
     }
-  });
-  // Failsafe timer (2.5s) to guarantee the loader dissolves and book opens cleanly
-  setTimeout(function() {
-    if (!document.body.classList.contains("ready")) {
-      document.body.classList.add("ready");
+    var cv = document.getElementById("c");
+    if (cv) {
+      cv.addEventListener("click", function() {
+        if (window.__ej && window.__ej.S && window.__ej.S.landing) {
+          openBookNow();
+        }
+      });
+      cv.addEventListener("touchstart", function() {
+        if (window.__ej && window.__ej.S && window.__ej.S.landing) {
+          openBookNow();
+        }
+      }, { passive: true });
     }
-  }, 2500);
+  });
+  // Failsafe timer (2.4s) to guarantee the loader dissolves and book opens to lesson 1
+  setTimeout(openBookNow, 2400);
 </script>
-  <script type="module" crossorigin src="./assets/main-quanta.js?v=20261103f"></script>
-  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js?v=20261103f">
-  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js?v=20261103f">
-  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js?v=20261103f">
-  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js?v=20261103f">
-  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js?v=20261103f">
-  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js?v=20261103f">
-  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css?v=20261103f">
+  <script type="module" crossorigin src="./assets/main-quanta.js?v=20261104a"></script>
+  <link rel="modulepreload" crossorigin href="./assets/numbers-D7lU_RWT.js?v=20261104a">
+  <link rel="modulepreload" crossorigin href="./assets/index-quanta.js?v=20261104a">
+  <link rel="modulepreload" crossorigin href="./assets/three-DMk7AhfD.js?v=20261104a">
+  <link rel="modulepreload" crossorigin href="./assets/post-CiGSGJXB.js?v=20261104a">
+  <link rel="modulepreload" crossorigin href="./assets/sims-quanta.js?v=20261104a">
+  <link rel="modulepreload" crossorigin href="./assets/sourcelist-ugshuCEn.js?v=20261104a">
+  <link rel="stylesheet" crossorigin href="./assets/index-utElasQ9.css?v=20261104a">
 </head>
 <body>
 <canvas id="c" tabindex="0" aria-label="O Cântico dos Quanta: um livro vivo aberto. Navegue pelas páginas com as setas ou passe o cursor sobre as ilustrações para erguê-las em 3D."></canvas>
